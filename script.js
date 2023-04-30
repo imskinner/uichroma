@@ -1,4 +1,7 @@
 document.getElementById("generate").addEventListener("click", async () => {
+    const loader = document.getElementById("loader");
+    loader.style.display = "inline-block"; // Show loader
+
     const feelingsInput = document.getElementById("feelings");
     const paletteContainer = document.getElementById("palette");
     paletteContainer.innerHTML = ""; // Clear previous colors
@@ -10,6 +13,7 @@ document.getElementById("generate").addEventListener("click", async () => {
     }
   
     const colors = await generateColorPalette(feelings);
+    loader.style.display = "none"; // Hide loader
     if (colors.length > 0) {
       colors.forEach(color => {
         const colorBox = document.createElement("div");
