@@ -2,11 +2,17 @@ document.getElementById("generate").addEventListener("click", async () => {
     const loader = document.getElementById("loader");
     loader.style.display = "inline-block"; // Show loader
 
+    const selectedFeelings = predefinedFeelings.filter(feeling => {
+        return document.getElementById(`feeling-${feeling}`).checked;
+    });
+
+
     const feelingsInput = document.getElementById("feelings");
+    const customFeelings = feelingsInput.value.trim();
     const paletteContainer = document.getElementById("palette");
     paletteContainer.innerHTML = ""; // Clear previous colors
   
-    const feelings = feelingsInput.value.trim();
+    const feelings = selectedFeelings.concat(customFeelings ? customFeelings.split(',') : []);
     if (!feelings) {
       alert("Por favor, insira os sentimentos.");
       return;
@@ -25,6 +31,30 @@ document.getElementById("generate").addEventListener("click", async () => {
     } else {
       alert("Não foi possível gerar a paleta de cores. Por favor, tente novamente.");
     }
+  });
+
+  const predefinedFeelings = [
+    "Happy", "Sad", "Angry", "Relaxed", "Energetic",
+    "Optimistic", "Pessimistic", "Romantic", "Stressed",
+    "Calm", "Loving", "Confident", "Fearful", "Surprised",
+    "Nostalgic", "Adventurous", "Motivated", "Bored",
+    "Curious", "Intrigued"
+  ];
+  
+  const feelingsCheckboxesContainer = document.getElementById("feelingsCheckboxes");
+  predefinedFeelings.forEach(feeling => {
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.id = `feeling-${feeling}`;
+    checkbox.value = feeling;
+  
+    const label = document.createElement("label");
+    label.htmlFor = `feeling-${feeling}`;
+    label.textContent = feeling;
+  
+    feelingsCheckboxesContainer.appendChild(checkbox);
+    feelingsCheckboxesContainer.appendChild(label);
+    feelingsCheckboxesContainer.appendChild(document.createElement("br"));
   });
   
   async function generateColorPalette(feelings) {
