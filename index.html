@@ -3,46 +3,25 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
   <title>Paleta de cores</title>
-  <style>
-    body{
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-    #palette{
-        margin-top: 32px;
-    }
-    .color-box {
-      width: 100px;
-      height: 100px;
-      display: inline-block;
-      margin-right: 5px;
-      border-radius: 8px;
-      padding: 12px;
-    }
-    .loader {
-      border: 5px solid #f3f3f3;
-      border-top: 5px solid #3498db;
-      border-radius: 50%;
-      width: 32px;
-      height: 32px;
-      animation: spin 1s linear infinite;
-    }
-  
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-  </style>
 </head>
 <body>
-  <h1>Paleta de cores</h1>
-  <label for="feelings">Digite os sentimentos (separados por vírgulas):</label>
-  <input type="text" id="feelings">
-  <div id="feelingsCheckboxes"></div>
-  <button id="generate">Gerar paleta</button>
-  <div id="loader" class="loader" style="display: none;"></div>
-  <div id="palette"></div>
-
+    <div class="wrapper">
+        <div class="leftCol">
+            <div><img src="/img/logo.png" alt="Pallet.ai" height="40"></div>
+            <h1>Get color ideas for your next project</h1>
+            <p>Generate colors based on keywords, traits and emotions and let the AI do the trick.</p>
+            <label for="feelings">Enter keywords for your project:</label>
+            <input type="text" id="feelings" placeholder="e.g. happy, tech, romance">
+            <div id="feelingsCheckboxes"></div>
+            <button id="generate">Generate colors</button>
+        </div>
+        <div class="rightCol">
+            <div id="loader" class="loader" style="display: none;"></div>
+            <div id="palette"></div>
+        </div>
+    </div>
   <script src="script.js"></script>
 </body>
 </html>

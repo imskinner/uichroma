@@ -20,6 +20,7 @@ document.getElementById("generate").addEventListener("click", async () => {
   
     const colors = await generateColorPalette(feelings);
     loader.style.display = "none"; // Hide loader
+    
     if (colors.length > 0) {
       colors.forEach(color => {
         const colorBox = document.createElement("div");
@@ -34,11 +35,10 @@ document.getElementById("generate").addEventListener("click", async () => {
   });
 
   const predefinedFeelings = [
-    "Happy", "Sad", "Angry", "Relaxed", "Energetic",
-    "Optimistic", "Pessimistic", "Romantic", "Stressed",
-    "Calm", "Loving", "Confident", "Fearful", "Surprised",
-    "Nostalgic", "Adventurous", "Motivated", "Bored",
-    "Curious", "Intrigued"
+    "Innovative", "Authentic", "Dynamic", "Passionate", "Bold",
+    "Creative", "Empowering", "Reliable", "Trustworthy", "Accessible",
+    "Ambitious", "Sophisticated", "Charismatic", "Vibrant", "Visionary",
+    "Energetic", "Playful", "Engaging", "Genuine", "Inclusive"
   ];
   
   const feelingsCheckboxesContainer = document.getElementById("feelingsCheckboxes");
@@ -59,8 +59,14 @@ document.getElementById("generate").addEventListener("click", async () => {
   
   async function generateColorPalette(feelings) {
     const apiKey = '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';
-    const prompt = `Generate a color palette of 5 colors based on the feelings: ${feelings}. 
-    Colors are to be used in Mobile App UI, so they should have a primary color, a secondary color and accent colors. Provide the colors in hexadecimal format. Make sure colors match and are elegant.`;
+    const prompt = `
+    Generate 5 colors based on keywords: "${feelings}". 
+    Colors are to be used in Mobile App UI, so they should have a primary color, a secondary color and accent colors, following best aesthetic practices.
+    Provide the colors in hexadecimal format.
+    Colors must be elegant.
+    Can't be monotone.
+    Primary color should always have a lightness (HSL) of 50.
+    Show result as a list ordered by color tones.`;
   
     try {
       const response = await fetch('https://api.openai.com/v1/completions', {
@@ -75,7 +81,7 @@ document.getElementById("generate").addEventListener("click", async () => {
           max_tokens: 500,
           n: 1,
           stop: null,
-          temperature: 0.7,
+          temperature: 0.4,
         })
       });
   
