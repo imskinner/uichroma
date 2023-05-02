@@ -10,7 +10,8 @@ document.getElementById("generate").addEventListener("click", async () => {
     const feelingsInput = document.getElementById("feelings");
     const customFeelings = feelingsInput.value.trim();
     const paletteContainer = document.getElementById("palette");
-    paletteContainer.innerHTML = ""; // Clear previous colors
+    paletteContainer.innerHTML = "";
+    document.getElementById("response-container").innerHTML = "" // Clear previous colors
   
     const feelings = selectedFeelings.concat(customFeelings ? customFeelings.split(',') : []);
     if (!feelings) {
@@ -34,11 +35,10 @@ document.getElementById("generate").addEventListener("click", async () => {
     }
   });
 
+  
+
   const predefinedFeelings = [
-    "Innovative", "Authentic", "Dynamic", "Passionate", "Bold",
-    "Creative", "Empowering", "Reliable", "Trustworthy", "Accessible",
-    "Ambitious", "Sophisticated", "Charismatic", "Vibrant", "Visionary",
-    "Energetic", "Playful", "Engaging", "Genuine", "Inclusive"
+    "Energetic",  "Mysterious",  "Confident",  "Peaceful",  "Romantic",  "Bold",  "Cheerful",  "Serene",  "Intense",  "Elegant",  "Joyful",  "Powerful",  "Tranquil",  "Refreshing",  "Whimsical",  "Passionate",  "Harmonious",  "Enigmatic",  "Vibrant",  "Sophisticated"
   ];
   
   const feelingsCheckboxesContainer = document.getElementById("feelingsCheckboxes");
@@ -51,10 +51,13 @@ document.getElementById("generate").addEventListener("click", async () => {
     const label = document.createElement("label");
     label.htmlFor = `feeling-${feeling}`;
     label.textContent = feeling;
-  
-    feelingsCheckboxesContainer.appendChild(checkbox);
-    feelingsCheckboxesContainer.appendChild(label);
-    feelingsCheckboxesContainer.appendChild(document.createElement("br"));
+
+    const checkboxField = document.createElement("div");
+    checkboxField.class = "checkboxField";
+
+    checkboxField.appendChild(checkbox);
+    checkboxField.appendChild(label);
+    feelingsCheckboxesContainer.appendChild(checkboxField);
   });
   
   async function generateColorPalette(feelings) {
@@ -66,32 +69,45 @@ document.getElementById("generate").addEventListener("click", async () => {
     Colors must be elegant.
     Can't be monotone.
     Primary color should always have a lightness (HSL) of 50.
-    Show result as a list ordered by color tones.`;
+    Show result as a list ordered by color tones."`;
   
     try {
-      const response = await fetch('https://api.openai.com/v1/completions', {
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${apiKey}`
         },
         body: JSON.stringify({
-          prompt: prompt,
-          model: "text-davinci-003",
-          max_tokens: 500,
+          model: "gpt-3.5-turbo",
+          messages: [
+            {
+              role: "system",
+              content: "You are a helpful assistant that generates color palettes based on feelings for mobile app UIs."
+            },
+            {
+              role: "user",
+              content: `Generate a color palette of 5 colors based on the keywords and/or traits: ${feelings}. The colors are to be used in Mobile App UI, so they should have a primary color, a secondary color, and accent colors. Provide the colors in hexadecimal format. Make sure colors match and are elegant.`
+            }
+          ],
+          max_tokens: 600,
           n: 1,
           stop: null,
-          temperature: 0.4,
+          temperature: 0.8,
         })
       });
   
       if (response.ok) {
         const data = await response.json();
+        const responseContainer = document.getElementById("response-container");
   
         if (data.choices && data.choices.length > 0) {
           const hexColorRegex = /#(?:[0-9a-fA-F]{3}){1,2}\b/g;
-          const colors = data.choices[0].text.match(hexColorRegex);
-  
+          const colors = data.choices[0].message.content.match(hexColorRegex);
+
+          responseContainer.innerHTML = "";
+          responseContainer.innerHTML = data.choices[0].message.content;
+        
           if (colors && colors.length > 0) {
             return colors;
           } else {

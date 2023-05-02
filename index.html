@@ -5,21 +5,34 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="style.css">
   <title>Paleta de cores</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="wrapper">
         <div class="leftCol">
-            <div><img src="/img/logo.png" alt="Pallet.ai" height="40"></div>
-            <h1>Get color ideas for your next project</h1>
-            <p>Generate colors based on keywords, traits and emotions and let the AI do the trick.</p>
-            <label for="feelings">Enter keywords for your project:</label>
-            <input type="text" id="feelings" placeholder="e.g. happy, tech, romance">
-            <div id="feelingsCheckboxes"></div>
-            <button id="generate">Generate colors</button>
+            <div class="logo"><img src="/img/logo.png" alt="Pallet.ai" height="40"></div>
+            <div>
+              <header>
+                <h1>Get color ideas for your next project</h1>
+                <p>Generate colors based on keywords, traits and emotions and let the AI do the trick.</p>
+              </header>
+
+              <section>
+                <div class="inputText">
+                  <label for="feelings">Enter keywords for your project:</label>
+                  <input type="text" id="feelings" placeholder="e.g. happy, tech, romance">
+                </div>
+                <div id="feelingsCheckboxes"></div>
+                <button id="generate">Generate colors</button>
+              </div>
+            </section>
         </div>
         <div class="rightCol">
             <div id="loader" class="loader" style="display: none;"></div>
             <div id="palette"></div>
+            <div id="response-container"></div>
         </div>
     </div>
   <script src="script.js"></script>
