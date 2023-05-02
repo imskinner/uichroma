@@ -4,6 +4,16 @@
 body{
     font-family: 'Inter', sans-serif;
 }
+.loader {
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #0077FE;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    animation: fadeIn 200ms ease-in;
+    animation: spin 1s linear infinite;
+  
+  }
 #palette{
     margin-top: 32px;
     margin-bottom: 32px;
@@ -13,21 +23,22 @@ header{
         font-family: 'Epilogue';
         font-style: normal;
         font-weight: 700;
-        font-size: 48px;
-        line-height: 56px;
-        margin-bottom: 20px;
+        font-size: 40px;
+        line-height: 48px;
+        margin-bottom: 16px;
         color: #1B1A18;
     }
     p{
         font-style: normal;
         font-weight: 400;
-        font-size: 18px;
-        line-height: 28px;
+        font-size: 16px;
+        line-height: 24px;
         color: #1B1A18;
         margin-top: 0px;
-        margin-bottom: 24px;
+        margin-bottom: 12px;
 
     }
+    margin-bottom: 20px;
 }
 .wrapper{
     padding:56px 88px 0 88px;
@@ -65,27 +76,43 @@ header{
     font-size: 14px;
     line-height: 20px;
     color:#42403D;
+
+    h3{
+        color:#585451;
+    }
 }
 .color-box {
-  width: 100px;
-  height: 100px;
+  width: 120px;
+  height: 120px;
   border: 1px solid rgba(0,0,0,0.1);
   display: inline-block;
   margin-right: 5px;
   border-radius: 8px;
-  padding: 12px;
+  padding: 16px 12px;
   animation: fadeIn 200ms ease-in;
+  box-sizing: border-box;
+
+  span{
+    padding: 4px;
+    background-color: rgba(255,255,255,.8);
+    border: 1px solid rgba(255,255,255,.7);
+    border-radius: 4px
+  }
   
 }
-.loader {
-  border: 5px solid #f3f3f3;
-  border-top: 5px solid #3498db;
-  border-radius: 50%;
-  width: 32px;
-  height: 32px;
-  animation: fadeIn 200ms ease-in;
-  animation: spin 1s linear infinite;
 
+.checkboxCombo{
+    label[for=feelingsCheckboxes]{
+        font-size: 14px;
+        margin-bottom: 12px;
+        font-style: normal;
+        font-weight: 500;
+        font-size: 14px;
+        line-height: 18px;
+        letter-spacing: 0.02em;
+        display: block;
+        color: #0060CC;
+      } 
 }
 
 #feelingsCheckboxes{
@@ -102,6 +129,9 @@ header{
         border-radius: 8px;
         &:hover{
             background-color: #BDDCFF;
+        }
+        input{
+            cursor: pointer;
         }
         label{
             cursor: pointer;

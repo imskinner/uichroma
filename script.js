@@ -27,7 +27,7 @@ document.getElementById("generate").addEventListener("click", async () => {
         const colorBox = document.createElement("div");
         colorBox.className = "color-box";
         colorBox.style.backgroundColor = color;
-        colorBox.textContent = color;
+        colorBox.innerHTML = `<span>${color}</span>`;
         paletteContainer.appendChild(colorBox);
       });
     } else {
@@ -38,7 +38,7 @@ document.getElementById("generate").addEventListener("click", async () => {
   
 
   const predefinedFeelings = [
-    "Energetic",  "Mysterious",  "Confident",  "Peaceful",  "Romantic",  "Bold",  "Cheerful",  "Serene",  "Intense",  "Elegant",  "Joyful",  "Powerful",  "Tranquil",  "Refreshing",  "Whimsical",  "Passionate",  "Harmonious",  "Enigmatic",  "Vibrant",  "Sophisticated"
+    "Energetic",  "Mysterious",  "Confident",  "Peaceful",  "Romantic",  "Bold",  "Cheerful",  "Serene",  "Intense",  "Elegant",  "Joyful",  "Powerful",  "Refreshing",  "Harmonious",  "Vibrant",  "Sophisticated"
   ];
   
   const feelingsCheckboxesContainer = document.getElementById("feelingsCheckboxes");
@@ -62,14 +62,14 @@ document.getElementById("generate").addEventListener("click", async () => {
   
   async function generateColorPalette(feelings) {
     const apiKey = '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';
-    const prompt = `
+    /**const prompt = `
     Generate 5 colors based on keywords: "${feelings}". 
     Colors are to be used in Mobile App UI, so they should have a primary color, a secondary color and accent colors, following best aesthetic practices.
     Provide the colors in hexadecimal format.
     Colors must be elegant.
     Can't be monotone.
     Primary color should always have a lightness (HSL) of 50.
-    Show result as a list ordered by color tones."`;
+    Show result as a list ordered by color tones."`;**/
   
     try {
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -87,7 +87,23 @@ document.getElementById("generate").addEventListener("click", async () => {
             },
             {
               role: "user",
-              content: `Generate a color palette of 5 colors based on the keywords and/or traits: ${feelings}. The colors are to be used in Mobile App UI, so they should have a primary color, a secondary color, and accent colors. Provide the colors in hexadecimal format. Make sure colors match and are elegant.`
+              content: `Generate a color palette of 5 colors based on the keywords and/or traits: ${feelings}. 
+              The colors are to be used in App UI, so they should have a primary color, a secondary color, and accent colors.
+              Provide the colors in hexadecimal format.
+              Make sure colors match and are elegant.
+              Primary color should always have a lightness (HSL) of 50.
+              Provide the response as you would but as HTML like the following example:"
+              <h3>Here's a color palette that might work well for your app UI:</h3>
+              <ul>
+                <li>Primary color: #3B7D57 (a deep green color that evokes a sense of peace and calmness, reminiscent of a lush forest).</li>
+                <li>Secondary color: #D3D0CB (a light gray color that complements the primary color and adds a touch of elegance).</li>
+                <li>Accent color 1: #F2C57C (a warm, sandy color that suggests stability and reliability, perfect for an investments app).</li>
+                <li>Accent color 2: #6E8E59 (a muted green color that adds depth and contrast to the palette, and works well with the primary color).</li>
+                <li>Accent color 3: #E8E1D7 (a light beige color that softens the palette and provides a neutral background for the other colors).</li>
+                </ul>
+                <p class="explanation">
+                  This color palette should give your app UI a peaceful, forest-inspired feel, while also conveying a sense of trust and reliability for an investments app.
+                </p>`
             }
           ],
           max_tokens: 600,

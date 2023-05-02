@@ -15,16 +15,20 @@
             <div class="logo"><img src="/img/logo.png" alt="Pallet.ai" height="40"></div>
             <div>
               <header>
-                <h1>Get color ideas for your next project</h1>
-                <p>Generate colors based on keywords, traits and emotions and let the AI do the trick.</p>
+                <h1>Discover Inspiring Colors for Your Next Design</h1>
+                <p>Instantly create beautiful UI color schemes with this AI-powered palette generator. Input keywords and traits, and generates endless variations to inspire your next project.</p>
               </header>
 
               <section>
                 <div class="inputText">
                   <label for="feelings">Enter keywords for your project:</label>
-                  <input type="text" id="feelings" placeholder="e.g. happy, tech, romance">
+                  <input type="text" id="feelings" placeholder="e.g. dating app, car wash, romance, pet, health">
+                  
                 </div>
-                <div id="feelingsCheckboxes"></div>
+                <div class="checkboxCombo">
+                  <label for="feelingsCheckboxes">Select traits if you want to enhance your query:</label>
+                  <div id="feelingsCheckboxes"></div>
+                </div>
                 <button id="generate">Generate colors</button>
               </div>
             </section>
