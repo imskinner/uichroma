@@ -1,0 +1,23 @@
+name: Deploy to FTP Server
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Deploy to FTP Server
+      uses: SamKirkland/FTP-Deploy-Action@4.0.0
+      with:
+        server: ftp.pepinodesign.com.br
+        username: palletai@pepinodesign.com.br
+        password: aoEqE4#pTUK8
+        # To use a passive mode, uncomment the following line
+        # passive: true
