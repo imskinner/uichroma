@@ -35,7 +35,6 @@ document.getElementById("generate").addEventListener("click", async () => {
     }
   });
 
-  
 
   const predefinedFeelings = [
     "Energetic",  "Mysterious",  "Confident",  "Peaceful",  "Romantic",  "Bold",  "Cheerful",  "Serene",  "Intense",  "Elegant",  "Joyful",  "Powerful",  "Refreshing",  "Harmonious",  "Vibrant",  "Sophisticated"
