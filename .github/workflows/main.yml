@@ -16,9 +16,10 @@ jobs:
     - name: Deploy to FTP Server
       uses: SamKirkland/FTP-Deploy-Action@4.0.0
       with:
-        server: ftp.pepinodesign.com.br
-        port: 21
-        username: palettai@guilhermeskinner.com
-        password: aoEqE4#pTUK8
+        server: "ftp.pepinodesign.com.br"
+        protocol: "sftp"
+        port: "21"
+        username: "palettai@guilhermeskinner.com"
+        password: "aoEqE4#pTUK8"
         # To use a passive mode, uncomment the following line
         # passive: true
