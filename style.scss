@@ -5,6 +5,10 @@ html{
     font-size: 62.5%;
 }
 
+body{
+    font-family: $base-font-family;
+}
+
 //Colors//----------------------
 //Primary
 $primary-0:#E6F1FF;

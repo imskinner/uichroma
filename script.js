@@ -81,7 +81,7 @@ document.getElementById("generate").addEventListener("click", async () => {
           messages: [
             {
               role: "system",
-              content: "You are a helpful assistant that generates color palettes based on feelings for mobile app UIs."
+              content: "You are a helpful assistant that generates color palettes based on keywords and traits for app UIs."
             },
             {
               role: "user",
