@@ -16,7 +16,7 @@ jobs:
     - name: Deploy to FTP Server
       uses: SamKirkland/FTP-Deploy-Action@4.0.0
       with:
-        server: "ftp.pepinodesign.com.br"
+        server: "ftp://ftp.pepinodesign.com.br"
         protocol: "ftps"
         port: "21"
         username: "palettai@guilhermeskinner.com"
