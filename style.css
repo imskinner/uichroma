@@ -1,44 +1,70 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Epilogue:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Inter:wght@300;400;500;600;700;800;900&display=swap");
-body {
+html {
+  font-size: 62.5%;
+}
+
+p {
   font-family: "Inter", sans-serif;
+  font-weight: 400;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Epilogue", sans-serif;
+  font-weight: 700;
+}
+
+label {
+  font-family: "Inter", sans-serif;
+  font-weight: 600;
+  font-size: 1.4rem;
+  line-height: 1.8rem;
+  letter-spacing: 0.02em;
+  margin-bottom: 4px;
+  color: #0060CC;
 }
 
 .loader {
-  border: 2px solid #f3f3f3;
+  border: 2px solid #CECCCA;
   border-top: 2px solid #0077FE;
   border-radius: 50%;
-  width: 32px;
-  height: 32px;
+  width: 3.2rem;
+  height: 3.2rem;
   animation: fadeIn 200ms ease-in;
   animation: spin 1s linear infinite;
 }
 
-#palette {
-  margin-top: 32px;
-  margin-bottom: 32px;
+.inputText {
+  display: flex;
+  flex-flow: column;
+  align-items: stretch;
+  margin-bottom: 2.4rem;
+}
+.inputText input {
+  padding: 18px 16px;
+  background: #FFFFFF;
+  border: 1px solid #CECCCA;
+  border-radius: 8px;
+  font-family: "Inter", sans-serif;
+  font-weight: 400;
+  font-size: 1.8rem;
+  line-height: 28px;
 }
 
-header {
-  margin-bottom: 20px;
-}
-header h1 {
-  font-family: "Epilogue";
-  font-style: normal;
-  font-weight: 700;
-  font-size: 40px;
-  line-height: 48px;
-  margin-bottom: 16px;
-  color: #1B1A18;
-}
-header p {
-  font-style: normal;
-  font-weight: 400;
-  font-size: 16px;
+button {
+  padding: 20px 32px;
+  border: 0px;
+  background: #0077FE;
+  border-radius: 8px;
+  font-family: "Inter", sans-serif;
+  font-weight: 600;
+  font-size: 1.8rem;
   line-height: 24px;
-  color: #1B1A18;
-  margin-top: 0px;
-  margin-bottom: 12px;
+  color: #FFFFFF;
+  cursor: pointer;
+}
+button:hover {
+  background-color: #0060CC;
 }
 
 .wrapper {
@@ -51,10 +77,6 @@ header p {
   height: 85vh;
 }
 
-.logo {
-  margin-bottom: 40px;
-}
-
 .leftCol {
   flex-grow: 1;
   flex: 0.7;
@@ -64,8 +86,68 @@ header p {
   flex-shrink: 0;
 }
 
+header {
+  margin-bottom: 20px;
+}
+header h1 {
+  font-family: "Epilogue", sans-serif;
+  font-weight: 700;
+  font-size: 4rem;
+  line-height: 48px;
+  margin-bottom: 16px;
+  color: #1B1A18;
+}
+header p {
+  font-family: "Inter", sans-serif;
+  font-weight: 400;
+  font-size: 1.6rem;
+  line-height: 24px;
+  color: #1B1A18;
+  margin-top: 0px;
+  margin-bottom: 12px;
+}
+
+.logo {
+  margin-bottom: 40px;
+}
+
+.checkboxCombo label[for=feelingsCheckboxes] {
+  font-size: 1.4rem;
+  margin-bottom: 12px;
+  font-weight: 600;
+  line-height: 18px;
+  letter-spacing: 0.02em;
+  display: block;
+  color: #0060CC;
+}
+
+#feelingsCheckboxes {
+  display: flex;
+  flex-flow: row wrap;
+  align-items: flex-start;
+  margin-bottom: 24px;
+}
+#feelingsCheckboxes div {
+  margin-right: 8px;
+  margin-bottom: 8px;
+  padding: 12px;
+  background-color: #E6F1FF;
+  border-radius: 8px;
+}
+#feelingsCheckboxes div:hover {
+  background-color: #BDDCFF;
+}
+#feelingsCheckboxes div input {
+  cursor: pointer;
+}
+#feelingsCheckboxes div label {
+  cursor: pointer;
+  color: #002147;
+  font-weight: 400;
+}
+
 .rightCol {
-  background-color: #fafafa;
+  background-color: #FAFAFA;
   flex: 1;
   flex-grow: 1;
   border-radius: 24px;
@@ -76,12 +158,17 @@ header p {
   justify-content: center;
   align-items: center;
   font-weight: 400;
-  font-size: 14px;
+  font-size: 1.4rem;
   line-height: 20px;
   color: #42403D;
 }
 .rightCol h3 {
   color: #585451;
+}
+
+#palette {
+  margin-top: 32px;
+  margin-bottom: 32px;
 }
 
 .color-box {
@@ -100,87 +187,6 @@ header p {
   background-color: rgba(255, 255, 255, 0.8);
   border: 1px solid rgba(255, 255, 255, 0.7);
   border-radius: 4px;
-}
-
-.checkboxCombo label[for=feelingsCheckboxes] {
-  font-size: 14px;
-  margin-bottom: 12px;
-  font-style: normal;
-  font-weight: 500;
-  font-size: 14px;
-  line-height: 18px;
-  letter-spacing: 0.02em;
-  display: block;
-  color: #0060CC;
-}
-
-#feelingsCheckboxes {
-  display: flex;
-  flex-flow: row wrap;
-  align-items: flex-start;
-  margin-bottom: 24px;
-}
-#feelingsCheckboxes div {
-  margin-right: 8px;
-  margin-bottom: 8px;
-  padding: 12px;
-  background-color: #E5F1FF;
-  border-radius: 8px;
-}
-#feelingsCheckboxes div:hover {
-  background-color: #BDDCFF;
-}
-#feelingsCheckboxes div input {
-  cursor: pointer;
-}
-#feelingsCheckboxes div label {
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.inputText {
-  display: flex;
-  flex-flow: column;
-  align-items: stretch;
-  margin-bottom: 24px;
-}
-.inputText label {
-  font-size: 14px;
-  margin-bottom: 4px;
-  font-style: normal;
-  font-weight: 500;
-  font-size: 14px;
-  line-height: 18px;
-  letter-spacing: 0.02em;
-  color: #0060CC;
-}
-.inputText input {
-  padding: 18px 16px;
-  background: #FFFFFF;
-  border: 1px solid #CECCCA;
-  border-radius: 8px;
-  font-family: "Inter";
-  font-style: normal;
-  font-weight: 400;
-  font-size: 18px;
-  line-height: 28px;
-}
-
-button {
-  padding: 20px 32px;
-  border: 0px;
-  background: #0077FE;
-  border-radius: 8px;
-  font-family: "Inter";
-  font-style: normal;
-  font-weight: 600;
-  font-size: 18px;
-  line-height: 24px;
-  color: white;
-  cursor: pointer;
-}
-button:hover {
-  background-color: #0060CC;
 }
 
 @keyframes spin {
