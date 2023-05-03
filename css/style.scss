@@ -77,10 +77,12 @@ label{
     border: 2px solid $neutral-2;
     border-top: 2px solid $primary-5;
     border-radius: 50%;
+    display: none;
     width: 3.2rem;
     height: 3.2rem;
     animation: fadeIn 200ms ease-in;
     animation: spin 1s linear infinite;
+    transition: display 200ms;
   
   }
 

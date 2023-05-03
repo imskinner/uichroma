@@ -34,10 +34,12 @@ label {
   border: 2px solid #CECCCA;
   border-top: 2px solid #0077FE;
   border-radius: 50%;
+  display: none;
   width: 3.2rem;
   height: 3.2rem;
   animation: fadeIn 200ms ease-in;
   animation: spin 1s linear infinite;
+  transition: display 200ms;
 }
 
 .inputText {
