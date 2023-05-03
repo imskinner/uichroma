@@ -89,6 +89,7 @@ document.getElementById("generate").addEventListener("click", async () => {
               The colors are to be used in App UI, so they should have a primary color, a secondary color, and accent colors.
               Provide the colors in hexadecimal format.
               Make sure colors match and are elegant.
+              Avoid White, Black or Shades of Grey as accent colors.
               Primary color should always have a lightness (HSL) of 50.
               Provide the response as you would but as HTML like the following example:"
               <h3>Here's a color palette that might work well for your app UI:</h3>

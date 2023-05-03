@@ -4,9 +4,15 @@ html {
   font-size: 62.5%;
 }
 
+body {
+  font-family: "Inter", sans-serif;
+  margin: 0px auto;
+}
+
 p {
   font-family: "Inter", sans-serif;
   font-weight: 400;
+  margin-bottom: 12px;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -16,7 +22,7 @@ h1, h2, h3, h4, h5, h6 {
 
 label {
   font-family: "Inter", sans-serif;
-  font-weight: 600;
+  font-weight: 500;
   font-size: 1.4rem;
   line-height: 1.8rem;
   letter-spacing: 0.02em;
@@ -40,8 +46,8 @@ label {
   align-items: stretch;
   margin-bottom: 2.4rem;
 }
-.inputText input {
-  padding: 18px 16px;
+.inputText input[type=text] {
+  padding: 16px;
   background: #FFFFFF;
   border: 1px solid #CECCCA;
   border-radius: 8px;
@@ -50,6 +56,13 @@ label {
   font-size: 1.8rem;
   line-height: 28px;
 }
+@media screen and (max-width: 1280px) {
+  .inputText input[type=text] {
+    padding: 12px;
+    font-size: 1.6rem;
+    line-height: 2.4rem;
+  }
+}
 
 button {
   padding: 20px 32px;
@@ -57,37 +70,67 @@ button {
   background: #0077FE;
   border-radius: 8px;
   font-family: "Inter", sans-serif;
-  font-weight: 600;
+  font-weight: 500;
   font-size: 1.8rem;
-  line-height: 24px;
+  line-height: 2.4rem;
   color: #FFFFFF;
   cursor: pointer;
 }
 button:hover {
   background-color: #0060CC;
 }
+@media screen and (max-width: 1280px) {
+  button {
+    padding: 16px 24px;
+    font-size: 1.6rem;
+    line-height: 2rem;
+  }
+}
 
 .wrapper {
-  padding: 56px 88px 0 88px;
   display: flex;
   flex-direction: row;
   flex-flow: row nowrap;
   align-items: stretch;
   justify-content: center;
-  height: 85vh;
+  height: 100vh;
+}
+@media screen and (max-width: 1280px) {
+  .wrapper {
+    height: auto;
+    flex-flow: column nowrap;
+  }
 }
 
 .leftCol {
-  flex-grow: 1;
   flex: 0.7;
   display: flex;
-  flex-flow: column;
+  flex-flow: column nowrap;
   justify-content: flex-start;
-  flex-shrink: 0;
+  align-self: stretch;
+  padding: 64px;
+}
+@media screen and (max-width: 1280px) {
+  .leftCol {
+    padding: 48px;
+    flex-grow: 1.2;
+  }
+}
+@media screen and (max-width: 1280px) {
+  .leftCol {
+    padding: 32px;
+  }
+}
+.leftCol .content {
+  display: flex;
+  flex-flow: column nowrap;
+  flex-grow: 1;
+  align-self: stretch;
+  justify-content: center;
 }
 
 header {
-  margin-bottom: 20px;
+  margin-bottom: 12px;
 }
 header h1 {
   font-family: "Epilogue", sans-serif;
@@ -95,7 +138,14 @@ header h1 {
   font-size: 4rem;
   line-height: 48px;
   margin-bottom: 16px;
+  margin-top: 0px;
   color: #1B1A18;
+}
+@media screen and (max-width: 1280px) {
+  header h1 {
+    font-size: 3.2rem;
+    line-height: 4rem;
+  }
 }
 header p {
   font-family: "Inter", sans-serif;
@@ -104,17 +154,27 @@ header p {
   line-height: 24px;
   color: #1B1A18;
   margin-top: 0px;
-  margin-bottom: 12px;
+}
+@media screen and (max-width: 1280px) {
+  header p {
+    font-size: 1.4rem;
+    line-height: 2rem;
+  }
+}
+@media screen and (max-width: 1280px) {
+  header {
+    margin-bottom: 4px;
+  }
 }
 
 .logo {
-  margin-bottom: 40px;
+  margin-bottom: 48px;
 }
 
 .checkboxCombo label[for=feelingsCheckboxes] {
   font-size: 1.4rem;
   margin-bottom: 12px;
-  font-weight: 600;
+  font-weight: 500;
   line-height: 18px;
   letter-spacing: 0.02em;
   display: block;
@@ -145,13 +205,16 @@ header p {
   color: #002147;
   font-weight: 400;
 }
+@media screen and (max-width: 1280px) {
+  #feelingsCheckboxes div {
+    padding: 8px;
+  }
+}
 
 .rightCol {
   background-color: #FAFAFA;
   flex: 1;
   flex-grow: 1;
-  border-radius: 24px;
-  margin-left: 64px;
   padding: 64px;
   display: flex;
   flex-direction: column;
@@ -164,11 +227,24 @@ header p {
 }
 .rightCol h3 {
   color: #585451;
+  text-align: center;
+}
+@media screen and (max-width: 1280px) {
+  .rightCol {
+    padding: 48px;
+  }
+}
+@media screen and (max-width: 1280px) {
+  .rightCol {
+    padding: 32px;
+  }
 }
 
 #palette {
   margin-top: 32px;
   margin-bottom: 32px;
+  display: flex;
+  flex-flow: row wrap;
 }
 
 .color-box {
@@ -176,17 +252,27 @@ header p {
   height: 128px;
   border: 1px solid rgba(0, 0, 0, 0.1);
   display: inline-block;
-  margin-right: 5px;
+  margin: 8px;
   border-radius: 8px;
   padding: 16px 12px;
   animation: fadeIn 200ms ease-in;
   box-sizing: border-box;
+}
+@media screen and (max-width: 1280px) {
+  .color-box {
+    width: 108px;
+    height: 108px;
+  }
 }
 .color-box span {
   padding: 4px;
   background-color: rgba(255, 255, 255, 0.8);
   border: 1px solid rgba(255, 255, 255, 0.7);
   border-radius: 4px;
+}
+
+#response-container {
+  font-family: "Inter", sans-serif;
 }
 
 @keyframes spin {
