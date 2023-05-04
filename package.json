@@ -1,0 +1,17 @@
+{
+    "name": "palette-generator",
+    "version": "1.0.0",
+    "main": "server.js",
+    "scripts": {
+      "start": "node server.js"
+    },
+    "dependencies": {
+      "express": "^4.17.1",
+      "mysql2": "^2.3.3",
+      "body-parser": "^1.19.0",
+      "cors": "^2.8.5",
+      "dotenv": "^10.0.0",
+      "node-fetch": "^2.6.7"
+    }
+  }
+  

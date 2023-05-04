@@ -59,16 +59,7 @@ document.getElementById("generate").addEventListener("click", async () => {
   });
   
   async function generateColorPalette(feelings) {
-    const apiKey = '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';
-    /**const prompt = `
-    Generate 5 colors based on keywords: "${feelings}". 
-    Colors are to be used in Mobile App UI, so they should have a primary color, a secondary color and accent colors, following best aesthetic practices.
-    Provide the colors in hexadecimal format.
-    Colors must be elegant.
-    Can't be monotone.
-    Primary color should always have a lightness (HSL) of 50.
-    Show result as a list ordered by color tones."`;**/
-  
+    const apiKey = process.env.API_KEY;
     try {
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
@@ -122,7 +113,7 @@ document.getElementById("generate").addEventListener("click", async () => {
 
           responseContainer.innerHTML = "";
           responseContainer.innerHTML = data.choices[0].message.content;
-        
+
           if (colors && colors.length > 0) {
             return colors;
           } else {
@@ -143,5 +134,4 @@ document.getElementById("generate").addEventListener("click", async () => {
         return [];
       }
     }
-    
-  
+
