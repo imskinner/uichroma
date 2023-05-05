@@ -61,7 +61,9 @@ if(!(window.location.pathname.split('/')[2])){
 document.getElementById('generate').addEventListener('click', async () => {
   const loader = document.getElementById("loader");
   document.getElementById("response-container").innerHTML = "";
+  document.getElementById("permalink-container").innerHTML = "";
   document.getElementById("placeholder-template").innerHTML = "";
+  document.getElementById("palette").innerHTML = "";
   loader.style.display = "inline-block"; // Show loader
 
   const feelingsInput = document.getElementById('feelings').value;
@@ -97,8 +99,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.log(paletteId);
   }
   const predefinedFeelings = [
-    "Energetic", "Mysterious", "Confident", "Peaceful", "Romantic", "Bold", "Cheerful", "Serene", "Intense", "Elegant", "Joyful", "Powerful", "Refreshing", "Harmonious", "Vibrant", "Sophisticated"
-  ];
+    "Vibrant",
+    "Pastel",
+    "Saturated",
+    "Muted",
+    "Bold",
+    "Subtle",
+    "Earthy",
+    "Warm",
+    "Cool",
+    "Rich",
+    "Pale",
+    "Gradient",
+    "Complementary",
+    "Harmonious",
+    "Monochromatic"
+    ];
 
   const feelingsCheckboxesContainer = document.getElementById("feelingsCheckboxes");
   predefinedFeelings.forEach(feeling => {

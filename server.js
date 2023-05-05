@@ -101,10 +101,9 @@ async function generateColorPalette(feelings) {
               The colors are to be used in App UI, so they should have a primary color, a secondary color, and accent colors.
               Provide the colors in hexadecimal format.
               Make sure colors match and are elegant.
-              Avoid White, Black or Shades of Grey as accent colors.
               Primary color should always have a lightness (HSL) of 50.
               Provide the response as you would but as HTML like the following example:"
-              <h3>Here's a color palette that might work well for your app UI:</h3>
+              <h3>Here's a color palette that might work well for your design:</h3>
               <ul>
                 <li>Primary color: #3B7D57 (a deep green color that evokes a sense of peace and calmness, reminiscent of a lush forest).</li>
                 <li>Secondary color: #D3D0CB (a light gray color that complements the primary color and adds a touch of elegance).</li>
@@ -113,14 +112,14 @@ async function generateColorPalette(feelings) {
                 <li>Accent color 3: #E8E1D7 (a light beige color that softens the palette and provides a neutral background for the other colors).</li>
                 </ul>
                 <p class="explanation">
-                  This color palette should give your app UI a peaceful, forest-inspired feel, while also conveying a sense of trust and reliability for an investments app.
+                  This color palette should give your design a peaceful, forest-inspired feel, while also conveying a sense of trust and reliability for an investments app.
                 </p>`
             }
           ],
         max_tokens: 600,
         n: 1,
         stop: null,
-        temperature: 0.8,
+        temperature: 0.5,
       })
     });
 
