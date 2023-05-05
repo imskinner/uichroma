@@ -61,6 +61,7 @@ if(!(window.location.pathname.split('/')[2])){
 document.getElementById('generate').addEventListener('click', async () => {
   const loader = document.getElementById("loader");
   document.getElementById("response-container").innerHTML = "";
+  document.getElementById("placeholder-template").innerHTML = "";
   loader.style.display = "inline-block"; // Show loader
 
   const feelingsInput = document.getElementById('feelings').value;
