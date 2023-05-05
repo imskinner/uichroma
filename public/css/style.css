@@ -66,7 +66,7 @@ label {
   }
 }
 
-button {
+button, .button {
   padding: 20px 32px;
   border: 0px;
   background: #0077FE;
@@ -77,12 +77,23 @@ button {
   line-height: 2.4rem;
   color: #FFFFFF;
   cursor: pointer;
+  text-decoration: none;
 }
-button:hover {
+button.permalink, .button.permalink {
+  background-color: #EEEDEC;
+  color: #585451;
+  font-size: 1.4rem;
+  line-height: 2rem;
+  display: block;
+}
+button.permalink:hover, .button.permalink:hover {
+  background-color: #CECCCA;
+}
+button:hover, .button:hover {
   background-color: #0060CC;
 }
 @media screen and (max-width: 1366px) {
-  button {
+  button, .button {
     padding: 16px 24px;
     font-size: 1.6rem;
     line-height: 2rem;
@@ -275,6 +286,12 @@ header p {
 
 #response-container {
   font-family: "Inter", sans-serif;
+}
+
+#permalink-container {
+  width: 100%;
+  text-align: center;
+  margin-top: 3.2rem;
 }
 
 @keyframes spin {

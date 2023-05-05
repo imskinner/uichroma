@@ -1,10 +1,11 @@
 require('dotenv').config();
 const express = require('express');
-const mysql = require('mysql2/promise');
+const { Pool } = require('pg');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const fetch = require('node-fetch');
 const path = require('path');
+const crypto = require('crypto');
 
 const app = express();
 app.use(cors());
@@ -14,56 +15,69 @@ app.use('/img', express.static(path.join(__dirname, 'public', 'img')));
 app.use(bodyParser.json());
 
 const dbConfig = {
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
+  connectionString: process.env.POSTGRES_URL,
 };
+
+const pool = new Pool(dbConfig);
 
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 app.post('/generatePalette', async (req, res) => {
-  try {
-    const feelings = req.body.feelings;
-    const { colors, aiResponse } = await generateColorPalette(feelings);
-
-    const db = await mysql.createConnection(dbConfig);
-    const query = 'INSERT INTO palettes (keywords, colors, ai_response, created_at) VALUES (?, ?, ?, ?)';
-    const dateAndTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
-
-    await db.execute(query, [feelings, JSON.stringify(colors), aiResponse, dateAndTime]);
-
-    res.json({ colors, aiResponse });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'An error occurred while generating the palette.' });
-  }
-});
-
-app.get('/palette/:paletteId', async (req, res) => {
-  try {
-    const paletteId = req.params.paletteId;
-    const db = await mysql.createConnection(dbConfig);
-    const query = 'SELECT * FROM palettes WHERE id = ?';
-
-    const [rows] = await db.execute(query, [paletteId]);
-
-    if (rows.length > 0) {
-      const palette = rows[0];
-      const colors = JSON.parse(palette.colors);
-      const aiResponse = palette.ai_response;
-
-      res.json({ colors, aiResponse });
-    } else {
-      res.status(404).json({ error: 'Palette not found.' });
+    try {
+      const feelings = req.body.feelings;
+      const { colors, aiResponse } = await generateColorPalette(feelings);
+  
+      const query = 'INSERT INTO palettes (keywords, colors, ai_response, created_at) VALUES ($1, $2, $3, $4) RETURNING id';
+      const dateAndTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
+  
+      // Inserir a paleta no banco de dados e obter o ID gerado
+      const { rows } = await pool.query(query, [feelings, JSON.stringify(colors), aiResponse, dateAndTime]);
+      const generatedId = rows[0].id;
+  
+      // Gerar o hash MD5 com base no ID gerado
+      const md5 = crypto.createHash('md5');
+      const permalink = md5.update(generatedId.toString()).digest('hex');
+  
+      // Atualizar a paleta no banco de dados com o permalink
+      const updateQuery = 'UPDATE palettes SET permalink = $1 WHERE id = $2';
+      await pool.query(updateQuery, [permalink, generatedId]);
+  
+      res.json({ permalink, colors, aiResponse });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'An error occurred while generating the palette.' });
     }
-  } catch (error) {
-    console.error(`Error: ${error.message}`);
-    res.status(500).json({ error: 'An error occurred while fetching the palette.' });
-  }
+  });
+
+  app.get('/palette/:permalink/data', async (req, res) => {
+    try {
+      const permalink = req.params.permalink;
+      const query = 'SELECT * FROM palettes WHERE permalink = $1';
+  
+      const { rows } = await pool.query(query, [permalink]);
+  
+      if (rows.length > 0) {
+        const palette = rows[0];
+        const colors = JSON.parse(palette.colors);
+        const aiResponse = palette.ai_response;
+  
+        res.json({ colors, aiResponse });
+      } else {
+        res.status(404).json({ error: 'Palette not found.' });
+      }
+    } catch (error) {
+      console.error(`Error: ${error.message}`);
+      res.status(500).json({ error: 'An error occurred while fetching the palette data.' });
+    }
+  });
+
+app.get('/palette/:permalink', async (req, res) => {
+    res.sendFile(path.join(__dirname,'public', 'palette.html'));
 });
+
+
 
 async function generateColorPalette(feelings) {
   const apiKey = process.env.API_KEY;

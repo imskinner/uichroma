@@ -111,7 +111,7 @@ label{
     }
   }
   
-  button{
+  button, .button{
       padding: 20px 32px;
       border: 0px;
       background: $primary-5;
@@ -122,6 +122,19 @@ label{
       line-height: 2.4rem;
       color:$white;
       cursor: pointer;
+      text-decoration: none;
+
+      &.permalink{
+        background-color: $neutral-1;
+        color: $neutral-7;
+        font-size: 1.4rem;
+        line-height: 2.0rem;
+        display: block;
+
+        &:hover{
+            background-color: $neutral-2;
+        }
+      }
   
       &:hover{
           background-color: $primary-6;
@@ -313,6 +326,12 @@ header{
 
 #response-container{
     font-family: $base-font-family;
+}
+
+#permalink-container{
+    width: 100%;
+    text-align: center;
+    margin-top: 3.2rem;
 }
 
 @keyframes spin {
