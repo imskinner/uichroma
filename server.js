@@ -8,6 +8,7 @@ const path = require('path');
 const crypto = require('crypto');
 
 const app = express();
+
 app.use(cors());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/css', express.static(path.join(__dirname, 'public', 'css')));
@@ -23,6 +24,38 @@ const pool = new Pool(dbConfig);
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
+
+// Função getPaletteFromDatabase
+async function getPaletteFromDatabase(permalink) {
+    try {
+      const query = 'SELECT * FROM palettes WHERE permalink = $1';
+      const { rows } = await pool.query(query, [permalink]);
+  
+      if (rows.length > 0) {
+        const palette = rows[0];
+        const colors = JSON.parse(palette.colors);
+        const aiResponse = palette.ai_response;
+  
+        return { colors, aiResponse };
+      } else {
+        return null;
+      }
+    } catch (error) {
+      console.error(`Error: ${error.message}`);
+      return null;
+    }
+  }
+
+  app.post('/api/getPalette', async (req, res) => {
+    const { permalink } = req.body;
+    try {
+      const palette = await getPaletteFromDatabase(permalink);
+      res.json({ palette });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Failed to fetch palette.' });
+    }
+  });
 
 app.post('/generatePalette', async (req, res) => {
     try {
@@ -51,7 +84,7 @@ app.post('/generatePalette', async (req, res) => {
     }
   });
 
-  app.get('/palette/:permalink/data', async (req, res) => {
+app.get('/palette/:permalink/data', async (req, res) => {
     try {
       const permalink = req.params.permalink;
       const query = 'SELECT * FROM palettes WHERE permalink = $1';
@@ -71,13 +104,11 @@ app.post('/generatePalette', async (req, res) => {
       console.error(`Error: ${error.message}`);
       res.status(500).json({ error: 'An error occurred while fetching the palette data.' });
     }
-  });
+});
 
 app.get('/palette/:permalink', async (req, res) => {
     res.sendFile(path.join(__dirname,'public', 'palette.html'));
 });
-
-
 
 async function generateColorPalette(feelings) {
   const apiKey = process.env.API_KEY;

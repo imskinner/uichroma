@@ -1,0 +1,11 @@
+{
+  "name": "palett.ai",
+  "id": "1236446289595951782",
+  "api": "1.0.0",
+  "main": "code.js",
+  "capabilities": [],
+  "enableProposedApi": false,
+  "editorType": [
+    "figma"
+  ]
+}

@@ -1,0 +1,33 @@
+<!-- ui.html -->
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      /* Estilos da interface do usuário do plugin */
+    </style>
+  </head>
+  <body>
+    <form id="palette-form">
+      <label for="permalink">Permalink:</label>
+      <input type="text" id="permalink" name="permalink" required />
+      <button type="submit">Create Local Styles</button>
+    </form>
+    <script>
+      // Funções para lidar com a entrada da paleta e enviar para o main.js
+      document.getElementById('palette-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const permalink = document.getElementById('permalink').value;
+        parent.postMessage(
+          {
+            pluginMessage: {
+              type: 'fetch-palette',
+              permalink,
+            },
+          },
+          '*'
+        );
+      });
+    </script>
+  </body>
+</html>

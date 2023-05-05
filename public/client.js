@@ -57,103 +57,160 @@ function updateUI(data) {
   }
 }
 
-if(!(window.location.pathname.split('/')[2])){
-document.getElementById('generate').addEventListener('click', async () => {
-  const loader = document.getElementById("loader");
-  document.getElementById("response-container").innerHTML = "";
-  document.getElementById("permalink-container").innerHTML = "";
-  document.getElementById("placeholder-template").innerHTML = "";
-  document.getElementById("palette").innerHTML = "";
-  loader.style.display = "inline-block"; // Show loader
+// Função para obter a paleta atual
+function getPalette() {
+  const paletteContainer = document.getElementById('palette');
+  const colorBoxes = paletteContainer.querySelectorAll('.color-box');
+  const colors = [];
 
-  const feelingsInput = document.getElementById('feelings').value;
-  const checkboxes = document.querySelectorAll('#feelingsCheckboxes input:checked');
-  let checkedFeelings = '';
-
-  checkboxes.forEach((checkbox) => {
-    checkedFeelings += ` ${checkbox.value}`;
+  colorBoxes.forEach(colorBox => {
+    const color = colorBox.style.backgroundColor;
+    colors.push(color);
   });
 
-  checkboxes.forEach((checkbox) => {
-    checkbox.checked = false;
-  });
+  return colors;
+}
 
-  const feelings = `${feelingsInput}${checkedFeelings}`;
-  console.log('feelings:', feelings);
+function getAuthorizationUrl(palette) {
+  const clientId = 'HHaOzQKGyCGCz4mBZnGYVx'; // Substitua pelo seu client_id
+  const redirectUri = encodeURIComponent(' http://localhost:3000/'); // Substitua pela sua URL de redirecionamento
 
-  const response = await fetch('/generatePalette', {
+  const authorizationUrl = `https://www.figma.com/oauth?client_id=${clientId}&redirect_uri=${redirectUri}&scope=file_read&response_type=code&state=${encodeURIComponent(JSON.stringify({ palette }))}`;
+
+  return authorizationUrl;
+}
+
+async function exportToFigma() {
+  const response = await fetch('/exportToFigma', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ feelings }),
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      palette: currentPalette
+    })
   });
 
-  const data = await response.json();
-  loader.style.display = "none"; // Hide loader
-  updateUI(data);
-})};
-
-document.addEventListener('DOMContentLoaded', async () => {
-  const paletteId = window.location.pathname.split('/')[2];
-  if (paletteId) {
-    await showPalette(paletteId);
-    console.log(paletteId);
+  if (response.ok) {
+    const data = await response.json();
+    const fileUrl = data.fileUrl;
+    window.open(fileUrl, '_blank');
+  } else {
+    console.error('Error exporting to Figma');
   }
-  const predefinedFeelings = [
-    "Vibrant",
-    "Pastel",
-    "Saturated",
-    "Muted",
-    "Bold",
-    "Subtle",
-    "Earthy",
-    "Warm",
-    "Cool",
-    "Rich",
-    "Pale",
-    "Gradient",
-    "Complementary",
-    "Harmonious",
-    "Monochromatic"
-    ];
+}
 
-  const feelingsCheckboxesContainer = document.getElementById("feelingsCheckboxes");
-  predefinedFeelings.forEach(feeling => {
-    const checkboxField = createCheckboxField(feeling);
-    feelingsCheckboxesContainer.appendChild(checkboxField);
-  });
-});
-
-async function showPalette(paletteId) {
-  loader.style.display = "inline-block"; // Show loader
-  try {
-    const response = await fetch(`/palette/${paletteId}/data`);
-    console.log(response);
+if(!(window.location.pathname.split('/')[2])){
+  document.getElementById('generate').addEventListener('click', async () => {
+    const loader = document.getElementById("loader");
+    document.getElementById("response-container").innerHTML = "";
+    document.getElementById("permalink-container").innerHTML = "";
+    document.getElementById("placeholder-template").innerHTML = "";
+    document.getElementById("palette").innerHTML = "";
+    loader.style.display = "inline-block"; // Show loader
+  
+    const feelingsInput = document.getElementById('feelings').value;
+    const checkboxes = document.querySelectorAll('#feelingsCheckboxes input:checked');
+    let checkedFeelings = '';
+  
+    checkboxes.forEach((checkbox) => {
+      checkedFeelings += ` ${checkbox.value}`;
+    });
+  
+    checkboxes.forEach((checkbox) => {
+      checkbox.checked = false;
+    });
+  
+    const feelings = `${feelingsInput}${checkedFeelings}`;
+    console.log('feelings:', feelings);
+  
+    const response = await fetch('/generatePalette', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ feelings }),
+    });
+  
     const data = await response.json();
     loader.style.display = "none"; // Hide loader
     updateUI(data);
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-function copyPermalinkToClipboard(event) {
-  event.preventDefault();
-  const linkElement = event.target;
-
-  // Copie o texto do permalink para a área de transferência
-  const textToCopy = linkElement.text;
-  navigator.clipboard.writeText(textToCopy).then(
-    () => {
-      // Altere o texto do botão
-      linkElement.textContent = "Link copied to clipboard";
-
-      // Reverta para o texto original após alguns segundos
-      setTimeout(() => {
-        linkElement.textContent = textToCopy;
-      }, 3000);
-    },
-    (err) => {
-      console.error("Error copying permalink to clipboard:", err);
+  })};
+  
+  document.addEventListener('DOMContentLoaded', async () => {
+    const paletteId = window.location.pathname.split('/')[2];
+    if (paletteId) {
+      await showPalette(paletteId);
+      console.log(paletteId);
     }
-  );
-}
+    const predefinedFeelings = [
+      "Vibrant",
+      "Pastel",
+      "Saturated",
+      "Muted",
+      "Bold",
+      "Subtle",
+      "Earthy",
+      "Warm",
+      "Cool",
+      "Rich",
+      "Pale",
+      "Gradient",
+      "Complementary",
+      "Harmonious",
+      "Monochromatic"
+      ];
+  
+    const feelingsCheckboxesContainer = document.getElementById("feelingsCheckboxes");
+    predefinedFeelings.forEach(feeling => {
+      const checkboxField = createCheckboxField(feeling);
+      feelingsCheckboxesContainer.appendChild(checkboxField);
+    });
+  });
+  
+  async function showPalette(paletteId) {
+    loader.style.display = "inline-block"; // Show loader
+    try {
+      const response = await fetch(`/palette/${paletteId}/data`);
+      console.log(response);
+      const data = await response.json();
+      loader.style.display = "none"; // Hide loader
+      updateUI(data);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+  
+  function copyPermalinkToClipboard(event) {
+    event.preventDefault();
+    const linkElement = event.target;
+  
+    // Copie o texto do permalink para a área de transferência
+    const textToCopy = linkElement.text;
+    navigator.clipboard.writeText(textToCopy).then(
+      () => {
+        // Altere o texto do botão
+        linkElement.textContent = "Link copied to clipboard";
+  
+        // Reverta para o texto original após alguns segundos
+        setTimeout(() => {
+          linkElement.textContent = textToCopy;
+        }, 3000);
+      },
+      (err) => {
+        console.error("Error copying permalink to clipboard:", err);
+      }
+    );
+  }
+  
+  document.querySelector('#exportToFigma').addEventListener('click', async () => {
+    const accessToken = localStorage.getItem('figmaAccessToken');
+  
+    const palette = JSON.parse(localStorage.getItem('currentPalette'));
+  
+    try {
+      const authorizationUrl = await getAuthorizationUrl(palette);
+      window.location.href = authorizationUrl;
+    } catch (error) {
+      console.error('Error getting authorization URL:', error);
+      alert('Error exporting to Figma. Please try again later.');
+    }
+  });
