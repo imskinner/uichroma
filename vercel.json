@@ -13,7 +13,7 @@
       }
     ],
     "env": {
-      "POSTGRES_URL": "@postgres_url",
-      "API_KEY": "@api_key"
-    }
+        "POSTGRES_URL": "@postgres_url",
+        "API_KEY": "@api_key"
+      }
   }
