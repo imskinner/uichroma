@@ -30,11 +30,11 @@ $black:#1B1A18;
 
 //Media Queries
 @mixin bp-small-desktop{
-    @media screen and (max-width:1280px) {@content}
+    @media screen and (max-width:1366px) {@content}
 };
 
 @mixin bp-tablet{
-    @media screen and (max-width:1280px) {@content}
+    @media screen and (max-width:800px) {@content}
 };
 
 //Fonts//----------------------

@@ -21,27 +21,26 @@ const dbConfig = {
 };
 
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
-  });
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
 
-  app.post('/generatePalette', async (req, res) => {
-    try {
-      const feelings = req.body.feelings;
-      const { colors, aiResponse } = await generateColorPalette(feelings);
-  
-      const db = await mysql.createConnection(dbConfig);
-      const query = 'INSERT INTO palettes (keywords, colors, ai_response, created_at) VALUES (?, ?, ?, ?)';
-      const dateAndTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
-  
-      await db.execute(query, [feelings, JSON.stringify(colors), aiResponse, dateAndTime]);
-  
-      res.json({ colors, aiResponse });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: 'An error occurred while generating the palette.' });
-    }
-  });
+app.post('/generatePalette', async (req, res) => {
+  try {
+    const feelings = req.body.feelings;
+    const { colors, aiResponse } = await generateColorPalette(feelings);
 
+    const db = await mysql.createConnection(dbConfig);
+    const query = 'INSERT INTO palettes (keywords, colors, ai_response, created_at) VALUES (?, ?, ?, ?)';
+    const dateAndTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
+
+    await db.execute(query, [feelings, JSON.stringify(colors), aiResponse, dateAndTime]);
+
+    res.json({ colors, aiResponse });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'An error occurred while generating the palette.' });
+  }
+});
 
 app.get('/palette/:paletteId', async (req, res) => {
   try {
@@ -53,8 +52,9 @@ app.get('/palette/:paletteId', async (req, res) => {
 
     if (rows.length > 0) {
       const palette = rows[0];
-      const colors = palette.colors.split(',');
+      const colors = JSON.parse(palette.colors);
       const aiResponse = palette.ai_response;
+
       res.json({ colors, aiResponse });
     } else {
       res.status(404).json({ error: 'Palette not found.' });
@@ -66,17 +66,17 @@ app.get('/palette/:paletteId', async (req, res) => {
 });
 
 async function generateColorPalette(feelings) {
-    const apiKey = process.env.API_KEY;
-    try {
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
-        },
-        body: JSON.stringify({
-          model: "gpt-3.5-turbo",
-          messages: [
+  const apiKey = process.env.API_KEY;
+  try {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: "gpt-3.5-turbo",
+        messages: [
             {
               role: "system",
               content: "You are a helpful assistant that generates color palettes based on keywords and traits for app UIs."
@@ -103,16 +103,16 @@ async function generateColorPalette(feelings) {
                 </p>`
             }
           ],
-          max_tokens: 600,
-          n: 1,
-          stop: null,
-          temperature: 0.8,
-        })
-      });
-  
-      if (response.ok) {
+        max_tokens: 600,
+        n: 1,
+        stop: null,
+        temperature: 0.8,
+      })
+    });
+
+    if (response.ok) {
         const data = await response.json();
-  
+
         if (data.choices && data.choices.length > 0) {
           const hexColorRegex = /#(?:[0-9a-fA-F]{3}){1,2}\b/g;
           const colors = data.choices[0].message.content.match(hexColorRegex);
@@ -135,11 +135,12 @@ async function generateColorPalette(feelings) {
         return [];
       }
     } catch (error) {
-        console.error(`Error: ${error.message}`);
-        return [];
-      }
+      console.error(`Error: ${error.message}`);
+      return [];
+    }
 }
 
 app.listen(3000, () => {
   console.log('Server is running on port 3000');
 });
+
