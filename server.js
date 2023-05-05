@@ -25,7 +25,7 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Função getPaletteFromDatabase
+// Get a palette from database
 async function getPaletteFromDatabase(permalink) {
     try {
       const query = 'SELECT * FROM palettes WHERE permalink = $1';
@@ -46,6 +46,7 @@ async function getPaletteFromDatabase(permalink) {
     }
   }
 
+//API Endpoint to return the palette to the Figma Plugin
   app.post('/api/getPalette', async (req, res) => {
     const { permalink } = req.body;
     try {
@@ -57,6 +58,7 @@ async function getPaletteFromDatabase(permalink) {
     }
   });
 
+//Endpoint to Generate the palette from the prompts
 app.post('/generatePalette', async (req, res) => {
     try {
       const feelings = req.body.feelings;
@@ -65,15 +67,15 @@ app.post('/generatePalette', async (req, res) => {
       const query = 'INSERT INTO palettes (keywords, colors, ai_response, created_at) VALUES ($1, $2, $3, $4) RETURNING id';
       const dateAndTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
   
-      // Inserir a paleta no banco de dados e obter o ID gerado
+      // Insert on database and obtain the ID
       const { rows } = await pool.query(query, [feelings, JSON.stringify(colors), aiResponse, dateAndTime]);
       const generatedId = rows[0].id;
   
-      // Gerar o hash MD5 com base no ID gerado
+      // Generate MD5 hash based on ID
       const md5 = crypto.createHash('md5');
       const permalink = md5.update(generatedId.toString()).digest('hex');
   
-      // Atualizar a paleta no banco de dados com o permalink
+      // Update palette entry on database to insert permalink
       const updateQuery = 'UPDATE palettes SET permalink = $1 WHERE id = $2';
       await pool.query(updateQuery, [permalink, generatedId]);
   
@@ -84,6 +86,7 @@ app.post('/generatePalette', async (req, res) => {
     }
   });
 
+//Endpoint to fetch a palette data
 app.get('/palette/:permalink/data', async (req, res) => {
     try {
       const permalink = req.params.permalink;
@@ -106,6 +109,7 @@ app.get('/palette/:permalink/data', async (req, res) => {
     }
 });
 
+//Render the palette.html as the template for an existing palette
 app.get('/palette/:permalink', async (req, res) => {
     res.sendFile(path.join(__dirname,'public', 'palette.html'));
 });
