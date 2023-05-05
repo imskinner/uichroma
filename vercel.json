@@ -1,0 +1,19 @@
+{
+    "version": 2,
+    "builds": [
+      {
+        "src": "server.js",
+        "use": "@vercel/node"
+      }
+    ],
+    "routes": [
+      {
+        "src": "/.*",
+        "dest": "server.js"
+      }
+    ],
+    "env": {
+      "POSTGRES_URL": "@postgres_url",
+      "API_KEY": "@api_key"
+    }
+  }
