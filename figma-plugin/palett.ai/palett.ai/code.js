@@ -213,7 +213,62 @@ async function fetchPalette(permalink) {
   }
 }
 
-function createLocalStyles(colorArray) {
+function rgbToHsl(r, g, b) {
+    r /= 255;
+    g /= 255;
+    b /= 255;
+  
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    let h, s, l = (max + min) / 2;
+  
+    if (max === min) {
+      h = s = 0; // achromatic
+    } else {
+      const d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      switch (max) {
+        case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+        case g: h = (b - r) / d + 2; break;
+        case b: h = (r - g) / d + 4; break;
+      }
+      h /= 6;
+    }
+  
+    return [h * 360, s * 100, l * 100];
+  }
+
+  function hslToRgb(h, s, l) {
+    const hue2rgb = (p, q, t) => {
+      if (t < 0) t += 1;
+      if (t > 1) t -= 1;
+      if (t < 1 / 6) return p + (q - p) * 6 * t;
+      if (t < 1 / 2) return q;
+      if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+      return p;
+    };
+  
+    h /= 360;
+    s /= 100;
+    l /= 100;
+  
+    let r, g, b;
+  
+    if (s === 0) {
+      r = g = b = l; // achromatic
+    } else {
+      const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+      const p = 2 * l - q;
+      r = hue2rgb(p, q, h + 1 / 3);
+      g = hue2rgb(p, q, h);
+      b = hue2rgb(p, q, h - 1 / 3);
+    }
+  
+    return [r * 255, g * 255, b * 255];
+  }
+  
+
+/**function createLocalStyles(colorArray) {
     // Iterar sobre cada cor no array de cores
     colorArray.forEach((color, index) => {
       // Criar um novo estilo de cor local
@@ -235,4 +290,70 @@ function createLocalStyles(colorArray) {
         },
       ];
     });
+  }**/
+
+  function createLocalStyles(colorArray) {
+    // Função para gerar tons
+    function generateTints(color, count) {
+      const tints = [];
+      const [h, s, l] = color;
+      const step = (95 - 5) / (count - 1);
+  
+      for (let i = 0; i < count; i++) {
+        const newL = 5 + step * i;
+        tints.push([h, s, newL]);
+      }
+  
+      return tints;
+    }
+  
+    // Iterar sobre cada cor no array de cores
+    colorArray.forEach((color, index) => {
+      const r = parseInt(color.substring(1, 3), 16);
+      const g = parseInt(color.substring(3, 5), 16);
+      const b = parseInt(color.substring(5, 7), 16);
+      const hsl = rgbToHsl(r, g, b);
+  
+      // Gerar 10 tons (incluindo a cor original) para cada cor da paleta
+      const tints = generateTints(hsl, 10);
+  
+      // Criar uma nova página para a família de cores
+      const colorPage = figma.createPage();
+      if (index === 0) {
+        colorPage.name = 'Primary';
+      } else if (index === 1) {
+        colorPage.name = 'Secondary';
+      } else {
+        colorPage.name = `Accent ${index - 1}`;
+      }
+  
+      tints.forEach((hslTint, tintIndex) => {
+        // Converter os valores HSL de volta para RGB
+        const [newR, newG, newB] = hslToRgb(...hslTint);
+  
+        // Criar um novo estilo de cor local
+        const localColorStyle = figma.createPaintStyle();
+  
+        // Configurar o nome e a cor do estilo
+        localColorStyle.name = `${colorPage.name} ${tintIndex + 1}`;
+  
+        localColorStyle.paints = [
+          {
+            type: 'SOLID',
+            color: {
+              r: newR / 255,
+              g: newG / 255,
+              b: newB / 255,
+            },
+          },
+        ];
+  
+        // Criar um retângulo com o estilo de cor aplicado
+        const colorRect = figma.createRectangle();
+        colorRect.x = tintIndex * 150;
+        colorRect.fills = [localColorStyle.paints[0]];
+        colorPage.appendChild(colorRect);
+      });
+    });
   }
+  
