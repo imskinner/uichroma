@@ -132,7 +132,8 @@ if(!(window.location.pathname.split('/')[2])){
   
     const data = await response.json();
     loader.style.display = "none"; // Hide loader
-    updateUI(data);
+    //updateUI(data);
+    window.location.href = `/palette/${data.permalink}`;
   })};
   
   document.addEventListener('DOMContentLoaded', async () => {

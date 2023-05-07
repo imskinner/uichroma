@@ -266,41 +266,122 @@ function rgbToHsl(r, g, b) {
   
     return [r * 255, g * 255, b * 255];
   }
-  
 
-/**function createLocalStyles(colorArray) {
+  /*function createLocalStyles(colorArray) {
+    // Função para gerar tons
+    function generateTints(color, count) {
+      const tints = [];
+      const [h, s, l] = color;
+      const step = (95 - 10) / (count - 1);
+    
+      for (let i = 0; i < count; i++) {
+        let newL = 10 + step * i;
+        if (Math.abs(newL - l) < step / 2) {
+          newL = l;
+        }
+        tints.push([h, s, newL]);
+      }
+    
+      return tints;
+    }
+    
+  
     // Iterar sobre cada cor no array de cores
     colorArray.forEach((color, index) => {
-      // Criar um novo estilo de cor local
-      const localColorStyle = figma.createPaintStyle();
+      const r = parseInt(color.substring(1, 3), 16);
+      const g = parseInt(color.substring(3, 5), 16);
+      const b = parseInt(color.substring(5, 7), 16);
+      const hsl = rgbToHsl(r, g, b);
+      console.log(hsl[2]);
   
-      // Configurar o nome e a cor do estilo
-      if(index==0){localColorStyle.name = `Primary`;}
-      if(index==1){localColorStyle.name = `Secondary`;}
-      if(index>1){localColorStyle.name = `Accent ${index - 1}`;}
+      // Gerar 10 tons (incluindo a cor original) para cada cor da paleta
+      const tints = generateTints(hsl, 10);
       
-      localColorStyle.paints = [
+  
+      tints.forEach((hslTint, tintIndex) => {
+        // Converter os valores HSL de volta para RGB
+        const [newR, newG, newB] = hslToRgb(...hslTint);
+  
+        // Criar um novo estilo de cor local
+        const localColorStyle = figma.createPaintStyle();
+
+        const colorSuffix = [9,8,7,6,5,4,3,2,1,0];
+
+        if (index === 0){
+          localColorStyle.name = `Primary/${colorSuffix[tintIndex]}`;
+        } else if (index === 1) {
+          localColorStyle.name = `Secondary/${colorSuffix[tintIndex]}`
+        } else if (index === 5){
+          if (tintIndex === 0){
+            localColorStyle.name = `Neutral/Black`
+          } else {
+            localColorStyle.name = `Neutral/${colorSuffix[tintIndex]}`
+          }
+        } else {
+          localColorStyle.name = `Accent ${index - 1}/${colorSuffix[tintIndex]}`
+        }
+
+        if (tintIndex == 4 && index !=5){
+          localColorStyle.name = `${localColorStyle.name} (default)`;
+        }
+  
+        localColorStyle.paints = [
+          {
+            type: 'SOLID',
+            color: {
+              r: newR / 255,
+              g: newG / 255,
+              b: newB / 255,
+            },
+          },
+        ];
+
+      });
+    });
+
+    const generateWhites = () =>{
+      const offWhiteColor = figma.createPaintStyle();
+      offWhiteColor.name = `Neutral/Off-White`;
+      offWhiteColor.paints = [
         {
           type: 'SOLID',
           color: {
-            r: parseInt(color.substring(1, 3), 16) / 255,
-            g: parseInt(color.substring(3, 5), 16) / 255,
-            b: parseInt(color.substring(5, 7), 16) / 255,
+            r: 250 / 255,
+            g: 250 / 255,
+            b: 250 / 255,
           },
         },
       ];
-    });
-  }**/
+      const whiteColor = figma.createPaintStyle();
+      whiteColor.name = `Neutral/White`;
+      whiteColor.paints = [
+        {
+          type: 'SOLID',
+          color: {
+            r: 255 / 255,
+            g: 255 / 255,
+            b: 255 / 255,
+          },
+        },
+      ];
+      }
+
+      return generateWhites();
+
+  }*/
 
   function createLocalStyles(colorArray) {
     // Função para gerar tons
     function generateTints(color, count) {
       const tints = [];
       const [h, s, l] = color;
-      const step = (95 - 5) / (count - 1);
+      const step = (95 - 10) / (count - 1);
   
       for (let i = 0; i < count; i++) {
-        const newL = 5 + step * i;
+        let newL = 10 + step * i;
+        if (Math.abs(newL - l) < step / 2) {
+          newL = l;
+        }
         tints.push([h, s, newL]);
       }
   
@@ -317,16 +398,6 @@ function rgbToHsl(r, g, b) {
       // Gerar 10 tons (incluindo a cor original) para cada cor da paleta
       const tints = generateTints(hsl, 10);
   
-      // Criar uma nova página para a família de cores
-      const colorPage = figma.createPage();
-      if (index === 0) {
-        colorPage.name = 'Primary';
-      } else if (index === 1) {
-        colorPage.name = 'Secondary';
-      } else {
-        colorPage.name = `Accent ${index - 1}`;
-      }
-  
       tints.forEach((hslTint, tintIndex) => {
         // Converter os valores HSL de volta para RGB
         const [newR, newG, newB] = hslToRgb(...hslTint);
@@ -334,8 +405,26 @@ function rgbToHsl(r, g, b) {
         // Criar um novo estilo de cor local
         const localColorStyle = figma.createPaintStyle();
   
-        // Configurar o nome e a cor do estilo
-        localColorStyle.name = `${colorPage.name} ${tintIndex + 1}`;
+        const colorSuffix = [9, 8, 7, 6, 5, 4, 3, 2, 1, 0];
+  
+        if (index === 0) {
+          localColorStyle.name = `Primary/${colorSuffix[tintIndex]}`;
+        } else if (index === 1) {
+          localColorStyle.name = `Secondary/${colorSuffix[tintIndex]}`;
+        } else if (index === 5) {
+          if (tintIndex === 0) {
+            localColorStyle.name = `Neutral/Black`;
+          } else {
+            localColorStyle.name = `Neutral/${colorSuffix[tintIndex]}`;
+          }
+        } else {
+          localColorStyle.name = `Accent ${index - 1}/${colorSuffix[tintIndex]}`;
+        }
+  
+        // Adicionar "(default)" ao nome do localStyle da cor original
+        if (hslTint[2] === hsl[2]) {
+          localColorStyle.name = `${localColorStyle.name} (default)`;
+        }
   
         localColorStyle.paints = [
           {
@@ -347,13 +436,35 @@ function rgbToHsl(r, g, b) {
             },
           },
         ];
-  
-        // Criar um retângulo com o estilo de cor aplicado
-        const colorRect = figma.createRectangle();
-        colorRect.x = tintIndex * 150;
-        colorRect.fills = [localColorStyle.paints[0]];
-        colorPage.appendChild(colorRect);
       });
     });
+    const generateWhites = () =>{
+      const offWhiteColor = figma.createPaintStyle();
+      offWhiteColor.name = `Neutral/Off-White`;
+      offWhiteColor.paints = [
+        {
+          type: 'SOLID',
+          color: {
+            r: 250 / 255,
+            g: 250 / 255,
+            b: 250 / 255,
+          },
+        },
+      ];
+      const whiteColor = figma.createPaintStyle();
+      whiteColor.name = `Neutral/White`;
+      whiteColor.paints = [
+        {
+          type: 'SOLID',
+          color: {
+            r: 255 / 255,
+            g: 255 / 255,
+            b: 255 / 255,
+          },
+        },
+      ];
+      }
+
+      return generateWhites();
+
   }
-  
