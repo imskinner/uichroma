@@ -17,12 +17,58 @@ function createCheckboxField(feeling) {
   return checkboxField;
 }
 
+document.addEventListener('DOMContentLoaded', () => {
+  const colorBoxes = document.querySelectorAll('.color-box');
+
+  colorBoxes.forEach((colorBox) => {
+    colorBox.addEventListener('click', () => openColorPicker(colorBox));
+  });
+});
+
+function openColorPicker(colorBoxElement) {
+  const pickr = Pickr.create({
+    el: colorBoxElement,
+    theme: 'classic',
+    default: colorBoxElement.style.backgroundColor,
+    comparison: false,
+    swatches: null,
+    components: {
+      preview: true,
+      opacity: false,
+      hue: true,
+      interaction: {
+        hex: true,
+        rgba: true,
+        hsla: true,
+        hsva: false,
+        cmyk: false,
+        input: true,
+        clear: false,
+        save: false,
+      },
+    },
+  });
+
+  pickr.on('hide', (color, instance) => {
+    const hexColor = color.toHEXA().toString();
+    updateColor(hexColor, colorBoxElement);
+    instance.close();
+  });
+}
+
+function updateColor(hexColor, colorBoxElement) {
+  colorBoxElement.style.backgroundColor = hexColor;
+  colorBoxElement.querySelector('span').innerText = hexColor;
+}
+
+
 function createColorBox(color) {
   const colorBox = document.createElement('div');
   colorBox.className = 'color-box';
   colorBox.style.backgroundColor = color;
   colorBox.innerHTML = `<span>${color}</span>`;
-  
+  colorBox.onclick = () => openColorPicker(colorBox);
+
   return colorBox;
 }
 
@@ -143,22 +189,19 @@ if(!(window.location.pathname.split('/')[2])){
       console.log(paletteId);
     }
     const predefinedFeelings = [
-      "Vibrant",
       "Pastel",
-      "Saturated",
+      "Vibrant",
       "Muted",
-      "Bold",
-      "Subtle",
       "Earthy",
+      "Jewel",
+      "Neon",
+      "Monochromatic",
       "Warm",
       "Cool",
-      "Rich",
-      "Pale",
-      "Gradient",
+      "Analogous",
       "Complementary",
-      "Harmonious",
-      "Monochromatic"
-      ];
+      "Triadic"
+      ]
   
     const feelingsCheckboxesContainer = document.getElementById("feelingsCheckboxes");
     predefinedFeelings.forEach(feeling => {
@@ -201,17 +244,3 @@ if(!(window.location.pathname.split('/')[2])){
       }
     );
   }
-  
-  document.querySelector('#exportToFigma').addEventListener('click', async () => {
-    const accessToken = localStorage.getItem('figmaAccessToken');
-  
-    const palette = JSON.parse(localStorage.getItem('currentPalette'));
-  
-    try {
-      const authorizationUrl = await getAuthorizationUrl(palette);
-      window.location.href = authorizationUrl;
-    } catch (error) {
-      console.error('Error getting authorization URL:', error);
-      alert('Error exporting to Figma. Please try again later.');
-    }
-  });

@@ -83,8 +83,8 @@ label{
     animation: fadeIn 200ms ease-in;
     animation: spin 1s linear infinite;
     transition: display 200ms;
-  
-  }
+    
+}
 
 //Global UI Elements
 .inputText{
@@ -94,58 +94,58 @@ label{
     margin-bottom: 2.4rem;
     
     input[type=text]{
-      padding: 16px;
-      background: $white;
-      border: 1px solid $neutral-2;
-      border-radius: 8px;
-      font-family: $base-font-family;
-      font-weight: $regular;
-      font-size: 1.8rem;
-      line-height: 28px;
-
-      @include bp-small-desktop{
-        padding: 12px;
-        font-size: 1.6rem;
-        line-height: 2.4rem;
-      }
+        padding: 16px;
+        background: $white;
+        border: 1px solid $neutral-2;
+        border-radius: 8px;
+        font-family: $base-font-family;
+        font-weight: $regular;
+        font-size: 1.8rem;
+        line-height: 28px;
+        
+        @include bp-small-desktop{
+            padding: 12px;
+            font-size: 1.6rem;
+            line-height: 2.4rem;
+        }
     }
-  }
-  
-  button, .button{
-      padding: 20px 32px;
-      border: 0px;
-      background: $primary-5;
-      border-radius: 8px;
-      font-family: $base-font-family;
-      font-weight: $semibold;
-      font-size: 1.8rem;
-      line-height: 2.4rem;
-      color:$white;
-      cursor: pointer;
-      text-decoration: none;
+}
 
-      &.permalink{
+button, .button{
+    padding: 20px 32px;
+    border: 0px;
+    background: $primary-5;
+    border-radius: 8px;
+    font-family: $base-font-family;
+    font-weight: $semibold;
+    font-size: 1.8rem;
+    line-height: 2.4rem;
+    color:$white;
+    cursor: pointer;
+    text-decoration: none;
+    
+    &.permalink{
         background-color: $neutral-1;
         color: $neutral-7;
         font-size: 1.4rem;
         line-height: 2.0rem;
         display: block;
-
+        
         &:hover{
             background-color: $neutral-2;
         }
-      }
-  
-      &:hover{
-          background-color: $primary-6;
-      }
-
-      @include bp-small-desktop{
+    }
+    
+    &:hover{
+        background-color: $primary-6;
+    }
+    
+    @include bp-small-desktop{
         padding: 16px 24px;
         font-size: 1.6rem;
         line-height: 2rem;
-      }
-  }
+    }
+}
 //Global Wrapper
 .wrapper{
     display: flex;
@@ -154,7 +154,7 @@ label{
     align-items: stretch;
     justify-content: center;
     height: 100vh;
-
+    
     @include bp-tablet{
         height: auto;
         flex-flow: column nowrap;
@@ -162,28 +162,28 @@ label{
 }
 //Left Column
 .leftCol{
-  flex: 0.7;
-  display: flex;
-  flex-flow: column nowrap;
-  justify-content: flex-start;
-  align-self: stretch;
-  padding: 64px;
-
-  @include bp-small-desktop{
-    padding: 48px;
-    flex-grow: 1.2;
-  }
-  @include bp-tablet{
-    padding: 32px;
-  }
-
-  .content{
+    flex: 0.7;
     display: flex;
     flex-flow: column nowrap;
-    flex-grow: 1;
+    justify-content: flex-start;
     align-self: stretch;
-    justify-content: center;
-  }
+    padding: 64px;
+    
+    @include bp-small-desktop{
+        padding: 48px;
+        flex-grow: 1.2;
+    }
+    @include bp-tablet{
+        padding: 32px;
+    }
+    
+    .content{
+        display: flex;
+        flex-flow: column nowrap;
+        flex-grow: 1;
+        align-self: stretch;
+        justify-content: center;
+    }
 }
 header{
     h1{
@@ -194,7 +194,7 @@ header{
         margin-bottom: 16px;
         margin-top: 0px;
         color: $black;
-
+        
         @include bp-small-desktop{
             font-size: 3.2rem;
             line-height: 4rem;
@@ -213,9 +213,36 @@ header{
         }
     }
     margin-bottom: 12px;
-
+    
     @include bp-small-desktop{
         margin-bottom: 4px;
+    }
+    
+    #response-container{
+        h3{
+            font-family: $title-font-family;
+            font-weight: $bold;
+            font-size: 3.2rem;
+            line-height: 40px;
+            margin-bottom: 16px;
+            margin-top: 0px;
+            color: $black;
+            
+            @include bp-small-desktop{
+                font-size: 2.8rem;
+                line-height: 3.6rem;
+            }
+        }
+        
+        li{
+            margin-bottom: 8px;
+        }
+        
+        p, ul{
+            font-size: 1.4rem;
+            line-height: 2rem;
+        }
+        
     }
 }
 //Logo DIV
@@ -232,7 +259,7 @@ header{
         letter-spacing: 0.02em;
         display: block;
         color: $primary-6;
-      } 
+    } 
 }
 
 #feelingsCheckboxes{
@@ -258,7 +285,7 @@ header{
             color: $primary-9;
             font-weight: $regular;
         }
-
+        
         @include bp-small-desktop{
             padding: 8px;
         };
@@ -279,12 +306,12 @@ header{
     font-size: 1.4rem;
     line-height: 20px;
     color:$neutral-8;
-
+    
     h3{
         color:$neutral-7;
         text-align: center;
     }
-
+    
     @include bp-small-desktop{
         padding: 48px;
     }
@@ -299,31 +326,48 @@ header{
     display: flex;
     flex-flow: row wrap;
     align-items: center;
+    width: 100%;
 }
 .color-box{
-  width: 96px;
-  height: 80px;
-  border: 1px solid rgba(0,0,0,0.1);
-  display: inline-block;
-  margin: 4px;
-  border-radius: 8px;
-  padding: 12px 12px;
-  animation: fadeIn 200ms ease-in;
-  box-sizing: border-box;
+    min-width: 30%;
+    height: 128px;
+    border: 1px solid rgba(0,0,0,0.1);
+    margin: 8px;
+    border-radius: 8px;
+    padding: 12px 12px;
+    animation: fadeIn 200ms ease-in;
+    box-sizing: border-box;
+    flex: 1 1 30%;
+    
+    @include bp-tablet{
+        width: 80px;
+        height: 72px;
+    }
+    
+    span{
+        padding: 4px;
+        background-color: rgba(255,255,255,.8);
+        border: 1px solid rgba(255,255,255,.7);
+        border-radius: 4px;
+        font-size:1.2rem;
+        font-weight: $semibold;
+    }
+}
 
-  @include bp-tablet{
-    width: 80px;
-    height: 72px;
-  }
+.pickr, .pcr-button{
+    min-width: 30%;
+    height: 128px;
+    border: 1px solid rgba(0,0,0,0.1);
+    margin: 8px;
+    border-radius: 8px;
+    padding: 12px 12px;
+    animation: fadeIn 200ms ease-in;
+    box-sizing: border-box;
+    flex: 1 1 30%;
+}
 
-  span{
-    padding: 4px;
-    background-color: rgba(255,255,255,.8);
-    border: 1px solid rgba(255,255,255,.7);
-    border-radius: 4px;
-    font-size:1.2rem;
-    font-weight: $semibold;
-  }
+.pickr .pcr-button{
+    position:initial;
 }
 
 #response-container{
@@ -337,8 +381,8 @@ header{
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
 @keyframes fadeIn {

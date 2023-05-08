@@ -151,29 +151,28 @@ async function generateColorPalette(feelings) {
           This color palette should give your design a peaceful, forest-inspired feel, while also conveying a sense of trust and reliability for an investments app.
           </p>`*/
           content:`
-          Generate a 6-color palette for a user interface based on the following keywords: ${feelings}. The first color should be the primary color, with a lightness in HSL around 50. The second color should be the secondary color, with a lightness in HSL around 50. The other three colors should be accent colors, useful for warning, error, and success states. All colors should have different hues and combine elegantly.
-          When generating the colors, you can use the following constraints:
-          Generate colors in HSL (Hue, Saturation, Lightness).
-          Colors must be complimentary.
-          For the primary and secondary color, select hues that are associated with the feelings keyword, and set the lightness in HSL to around 50.
-          Secondary color must be around 50 Lightnes in HSL.
-          For the accent colors, select hues that complement the primary and secondary colors and are suitable for warning, error, and success states.
-          The sixth color is a neutral color, a type of black or subtle hued black, to be used for the text and other neutral elements in the UI.
-          Ensure that all five colors have different hues and that they combine well together to create an elegant color palette.
-          Provide the colors in hexadecimal format.
-          Once you've generated the palette, you can provide the hexadecimal values for each color in the output.
-          Provide the response as you would but as HTML like the following example:"
+          Create a 6-color palette for a user interface design based on the following keywords: ${feelings}. Consider the following guidelines:
+          - Use HSL (Hue, Saturation, Lightness) for color generation.
+          - Choose primary and secondary colors with hues associated with the feelings keyword and set their lightness to around 50 in HSL.
+          - Select complementary accent colors suitable for UI elements, warnings, alerts, and states.
+          - Include a neutral dark color or black as the sixth color for text in the UI. Hue and Saturation can differ from 0 to tone it a bit.
+          - Ensure all colors have distinct hues and harmonize well together to create an elegant palette.
+          - Ensure all colors are different in hue or saturation.
+          - Colors must be elegant.
+          
+          Provide the hexadecimal values and explanations for each color. Format your response as HTML, similar to the example below:
+          
           <h3>Here's a color palette that might work well for your design:</h3>
           <ul>
-          <li>Primary color: #3B7D57 (a deep green color that evokes a sense of peace and calmness, reminiscent of a lush forest).</li>
-          <li>Secondary color: #D3D0CB (a light gray color that complements the primary color and adds a touch of elegance).</li>
-          <li>Accent color 1: #F2C57C (a warm, sandy color that suggests stability and reliability, perfect for an investments app).</li>
-          <li>Accent color 2: #6E8E59 (a muted green color that adds depth and contrast to the palette, and works well with the primary color).</li>
-          <li>Accent color 3: #E8E1D7 (a light beige color that softens the palette and provides a neutral background for the other colors).</li>
-          <li>Neutral color: #E8E1D7 (a light beige color that softens the palette and provides a neutral background for the other colors).</li>
+          <li>Primary color: #XXXXXX (This color is a warm grape hue that evokes feelings of luxury and relaxation, perfect for a wellness app.).</li>
+          <li>Secondary color: #XXXXXX (quick explanation).</li>
+          <li>Accent color 1: #XXXXXX (quick explanation).</li>
+          <li>Accent color 2: #XXXXXX (quick explanation).</li>
+          <li>Accent color 3: #XXXXXX (quick explanation).</li>
+          <li>Neutral color: #XXXXXX (quick explanation).</li>
           </ul>
           <p class="explanation">
-          This color palette should give your design a peaceful, forest-inspired feel, while also conveying a sense of trust and reliability for an investments app.
+          This color palette should give your design a nice, forest-inspired feel, while also conveying a sense of trust and reliability for an investments app.
           </p>
           
           `
@@ -182,7 +181,7 @@ async function generateColorPalette(feelings) {
       max_tokens: 600,
       n: 1,
       stop: null,
-      temperature: 0.7,
+      temperature: 0.65,
     })
   });
   

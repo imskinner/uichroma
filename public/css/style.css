@@ -179,6 +179,28 @@ header p {
     margin-bottom: 4px;
   }
 }
+header #response-container h3 {
+  font-family: "Epilogue", sans-serif;
+  font-weight: 700;
+  font-size: 3.2rem;
+  line-height: 40px;
+  margin-bottom: 16px;
+  margin-top: 0px;
+  color: #1B1A18;
+}
+@media screen and (max-width: 1366px) {
+  header #response-container h3 {
+    font-size: 2.8rem;
+    line-height: 3.6rem;
+  }
+}
+header #response-container li {
+  margin-bottom: 8px;
+}
+header #response-container p, header #response-container ul {
+  font-size: 1.4rem;
+  line-height: 2rem;
+}
 
 .logo {
   margin-bottom: 48px;
@@ -259,18 +281,19 @@ header p {
   display: flex;
   flex-flow: row wrap;
   align-items: center;
+  width: 100%;
 }
 
 .color-box {
-  width: 96px;
-  height: 80px;
+  min-width: 30%;
+  height: 128px;
   border: 1px solid rgba(0, 0, 0, 0.1);
-  display: inline-block;
-  margin: 4px;
+  margin: 8px;
   border-radius: 8px;
   padding: 12px 12px;
   animation: fadeIn 200ms ease-in;
   box-sizing: border-box;
+  flex: 1 1 30%;
 }
 @media screen and (max-width: 800px) {
   .color-box {
@@ -285,6 +308,22 @@ header p {
   border-radius: 4px;
   font-size: 1.2rem;
   font-weight: 500;
+}
+
+.pickr, .pcr-button {
+  min-width: 30%;
+  height: 128px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  margin: 8px;
+  border-radius: 8px;
+  padding: 12px 12px;
+  animation: fadeIn 200ms ease-in;
+  box-sizing: border-box;
+  flex: 1 1 30%;
+}
+
+.pickr .pcr-button {
+  position: initial;
 }
 
 #response-container {
