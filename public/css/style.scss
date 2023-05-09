@@ -354,20 +354,39 @@ header{
     }
 }
 
-.pickr, .pcr-button{
-    min-width: 30%;
-    height: 128px;
-    border: 1px solid rgba(0,0,0,0.1);
-    margin: 8px;
-    border-radius: 8px;
-    padding: 12px 12px;
-    animation: fadeIn 200ms ease-in;
-    box-sizing: border-box;
-    flex: 1 1 30%;
-}
+.color-picker{
+    height: 200px !important;
+    width: 320px !important;
+    visibility: visible;
+    opacity: 1;
+    font-family: $base-font-family !important;
 
-.pickr .pcr-button{
-    position:initial;
+    .pcr-selection{
+        .pcr-color-preview{
+            margin-right: 0 !important;
+        }
+
+        .pcr-color-palette{
+            height: 100% !important;
+        }
+
+        .pcr-save{
+            font-size: 1.2rem !important;
+            background: $primary-5;
+        }
+
+    }
+    .pcr-swatches{
+        display: none;
+    }
+    .pcr-interaction{
+        font-size: 1.2rem !important;
+        .pcr-result{
+            border:1px solid $neutral-1;
+            padding:8px;
+            font-size: 1.2rem;
+        }
+    }
 }
 
 #response-container{

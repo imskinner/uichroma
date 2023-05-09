@@ -310,20 +310,33 @@ header #response-container p, header #response-container ul {
   font-weight: 500;
 }
 
-.pickr, .pcr-button {
-  min-width: 30%;
-  height: 128px;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  margin: 8px;
-  border-radius: 8px;
-  padding: 12px 12px;
-  animation: fadeIn 200ms ease-in;
-  box-sizing: border-box;
-  flex: 1 1 30%;
+.color-picker {
+  height: 200px !important;
+  width: 320px !important;
+  visibility: visible;
+  opacity: 1;
+  font-family: "Inter", sans-serif !important;
 }
-
-.pickr .pcr-button {
-  position: initial;
+.color-picker .pcr-selection .pcr-color-preview {
+  margin-right: 0 !important;
+}
+.color-picker .pcr-selection .pcr-color-palette {
+  height: 100% !important;
+}
+.color-picker .pcr-selection .pcr-save {
+  font-size: 1.2rem !important;
+  background: #0077FE;
+}
+.color-picker .pcr-swatches {
+  display: none;
+}
+.color-picker .pcr-interaction {
+  font-size: 1.2rem !important;
+}
+.color-picker .pcr-interaction .pcr-result {
+  border: 1px solid #EEEDEC;
+  padding: 8px;
+  font-size: 1.2rem;
 }
 
 #response-container {
