@@ -329,7 +329,7 @@ header{
     width: 100%;
 }
 .color-box{
-    min-width: 30%;
+    min-width: 20%;
     height: 128px;
     border: 1px solid rgba(0,0,0,0.1);
     margin: 8px;
@@ -337,7 +337,11 @@ header{
     padding: 12px 12px;
     animation: fadeIn 200ms ease-in;
     box-sizing: border-box;
-    flex: 1 1 30%;
+    flex: 1 1 20%;
+    display: flex;
+    align-items: flex-start;
+    flex-direction: column;
+    justify-content: space-between;
     
     @include bp-tablet{
         width: 80px;
@@ -345,14 +349,26 @@ header{
     }
     
     span{
-        padding: 4px;
-        background-color: rgba(255,255,255,.8);
-        border: 1px solid rgba(255,255,255,.7);
-        border-radius: 4px;
-        font-size:1.2rem;
-        font-weight: $semibold;
+        &.hex{
+            padding: 4px;
+            background-color: rgba(255,255,255,.8);
+            border: 1px solid rgba(255,255,255,.7);
+            border-radius: 4px;
+            font-size:1.2rem;
+            font-weight: $semibold;
+        }
+        &.color-label{
+            padding: 4px;
+            background-color: rgba(0,0,0,.1);
+            border: 1px solid rgba(0,0,0,.05);
+            border-radius: 4px;
+            font-size:1.2rem;
+            font-weight: $regular;
+            color: $white;
+        }
+        
+        }
     }
-}
 
 .color-picker{
     height: 200px !important;

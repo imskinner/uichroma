@@ -128,28 +128,34 @@ async function generateColorPalette(feelings) {
       messages: [
         {
           role: "system",
-          content: "You are a helpful assistant that generates color palettes based on keywords and traits for app UIs."
-        },
-        {
-          role: "user",
-          /*content: `
-          Generate a color palette of 5 colors based on the keywords and/or traits: ${feelings}. 
-          The colors are to be used in App UI, so they should have a primary color, a secondary color, and accent colors.
-          Provide the colors in hexadecimal format.
-          Make sure colors match and are elegant.
-          Primary color should always have a lightness (HSL) of 50.
-          Provide the response as you would but as HTML like the following example:"
+          content: `Generate an 8 color palette suitable for user interface design based on the keywords "${feelings}". The palette must contain:
+          - A primary color that should be eye-catching and able to stand out. 
+          - A secondary color that can complement the primary color. 
+          - Two accent colors that are elegant and attractive, but not overpowering or clashing with the primary and secondary colors, can't be gray, white or black.
+          - A warning color that should be able to clearly communicate caution or the need for attention.
+          - A danger color that is capable of signaling errors or serious issues. It should be vivid and easily noticeable.
+          - A success color that indicates positive outcomes or states. It should evoke a sense of positivity and accomplishment.
+          - A neutral blackish color, which can be used for text. It should be easy to read against a white or light background.
+        
+          Each color should have a different hue. Please provide the colors in the Hex color code format. Format your response as HTML, similar to the example below:
           <h3>Here's a color palette that might work well for your design:</h3>
           <ul>
-          <li>Primary color: #3B7D57 (a deep green color that evokes a sense of peace and calmness, reminiscent of a lush forest).</li>
-          <li>Secondary color: #D3D0CB (a light gray color that complements the primary color and adds a touch of elegance).</li>
-          <li>Accent color 1: #F2C57C (a warm, sandy color that suggests stability and reliability, perfect for an investments app).</li>
-          <li>Accent color 2: #6E8E59 (a muted green color that adds depth and contrast to the palette, and works well with the primary color).</li>
-          <li>Accent color 3: #E8E1D7 (a light beige color that softens the palette and provides a neutral background for the other colors).</li>
+          <li>Primary color: #XXXXXX (This color is a warm grape hue that evokes feelings of luxury and relaxation, perfect for a wellness app.).</li>
+          <li>Secondary color: #XXXXXX (quick explanation).</li>
+          <li>Accent color 1: #XXXXXX (quick explanation).</li>
+          <li>Accent color 2: #XXXXXX (quick explanation).</li>
+          <li>Warning color: #XXXXXX (quick explanation).</li>
+          <li>Danger color: #XXXXXX (quick explanation).</li>
+          <li>Success color: #XXXXXX (quick explanation).</li>
+          <li>Neutral color: #XXXXXX (quick explanation).</li>
           </ul>
           <p class="explanation">
-          This color palette should give your design a peaceful, forest-inspired feel, while also conveying a sense of trust and reliability for an investments app.
-          </p>`*/
+          This color palette should give your design a nice, forest-inspired feel, while also conveying a sense of trust and reliability for an investments app.
+          </p>
+          `,
+        },
+        /*{
+          role: "user",
           content:`
           Create a 6-color palette for a user interface design based on the following keywords: ${feelings}. Consider the following guidelines:
           - Use HSL (Hue, Saturation, Lightness) for color generation.
@@ -174,9 +180,8 @@ async function generateColorPalette(feelings) {
           <p class="explanation">
           This color palette should give your design a nice, forest-inspired feel, while also conveying a sense of trust and reliability for an investments app.
           </p>
-          
           `
-        }
+        }*/
       ],
       max_tokens: 600,
       n: 1,

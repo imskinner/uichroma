@@ -285,7 +285,7 @@ header #response-container p, header #response-container ul {
 }
 
 .color-box {
-  min-width: 30%;
+  min-width: 20%;
   height: 128px;
   border: 1px solid rgba(0, 0, 0, 0.1);
   margin: 8px;
@@ -293,7 +293,11 @@ header #response-container p, header #response-container ul {
   padding: 12px 12px;
   animation: fadeIn 200ms ease-in;
   box-sizing: border-box;
-  flex: 1 1 30%;
+  flex: 1 1 20%;
+  display: flex;
+  align-items: flex-start;
+  flex-direction: column;
+  justify-content: space-between;
 }
 @media screen and (max-width: 800px) {
   .color-box {
@@ -301,13 +305,22 @@ header #response-container p, header #response-container ul {
     height: 72px;
   }
 }
-.color-box span {
+.color-box span.hex {
   padding: 4px;
   background-color: rgba(255, 255, 255, 0.8);
   border: 1px solid rgba(255, 255, 255, 0.7);
   border-radius: 4px;
   font-size: 1.2rem;
   font-weight: 500;
+}
+.color-box span.color-label {
+  padding: 4px;
+  background-color: rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+  font-size: 1.2rem;
+  font-weight: 400;
+  color: #FFFFFF;
 }
 
 .color-picker {

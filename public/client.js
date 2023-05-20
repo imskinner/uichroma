@@ -68,7 +68,7 @@ function openColorPicker(colorBoxElement, top, left) {
       },
     },
   });
-
+  
   pickr.on('init', () => {
     positionPickr(pickr, top, left);
   });
@@ -101,11 +101,21 @@ function updateColor(hexColor, colorBoxElement) {
 }
 
 
-function createColorBox(color) {
+function createColorBox(color, index) {
+  const colorLabels = [
+    "Primary",
+    "Secondary",
+    "Accent 1",
+    "Accent 2",
+    "Warning",
+    "Danger",
+    "Success",
+    "Neutral"
+  ]
   const colorBox = document.createElement('div');
   colorBox.className = 'color-box';
   colorBox.style.backgroundColor = color;
-  colorBox.innerHTML = `<span>${color}</span>`;
+  colorBox.innerHTML = `<span class="hex">${color}</span><span class="color-label">${colorLabels[index]}</span>`;
   colorBox.onclick = (event) => {
     event.stopPropagation();
     const rect = colorBox.getBoundingClientRect();
@@ -125,8 +135,8 @@ function updateUI(data) {
   const paletteContainer = document.getElementById('palette');
   paletteContainer.innerHTML = '';
   
-  colors.forEach(color => {
-    const colorBox = createColorBox(color);
+  colors.forEach((color,index) => {
+    const colorBox = createColorBox(color, index);
     paletteContainer.appendChild(colorBox);
   });
   
@@ -252,18 +262,20 @@ if(!(window.location.pathname.split('/')[2])){
     
     //Generate color types checkboxes
     const predefinedFeelings = [
-      "Pastel",
       "Vibrant",
-      "Muted",
-      "Earthy",
-      "Jewel",
-      "Neon",
-      "Monochromatic",
-      "Warm",
+      "Pastel",
+      "Earthy/Natural",
       "Cool",
-      "Analogous",
-      "Complementary",
-      "Triadic"
+      "Warm",
+      "Jewel Tones",
+      "Muted",
+      "Romantic",
+      "Dark",
+      "Hyper Color",
+      "Light",
+      "Retro",
+      "Tropical",
+      "Minimalist"
     ]
     
     const feelingsCheckboxesContainer = document.getElementById("feelingsCheckboxes");
