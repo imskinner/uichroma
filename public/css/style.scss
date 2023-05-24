@@ -3,16 +3,16 @@
 
 //Colors//----------------------
 //Primary
-$primary-0:#E6F1FF;
-$primary-1:#BDDCFF;
-$primary-2:#99C9FF;
-$primary-3:#66AEFF;
-$primary-4:#3393FF;
-$primary-5:#0077FE;
-$primary-6:#0060CC;
-$primary-7:#004899;
-$primary-8:#003066;
-$primary-9:#002147;
+$primary-0:#E5F4FF;
+$primary-1:#B5E0FF;
+$primary-2:#85CBFF;
+$primary-3:#55B7FF;
+$primary-4:#25A2FF;
+$primary-5:#008CF4;
+$primary-6:#0072C6;
+$primary-7:#005593;
+$primary-8:#003963;
+$primary-9:#001D33;
 //Neutral
 $white:#FFFFFF;
 $neutral-0:#FAFAFA;
@@ -102,6 +102,19 @@ label{
         font-weight: $regular;
         font-size: 1.8rem;
         line-height: 28px;
+        transition: background-color 0.3s ease-in-out;
+
+        &:focus{
+            outline-color: $primary-5;
+            outline-style:solid;
+            outline-width: 2px;
+            border-color: $primary-5;
+        }
+
+        &:hover{
+            transition: background-color 0.3s ease-in-out;
+            background-color: $primary-0;
+        }
         
         @include bp-small-desktop{
             padding: 12px;
@@ -320,7 +333,7 @@ header{
     }
 }
 //Palette Container
-#palette{
+#palette, #placeholder-template{
     margin-top: 32px;
     margin-bottom: 32px;
     display: flex;
@@ -342,6 +355,10 @@ header{
     align-items: flex-start;
     flex-direction: column;
     justify-content: space-between;
+    transition: box-shadow 0.3s ease-in-out;
+    cursor: pointer;
+
+    &:hover{box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15), 0 20px 60px rgba(0, 0, 0, 0.1);}
     
     @include bp-tablet{
         width: 80px;

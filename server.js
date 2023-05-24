@@ -131,7 +131,7 @@ async function generateColorPalette(feelings) {
           content: `Generate an 8 color palette suitable for user interface design based on the keywords "${feelings}". The palette must contain:
           - A primary color that should be eye-catching and able to stand out. 
           - A secondary color that can complement the primary color. 
-          - Two accent colors that are elegant and attractive, but not overpowering or clashing with the primary and secondary colors. Not gray, white or black.
+          - Two accent colors that are elegant and attractive, but not overpowering or clashing with the primary and secondary colors. Not grey, white or black.
           - A warning color that should be able to clearly communicate caution or the need for attention.
           - A danger color that is capable of signaling errors or serious issues. It should be vivid and easily noticeable.
           - A success color that indicates positive outcomes or states. It should evoke a sense of positivity and accomplishment.

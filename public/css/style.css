@@ -27,12 +27,12 @@ label {
   line-height: 1.8rem;
   letter-spacing: 0.02em;
   margin-bottom: 4px;
-  color: #0060CC;
+  color: #0072C6;
 }
 
 .loader {
   border: 2px solid #CECCCA;
-  border-top: 2px solid #0077FE;
+  border-top: 2px solid #008CF4;
   border-radius: 50%;
   display: none;
   width: 3.2rem;
@@ -57,6 +57,17 @@ label {
   font-weight: 400;
   font-size: 1.8rem;
   line-height: 28px;
+  transition: background-color 0.3s ease-in-out;
+}
+.inputText input[type=text]:focus {
+  outline-color: #008CF4;
+  outline-style: solid;
+  outline-width: 2px;
+  border-color: #008CF4;
+}
+.inputText input[type=text]:hover {
+  transition: background-color 0.3s ease-in-out;
+  background-color: #E5F4FF;
 }
 @media screen and (max-width: 1366px) {
   .inputText input[type=text] {
@@ -69,7 +80,7 @@ label {
 button, .button {
   padding: 20px 32px;
   border: 0px;
-  background: #0077FE;
+  background: #008CF4;
   border-radius: 8px;
   font-family: "Inter", sans-serif;
   font-weight: 500;
@@ -90,7 +101,7 @@ button.permalink:hover, .button.permalink:hover {
   background-color: #CECCCA;
 }
 button:hover, .button:hover {
-  background-color: #0060CC;
+  background-color: #0072C6;
 }
 @media screen and (max-width: 1366px) {
   button, .button {
@@ -213,7 +224,7 @@ header #response-container p, header #response-container ul {
   line-height: 18px;
   letter-spacing: 0.02em;
   display: block;
-  color: #0060CC;
+  color: #0072C6;
 }
 
 #feelingsCheckboxes {
@@ -226,18 +237,18 @@ header #response-container p, header #response-container ul {
   margin-right: 8px;
   margin-bottom: 8px;
   padding: 12px;
-  background-color: #E6F1FF;
+  background-color: #E5F4FF;
   border-radius: 8px;
 }
 #feelingsCheckboxes div:hover {
-  background-color: #BDDCFF;
+  background-color: #B5E0FF;
 }
 #feelingsCheckboxes div input {
   cursor: pointer;
 }
 #feelingsCheckboxes div label {
   cursor: pointer;
-  color: #002147;
+  color: #001D33;
   font-weight: 400;
 }
 @media screen and (max-width: 1366px) {
@@ -275,7 +286,7 @@ header #response-container p, header #response-container ul {
   }
 }
 
-#palette {
+#palette, #placeholder-template {
   margin-top: 32px;
   margin-bottom: 32px;
   display: flex;
@@ -298,6 +309,11 @@ header #response-container p, header #response-container ul {
   align-items: flex-start;
   flex-direction: column;
   justify-content: space-between;
+  transition: box-shadow 0.3s ease-in-out;
+  cursor: pointer;
+}
+.color-box:hover {
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15), 0 20px 60px rgba(0, 0, 0, 0.1);
 }
 @media screen and (max-width: 800px) {
   .color-box {
@@ -338,7 +354,7 @@ header #response-container p, header #response-container ul {
 }
 .color-picker .pcr-selection .pcr-save {
   font-size: 1.2rem !important;
-  background: #0077FE;
+  background: #008CF4;
 }
 .color-picker .pcr-swatches {
   display: none;
