@@ -1,25 +1,25 @@
 {
-    "name": "palette-generator",
+    "name": "uichroma",
     "version": "1.0.0",
+    "description": "UI Chroma - Color Palette Generator",
     "main": "server.js",
     "scripts": {
         "start": "node server.js",
-        "deploy": "firebase deploy",
-        "firebase:init": "firebase init"
+        "sass": "sass --watch src/scss:public/css --no-source-map --style=expanded",
+        "dev": "concurrently -k \"npm run sass\" \"nodemon server.js\"",
+        "test": "echo \"Error: no test specified\" && exit 1"
     },
     "dependencies": {
-        "body-parser": "^1.19.0",
+        "body-parser": "^1.20.2",
         "cors": "^2.8.5",
-        "crypto": "^1.0.1",
-        "dotenv": "^10.0.0",
-        "express": "^4.17.1",
-        "express-session": "^1.17.3",
-        "mysql2": "^2.3.3",
-        "node-fetch": "^2.6.7",
-        "pg": "^8.10.0",
-        "firebase": "^10.6.0"
+        "dotenv": "^16.3.1",
+        "express": "^4.18.2",
+        "firebase": "^10.7.0",
+        "node-fetch": "^2.7.0"
     },
     "devDependencies": {
-        "firebase-tools": "^12.9.1"
+        "sass": "^1.70.0",
+        "concurrently": "^8.0.1",
+        "nodemon": "^3.0.1"
     }
 }

@@ -1,13 +1,27 @@
 require('dotenv').config();
 const express = require('express');
-const { Pool } = require('pg');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const fetch = require('node-fetch');
 const path = require('path');
 const crypto = require('crypto');
+const { initializeApp } = require('firebase/app');
+const { getFirestore, collection, addDoc, query, where, getDocs } = require('firebase/firestore');
 
 const app = express();
+
+// Initialize Firebase
+const firebaseConfig = {
+  apiKey: process.env.FIREBASE_API_KEY,
+  authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.FIREBASE_PROJECT_ID,
+  storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.FIREBASE_APP_ID
+};
+
+const firebaseApp = initializeApp(firebaseConfig);
+const db = getFirestore(firebaseApp);
 
 app.use(cors());
 app.use(express.static(path.join(__dirname, 'public')));
@@ -15,28 +29,21 @@ app.use('/css', express.static(path.join(__dirname, 'public', 'css')));
 app.use('/img', express.static(path.join(__dirname, 'public', 'img')));
 app.use(bodyParser.json());
 
-const dbConfig = {
-  connectionString: process.env.POSTGRES_URL,
-};
-
-const pool = new Pool(dbConfig);
-
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Get a palette from database
+// Get a palette from Firestore
 async function getPaletteFromDatabase(permalink) {
   try {
-    const query = 'SELECT * FROM palettes WHERE permalink = $1';
-    const { rows } = await pool.query(query, [permalink]);
+    const palettesRef = collection(db, 'palettes');
+    const q = query(palettesRef, where('permalink', '==', permalink));
+    const querySnapshot = await getDocs(q);
     
-    if (rows.length > 0) {
-      const palette = rows[0];
-      const colors = JSON.parse(palette.colors);
-      const aiResponse = palette.ai_response;
-      
-      return { colors, aiResponse };
+    if (!querySnapshot.empty) {
+      const paletteDoc = querySnapshot.docs[0];
+      const palette = paletteDoc.data();
+      return { colors: palette.colors, aiResponse: palette.ai_response };
     } else {
       return null;
     }
@@ -44,6 +51,50 @@ async function getPaletteFromDatabase(permalink) {
     console.error(`Error: ${error.message}`);
     return null;
   }
+}
+
+// Utility: convert hex to HSL
+function hexToHSL(H) {
+  let r = 0, g = 0, b = 0;
+  if (H.length === 4) {
+    r = parseInt(H[1] + H[1], 16);
+    g = parseInt(H[2] + H[2], 16);
+    b = parseInt(H[3] + H[3], 16);
+  } else if (H.length === 7) {
+    r = parseInt(H.substr(1,2), 16);
+    g = parseInt(H.substr(3,2), 16);
+    b = parseInt(H.substr(5,2), 16);
+  }
+  r /= 255; g /= 255; b /= 255;
+  const cmin = Math.min(r, g, b), cmax = Math.max(r, g, b);
+  const delta = cmax - cmin;
+  let h = 0, s = 0;
+  const l = (cmax + cmin) / 2;
+  if (delta !== 0) {
+    s = delta / (1 - Math.abs(2 * l - 1));
+    switch (cmax) {
+      case r: h = ((g - b) / delta) % 6; break;
+      case g: h = (b - r) / delta + 2; break;
+      case b: h = (r - g) / delta + 4; break;
+    }
+    h = Math.round(h * 60);
+    if (h < 0) h += 360;
+  }
+  s = +((s * 100).toFixed(1));
+  return { h, s, l: +((l * 100).toFixed(1)) };
+}
+
+// Utility: convert HSL to hex
+function hslToHex(h, s, l) {
+  s /= 100; l /= 100;
+  const k = n => (n + h / 30) % 12;
+  const a = s * Math.min(l, 1 - l);
+  const f = n => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+  const toHex = x => {
+    const hex = Math.round(x * 255).toString(16);
+    return hex.length === 1 ? '0' + hex : hex;
+  };
+  return `#${toHex(f(0))}${toHex(f(8))}${toHex(f(4))}`;
 }
 
 //API Endpoint to return the palette to the Figma Plugin
@@ -64,25 +115,66 @@ app.post('/generatePalette', async (req, res) => {
     const feelings = req.body.feelings;
     const { colors, aiResponse } = await generateColorPalette(feelings);
     
-    const query = 'INSERT INTO palettes (keywords, colors, ai_response, created_at) VALUES ($1, $2, $3, $4) RETURNING id';
-    const dateAndTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
-    
-    // Insert on database and obtain the ID
-    const { rows } = await pool.query(query, [feelings, JSON.stringify(colors), aiResponse, dateAndTime]);
-    const generatedId = rows[0].id;
-    
-    // Generate MD5 hash based on ID
+    // Generate MD5 hash for permalink
     const md5 = crypto.createHash('md5');
-    const permalink = md5.update(generatedId.toString()).digest('hex');
+    const timestamp = Date.now().toString();
+    const permalink = md5.update(timestamp).digest('hex');
     
-    // Update palette entry on database to insert permalink
-    const updateQuery = 'UPDATE palettes SET permalink = $1 WHERE id = $2';
-    await pool.query(updateQuery, [permalink, generatedId]);
+    // Normalize and validate palette (array or structured)
+    let paletteData;
+    if (Array.isArray(colors)) {
+      if (colors.length < 7) throw new Error('Invalid colors array received from palette generation');
+      paletteData = {
+        primary:   { hex: colors[0] },
+        secondary: { hex: colors[1] },
+        accent:    { hex: colors[2] },
+        warning:   { hex: colors[3] },
+        danger:    { hex: colors[4] },
+        success:   { hex: colors[5] },
+        info:      { hex: colors[6] }
+      };
+    } else if (colors && typeof colors === 'object') {
+      const keys = ['primary','secondary','accent','warning','danger','success','info'];
+      for (const key of keys) {
+        if (!colors[key] || typeof colors[key].hex !== 'string') {
+          throw new Error(`Missing or invalid color field: ${key}`);
+        }
+      }
+      paletteData = colors;
+    } else {
+      throw new Error('Invalid colors format received from palette generation');
+    }
     
-    res.json({ permalink, colors, aiResponse });
+    // Generate neutral based on primary
+    const primaryHSL = hexToHSL(paletteData.primary.hex);
+    const neutralHex = hslToHex(primaryHSL.h, 10, 10);
+    paletteData.neutral = {
+      hex: neutralHex,
+      description: 'A blackish color that elegantly integrates the palette. Best for text, lines, backgrounds, etc'
+    };
+    
+    // Add palette to Firestore
+    const palettesRef = collection(db, 'palettes');
+    const docRef = await addDoc(palettesRef, {
+      keywords: feelings,
+      colors: paletteData,
+      ai_response: aiResponse,
+      created_at: new Date().toISOString(),
+      permalink: permalink
+    });
+    
+    res.json({
+      permalink,
+      colors: paletteData,
+      aiResponse,
+      id: docRef.id
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'An error occurred while generating the palette.' });
+    console.error('Error in /generatePalette:', error);
+    res.status(500).json({ 
+      error: 'An error occurred while generating the palette.',
+      details: error.message
+    });
   }
 });
 
@@ -90,16 +182,14 @@ app.post('/generatePalette', async (req, res) => {
 app.get('/palette/:permalink/data', async (req, res) => {
   try {
     const permalink = req.params.permalink;
-    const query = 'SELECT * FROM palettes WHERE permalink = $1';
+    const palettesRef = collection(db, 'palettes');
+    const q = query(palettesRef, where('permalink', '==', permalink));
+    const querySnapshot = await getDocs(q);
     
-    const { rows } = await pool.query(query, [permalink]);
-    
-    if (rows.length > 0) {
-      const palette = rows[0];
-      const colors = JSON.parse(palette.colors);
-      const aiResponse = palette.ai_response;
-      
-      res.json({ colors, aiResponse });
+    if (!querySnapshot.empty) {
+      const paletteDoc = querySnapshot.docs[0];
+      const palette = paletteDoc.data();
+      res.json({ colors: palette.colors, aiResponse: palette.ai_response, keywords: palette.keywords });
     } else {
       res.status(404).json({ error: 'Palette not found.' });
     }
@@ -116,111 +206,113 @@ app.get('/palette/:permalink', async (req, res) => {
 
 async function generateColorPalette(feelings) {
   const apiKey = process.env.API_KEY;
+  // Define function schema for structured JSON output
+  const paletteFunction = [
+    {
+      name: "generate_palette",
+      description: "Generate an 8-color UI palette with hex codes and descriptions for primary, secondary, accent, warning, danger, success, info, and neutral",
+      parameters: {
+        type: "object",
+        properties: {
+          primary:   { type: "object", properties: { hex: { type: "string" }, description: { type: "string" } }, required: ["hex"] },
+          secondary: { type: "object", properties: { hex: { type: "string" }, description: { type: "string" } }, required: ["hex"] },
+          accent:    { type: "object", properties: { hex: { type: "string" }, description: { type: "string" } }, required: ["hex"] },
+          warning:   { type: "object", properties: { hex: { type: "string" }, description: { type: "string" } }, required: ["hex"] },
+          danger:    { type: "object", properties: { hex: { type: "string" }, description: { type: "string" } }, required: ["hex"] },
+          success:   { type: "object", properties: { hex: { type: "string" }, description: { type: "string" } }, required: ["hex"] },
+          info:      { type: "object", properties: { hex: { type: "string" }, description: { type: "string" } }, required: ["hex"] }
+        },
+        required: ["primary","secondary","accent","warning","danger","success","info"]
+      }
+    }
+  ];
   try {
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`
-    },
-    body: JSON.stringify({
-      model: "gpt-3.5-turbo",
-      messages: [
-        {
-          role: "system",
-          content: `Generate an 8 color palette suitable for user interface design based on the keywords "${feelings}". The palette must contain:
-          - A primary color that should be eye-catching and able to stand out. 
-          - A secondary color that can complement the primary color. 
-          - Two accent colors that are elegant and attractive, but not overpowering or clashing with the primary and secondary colors. Not grey, white or black.
-          - A warning color that should be able to clearly communicate caution or the need for attention.
-          - A danger color that is capable of signaling errors or serious issues. It should be vivid and easily noticeable.
-          - A success color that indicates positive outcomes or states. It should evoke a sense of positivity and accomplishment.
-          - A neutral blackish color, which can be used for text. It should be easy to read against a white or light background.
-        
-          Each color should have a different hue. Please provide the colors in the Hex color code format. Format your response as HTML, similar to the example below:
-          <h3>Here's a color palette that might work well for your design:</h3>
-          <ul>
-          <li>Primary color: #XXXXXX (This color is a warm grape hue that evokes feelings of luxury and relaxation, perfect for a wellness app.).</li>
-          <li>Secondary color: #XXXXXX (quick explanation).</li>
-          <li>Accent color 1: #XXXXXX (quick explanation).</li>
-          <li>Accent color 2: #XXXXXX (quick explanation).</li>
-          <li>Warning color: #XXXXXX (quick explanation).</li>
-          <li>Danger color: #XXXXXX (quick explanation).</li>
-          <li>Success color: #XXXXXX (quick explanation).</li>
-          <li>Neutral color: #XXXXXX (quick explanation).</li>
-          </ul>
-          <p class="explanation">
-          This color palette should give your design a nice, forest-inspired feel, while also conveying a sense of trust and reliability for an investments app.
-          </p>
-          `,
-        },
-        /*{
-          role: "user",
-          content:`
-          Create a 6-color palette for a user interface design based on the following keywords: ${feelings}. Consider the following guidelines:
-          - Use HSL (Hue, Saturation, Lightness) for color generation.
-          - Choose primary and secondary colors with hues associated with the feelings keyword and set their lightness to around 50 in HSL.
-          - Select complementary accent colors suitable for UI elements, warnings, alerts, and states.
-          - Include a neutral dark color or black as the sixth color for text in the UI. Hue and Saturation can differ from 0 to tone it a bit.
-          - Ensure all colors have distinct hues and harmonize well together to create an elegant palette.
-          - Ensure all colors are different in hue or saturation.
-          - Colors must be elegant.
-          
-          Provide the hexadecimal values and explanations for each color. Format your response as HTML, similar to the example below:
-          
-          <h3>Here's a color palette that might work well for your design:</h3>
-          <ul>
-          <li>Primary color: #XXXXXX (This color is a warm grape hue that evokes feelings of luxury and relaxation, perfect for a wellness app.).</li>
-          <li>Secondary color: #XXXXXX (quick explanation).</li>
-          <li>Accent color 1: #XXXXXX (quick explanation).</li>
-          <li>Accent color 2: #XXXXXX (quick explanation).</li>
-          <li>Accent color 3: #XXXXXX (quick explanation).</li>
-          <li>Neutral color: #XXXXXX (quick explanation).</li>
-          </ul>
-          <p class="explanation">
-          This color palette should give your design a nice, forest-inspired feel, while also conveying a sense of trust and reliability for an investments app.
-          </p>
-          `
-        }*/
-      ],
-      max_tokens: 600,
-      n: 1,
-      stop: null,
-      temperature: 0.7,
-    })
-  });
-  
-  if (response.ok) {
-    const data = await response.json();
-    
-    if (data.choices && data.choices.length > 0) {
-      const hexColorRegex = /#(?:[0-9a-fA-F]{3}){1,2}\b/g;
-      const colors = data.choices[0].message.content.match(hexColorRegex);
-      
-      const aiResponse = data.choices[0].message.content;
-      
-      if (colors && colors.length > 0) {
-        return { colors, aiResponse };
-      } else {
-        console.error('Error: Unable to extract colors from the API response');
-        return [];
-      }
-    } else {
-      console.error('Error: API response does not contain the expected "choices" property');
-      return [];
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: "gpt-4-turbo-preview",
+        messages: [
+          { role: "system", content: "You are a UI/UX designer. Use function generate_palette to return a palette with primary, secondary, accent, warning, danger, success, info, and neutral colors including hex codes and brief descriptions." },
+          { role: "user", content: `Keywords: \"${feelings}\".` }
+        ],
+        functions: paletteFunction,
+        function_call: { name: "generate_palette" },
+        temperature: 0.7
+      })
+    });
+    // Handle HTTP errors
+    if (!response.ok) {
+      const errText = await response.text();
+      console.error(`OpenAI API Error: ${response.status} - ${errText}`);
+      throw new Error('OpenAI API request failed');
     }
-  } else {
-    const errorData = await response.json();
-    console.error(`Error: API returned status ${response.status} - ${errorData.error.message}`);
-    return [];
+    const data = await response.json();
+    // Parse structured JSON from function call
+    const choiceMsg = data.choices?.[0]?.message;
+    if (choiceMsg?.function_call) {
+      const args = JSON.parse(choiceMsg.function_call.arguments);
+      return { colors: args, aiResponse: JSON.stringify(args) };
+    }
+    // Unexpected response format
+    throw new Error('OpenAI did not return a function call');
+  } catch (error) {
+    console.error(`Error in generateColorPalette: ${error.message}`);
+    // Return a fallback palette
+    return {
+      colors: {
+        primary:   { hex: '#4A90E2', description: 'Fallback primary color' },
+        secondary: { hex: '#50E3C2', description: 'Fallback secondary color' },
+        accent:    { hex: '#F5A623', description: 'Fallback accent color' },
+        warning:   { hex: '#F8E71C', description: 'Fallback warning color' },
+        danger:    { hex: '#FF0000', description: 'Fallback danger color' },
+        success:   { hex: '#7ED321', description: 'Fallback success color' },
+        info:      { hex: '#50BFFF', description: 'Fallback info color' },
+        neutral:   { hex: '#4A4A4A', description: 'Fallback neutral color' }
+      },
+      aiResponse: "Generated a fallback palette due to an error. Please try again later."
+    };
   }
-} catch (error) {
-  console.error(`Error: ${error.message}`);
-  return [];
-}
 }
 
-app.listen(3000, () => {
-  console.log('Server is running on port 3000');
+// Routes
+app.post('/api/palettes', async (req, res) => {
+  try {
+    const { name, colors, userId } = req.body;
+    const docRef = await addDoc(collection(db, 'palettes'), {
+      name,
+      colors,
+      userId,
+      createdAt: new Date()
+    });
+    res.json({ id: docRef.id });
+  } catch (error) {
+    console.error('Error saving palette:', error);
+    res.status(500).json({ error: 'Failed to save palette' });
+  }
+});
+
+app.get('/api/palettes', async (req, res) => {
+  try {
+    const { userId } = req.query;
+    const q = query(collection(db, 'palettes'), where('userId', '==', userId));
+    const querySnapshot = await getDocs(q);
+    const palettes = [];
+    querySnapshot.forEach((doc) => {
+      palettes.push({ id: doc.id, ...doc.data() });
+    });
+    res.json(palettes);
+  } catch (error) {
+    console.error('Error fetching palettes:', error);
+    res.status(500).json({ error: 'Failed to fetch palettes' });
+  }
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
 

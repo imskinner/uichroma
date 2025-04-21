@@ -9,15 +9,56 @@ body {
   margin: 0px auto;
 }
 
-p {
+p, ul, li {
   font-family: "Inter", sans-serif;
   font-weight: 400;
-  margin-bottom: 12px;
+  font-size: 1.6rem;
+  line-height: 24px;
+  color: #1B1A18;
+  margin-top: 0px;
+}
+@media screen and (max-width: 1366px) {
+  p, ul, li {
+    font-size: 1.4rem;
+    line-height: 2rem;
+  }
 }
 
 h1, h2, h3, h4, h5, h6 {
   font-family: "Epilogue", sans-serif;
   font-weight: 700;
+}
+
+h1 {
+  font-family: "Epilogue", sans-serif;
+  font-weight: 700;
+  font-size: 4rem;
+  line-height: 48px;
+  margin-bottom: 20px;
+  margin-top: 0px;
+  color: #1B1A18;
+}
+@media screen and (max-width: 1366px) {
+  h1 {
+    font-size: 3.2rem;
+    line-height: 4rem;
+  }
+}
+
+h3 {
+  font-family: "Epilogue", sans-serif;
+  font-weight: 700;
+  font-size: 3.2rem;
+  line-height: 40px;
+  margin-bottom: 16px;
+  margin-top: 0px;
+  color: #1B1A18;
+}
+@media screen and (max-width: 1366px) {
+  h3 {
+    font-size: 2.8rem;
+    line-height: 3.6rem;
+  }
 }
 
 label {
@@ -153,64 +194,21 @@ button:hover, .button:hover {
   justify-content: center;
 }
 
-header {
-  margin-bottom: 12px;
+#palette-description {
+  margin-bottom: 24px;
 }
-header h1 {
-  font-family: "Epilogue", sans-serif;
-  font-weight: 700;
-  font-size: 4rem;
-  line-height: 48px;
-  margin-bottom: 16px;
-  margin-top: 0px;
-  color: #1B1A18;
+#palette-description ul {
+  padding-left: 0px;
+  margin-left: 0px;
+  padding-inline-start: 0px;
+  display: flex;
+  flex-flow: row wrap;
+  gap: 12px;
 }
-@media screen and (max-width: 1366px) {
-  header h1 {
-    font-size: 3.2rem;
-    line-height: 4rem;
-  }
-}
-header p {
-  font-family: "Inter", sans-serif;
-  font-weight: 400;
-  font-size: 1.6rem;
-  line-height: 24px;
-  color: #1B1A18;
-  margin-top: 0px;
-}
-@media screen and (max-width: 1366px) {
-  header p {
-    font-size: 1.4rem;
-    line-height: 2rem;
-  }
-}
-@media screen and (max-width: 1366px) {
-  header {
-    margin-bottom: 4px;
-  }
-}
-header #response-container h3 {
-  font-family: "Epilogue", sans-serif;
-  font-weight: 700;
-  font-size: 3.2rem;
-  line-height: 40px;
-  margin-bottom: 16px;
-  margin-top: 0px;
-  color: #1B1A18;
-}
-@media screen and (max-width: 1366px) {
-  header #response-container h3 {
-    font-size: 2.8rem;
-    line-height: 3.6rem;
-  }
-}
-header #response-container li {
-  margin-bottom: 8px;
-}
-header #response-container p, header #response-container ul {
-  font-size: 1.4rem;
-  line-height: 2rem;
+#palette-description .descriptions-list li {
+  list-style-type: none;
+  margin-left: 0px;
+  padding-left: 0px;
 }
 
 .logo {
@@ -287,30 +285,30 @@ header #response-container p, header #response-container ul {
 }
 
 #palette, #placeholder-template {
-  margin-top: 32px;
-  margin-bottom: 32px;
   display: flex;
-  flex-flow: row wrap;
-  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
   width: 100%;
 }
 
 .color-box {
-  min-width: 20%;
   height: 128px;
   border: 1px solid rgba(0, 0, 0, 0.1);
-  margin: 8px;
   border-radius: 8px;
-  padding: 12px 12px;
-  animation: fadeIn 200ms ease-in;
+  padding: 12px;
   box-sizing: border-box;
-  flex: 1 1 20%;
   display: flex;
   align-items: flex-start;
   flex-direction: column;
   justify-content: space-between;
   transition: box-shadow 0.3s ease-in-out;
   cursor: pointer;
+}
+.color-box:nth-child(-n+3) {
+  flex: 1 1 calc((100% - 2rem) / 3);
+}
+.color-box:nth-child(n+4) {
+  flex: 1 1 calc((100% - 4rem) / 5);
 }
 .color-box:hover {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15), 0 20px 60px rgba(0, 0, 0, 0.1);
@@ -366,10 +364,6 @@ header #response-container p, header #response-container ul {
   border: 1px solid #EEEDEC;
   padding: 8px;
   font-size: 1.2rem;
-}
-
-#response-container {
-  font-family: "Inter", sans-serif;
 }
 
 #permalink-container {

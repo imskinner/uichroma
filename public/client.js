@@ -105,11 +105,11 @@ function createColorBox(color, index) {
   const colorLabels = [
     "Primary",
     "Secondary",
-    "Accent 1",
-    "Accent 2",
+    "Accent",
     "Warning",
     "Danger",
     "Success",
+    "Info",
     "Neutral"
   ]
   const colorBox = document.createElement('div');
@@ -126,35 +126,147 @@ function createColorBox(color, index) {
   return colorBox;
 }
 
+// Utility: convert hex to HSL
+function hexToHSL(H) {
+  let r = 0, g = 0, b = 0;
+  if (H.length === 4) {
+    r = parseInt(H[1] + H[1], 16);
+    g = parseInt(H[2] + H[2], 16);
+    b = parseInt(H[3] + H[3], 16);
+  } else if (H.length === 7) {
+    r = parseInt(H.substr(1,2), 16);
+    g = parseInt(H.substr(3,2), 16);
+    b = parseInt(H.substr(5,2), 16);
+  }
+  r /= 255; g /= 255; b /= 255;
+  const cmin = Math.min(r,g,b), cmax = Math.max(r,g,b);
+  const delta = cmax - cmin;
+  let h = 0, s = 0;
+  const l = (cmax + cmin) / 2;
+  if (delta !== 0) {
+    s = delta / (1 - Math.abs(2*l - 1));
+    switch (cmax) {
+      case r: h = ((g - b) / delta) % 6; break;
+      case g: h = (b - r) / delta + 2; break;
+      case b: h = (r - g) / delta + 4; break;
+    }
+    h = Math.round(h * 60);
+    if (h < 0) h += 360;
+  }
+  s = +(s * 100).toFixed(1);
+  return { h, s, l: +(l * 100).toFixed(1) };
+}
+
+// Utility: convert HSL to hex
+function hslToHex(h, s, l) {
+  s /= 100; l /= 100;
+  const k = n => (n + h / 30) % 12;
+  const a = s * Math.min(l, 1 - l);
+  const f = n => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+  const toHex = x => {
+    const hex = Math.round(x * 255).toString(16);
+    return hex.length === 1 ? '0' + hex : hex;
+  };
+  return `#${toHex(f(0))}${toHex(f(8))}${toHex(f(4))}`;
+}
+
+// Utility: generate tonal variations for a given HSL
+function generateTonesForColor(h, s, count = 10, minL = 10, maxL = 95) {
+  const tones = [];
+  for (let i = 0; i < count; i++) {
+    const lightness = Math.round(minL + (maxL - minL) * (i / (count - 1)));
+    const hex = hslToHex(h, s, lightness);
+    tones.push({ h, s, l: lightness, hex });
+  }
+  return tones;
+}
+
+// Normalize palette colors to HSL rules
+function normalizePaletteColors(colors) {
+  if (Array.isArray(colors)) return colors;
+  const ORDERED_KEYS = ["primary","secondary","accent","warning","danger","success","info","neutral"];
+  const normalized = {};
+  const primaryHSL = hexToHSL(colors.primary.hex);
+  ORDERED_KEYS.forEach(key => {
+    const orig = colors[key];
+    if (!orig) return;
+    let h, s, l, hex;
+    if (key === 'neutral') {
+      // derive neutral from primary hue
+      h = primaryHSL.h;
+      s = 10;
+      l = 10;
+      hex = hslToHex(h, s, l);
+    } else if (["warning","danger","success","info"].includes(key)) {
+      // normalize these colors to L=50
+      const hslObj = hexToHSL(orig.hex);
+      h = hslObj.h;
+      s = hslObj.s;
+      l = 50;
+      hex = hslToHex(h, s, l);
+    } else {
+      // keep original for primary, secondary, accent
+      hex = orig.hex;
+      const hslObj = hexToHSL(orig.hex);
+      h = hslObj.h;
+      s = hslObj.s;
+      l = hslObj.l;
+    }
+    const tones = generateTonesForColor(h, s);
+    normalized[key] = { ...orig, hex, h, s, l, tones };
+  });
+  return normalized;
+}
+
 function updateUI(data) {
-  console.log(data);
-  const { colors, aiResponse, permalink } = data;
-  console.log(colors);
-  
-  // Atualizar a paleta de cores
+  let { colors, permalink, keywords } = data;
+  // Normalize colors using HSL logic before rendering
+  colors = normalizePaletteColors(colors);
+  // Update page title with keywords
+  const title = document.getElementById('palette-title');
+  title.innerText = `Your Color Palette for ${keywords}`;
+  // Prepare description list
+  const descUl = document.getElementById('descriptions');
+  descUl.innerHTML = '';
+  // Update palette display
   const paletteContainer = document.getElementById('palette');
   paletteContainer.innerHTML = '';
-  
-  colors.forEach((color,index) => {
-    const colorBox = createColorBox(color, index);
-    paletteContainer.appendChild(colorBox);
-  });
-  
-  // Atualizar a resposta da IA
-  const responseContainer = document.getElementById('response-container');
-  responseContainer.innerHTML = aiResponse;
-  
-  const palletaiURL = window.location;
-  console.log(palletaiURL);
-  
-  // Atualizar a resposta da IA
-  if(!(window.location.pathname.split('/')[2])){
-    const permalinkContainer = document.getElementById('permalink-container');
-    permalinkContainer.innerHTML = '<a href="palette/'+permalink+'" class="button permalink" onclick="copyPermalinkToClipboard(event)">'+palletaiURL+'palette/'+permalink+'</a>'
-  } else {
-    const permalinkContainer = document.getElementById('permalink-container');
-    permalinkContainer.innerHTML = '<a href="'+palletaiURL+'" class="button permalink" onclick="copyPermalinkToClipboard(event)">'+palletaiURL+'</a>'
+  if (Array.isArray(colors)) {
+    colors.forEach((hex, index) => {
+      const colorBox = createColorBox(hex, index);
+      paletteContainer.appendChild(colorBox);
+    });
+  } else if (colors && typeof colors === 'object') {
+    // Render structured palettes in a fixed order
+    const ORDERED_KEYS = ["primary","secondary","accent","warning","danger","success","info","neutral"];
+    const DISPLAY_LABELS = {
+      primary: "Primary",
+      secondary: "Secondary",
+      accent: "Accent",
+      warning: "Warning",
+      danger: "Danger",
+      success: "Success",
+      info: "Info",
+      neutral: "Neutral"
+    };
+    ORDERED_KEYS.forEach((key, index) => {
+      const val = colors[key];
+      if (!val) return;
+      const { hex, description } = val;
+      // Render swatch and label
+      const colorBox = createColorBox(hex, index);
+      paletteContainer.appendChild(colorBox);
+      // Add description to list in same order
+      const li = document.createElement('li');
+      li.innerHTML = `<strong>${DISPLAY_LABELS[key]}:</strong> ${description}`;
+      descUl.appendChild(li);
+    });
   }
+  
+  // Update permalink
+  const permalinkContainer = document.getElementById('permalink-container');
+  const base = window.location.origin;
+  permalinkContainer.innerHTML = `<a href="${base}/palette/${permalink}" class="button permalink">${base}/palette/${permalink}</a>`;
 }
 
 // Função para obter a paleta atual
