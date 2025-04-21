@@ -411,7 +411,16 @@ function rgbToHsl(r, g, b) {
           localColorStyle.name = `Primary/${colorSuffix[tintIndex]}`;
         } else if (index === 1) {
           localColorStyle.name = `Secondary/${colorSuffix[tintIndex]}`;
-        } else if (index === 5) {
+        } else if (index === 4){
+          localColorStyle.name = `Warning/${colorSuffix[tintIndex]}`;
+
+        } else if (index === 5){
+          localColorStyle.name = `Danger/${colorSuffix[tintIndex]}`;
+
+        } else if (index === 6){
+          localColorStyle.name = `Success/${colorSuffix[tintIndex]}`;
+
+        } else if (index === 7) {
           if (tintIndex === 0) {
             localColorStyle.name = `Neutral/Black`;
           } else {

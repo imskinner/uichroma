@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="css/style.css">
   <link rel="icon" type="image/png" sizes="32x32" href="img/favicon.png">
-  <title>Palett.ai - Generate Colors For App User Interfaces - UI Color Generator</title>
+  <title>UI Chroma - AI-Powered Color Palette Generator for Designers and Developers</title>
+  <link rel="canonical" href="https://www.uichroma.com/" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -13,29 +14,32 @@
 <body>
     <div class="wrapper">
         <section class="leftCol">
-            <section class="logo"><img src="img/logo-palettai.png" alt="Pallet.ai" height="40"></section>
+            <section class="logo"><img src="img/logo.svg" alt="UI Chroma" height="28"></section>
             <section class="content">
               <header>
-                <h1>Discover Inspiring Colors for Your Next Design</h1>
-                <p>Instantly create beautiful UI color schemes with this AI-powered palette generator. Input keywords and traits, and generates endless variations to inspire your next project.</p>
+                <h1>Discover AI-Generated Color Schemes for Your Next Design with UI Chroma</h1>
+                <p> Input keywords, select mood traits, and let our AI create your perfect palette. With seamless exports to Figma, SCSS, and React, implementing your color schemes has never been easier. Try UI Chroma today.</p>
               </header>
               <section>
                 <div class="inputText">
-                  <label for="feelings">Enter keywords for your project:</label>
-                  <input type="text" id="feelings" placeholder="e.g. dating app, car wash, romance, pet, health">
+                  <label for="feelings">Enter keywords for your color palette:</label>
+                  <input type="text" id="feelings" placeholder="e.g. modern, serene, wellness app">
                   
                 </div>
                 <div class="checkboxCombo">
-                  <label for="feelingsCheckboxes">Select traits if you want to enhance your query:</label>
+                  <label for="feelingsCheckboxes">Select a color mood to enhance your mix:</label>
                   <div id="feelingsCheckboxes"></div>
                 </div>
-                <button id="generate">Generate colors</button>
+                <button id="generate">Generate Color Palette</button>
               </section>
             </section>
         </section>
         <section class="rightCol">
             <div id="loader" class="loader" style="display: none;"></div>
             <div id="placeholder-template">
+              <div class="color-box"></div>
+              <div class="color-box"></div>
+              <div class="color-box"></div>
               <div class="color-box"></div>
               <div class="color-box"></div>
               <div class="color-box"></div>

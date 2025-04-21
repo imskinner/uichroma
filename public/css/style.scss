@@ -3,16 +3,16 @@
 
 //Colors//----------------------
 //Primary
-$primary-0:#E6F1FF;
-$primary-1:#BDDCFF;
-$primary-2:#99C9FF;
-$primary-3:#66AEFF;
-$primary-4:#3393FF;
-$primary-5:#0077FE;
-$primary-6:#0060CC;
-$primary-7:#004899;
-$primary-8:#003066;
-$primary-9:#002147;
+$primary-0:#E5F4FF;
+$primary-1:#B5E0FF;
+$primary-2:#85CBFF;
+$primary-3:#55B7FF;
+$primary-4:#25A2FF;
+$primary-5:#008CF4;
+$primary-6:#0072C6;
+$primary-7:#005593;
+$primary-8:#003963;
+$primary-9:#001D33;
 //Neutral
 $white:#FFFFFF;
 $neutral-0:#FAFAFA;
@@ -83,8 +83,8 @@ label{
     animation: fadeIn 200ms ease-in;
     animation: spin 1s linear infinite;
     transition: display 200ms;
-  
-  }
+    
+}
 
 //Global UI Elements
 .inputText{
@@ -94,58 +94,71 @@ label{
     margin-bottom: 2.4rem;
     
     input[type=text]{
-      padding: 16px;
-      background: $white;
-      border: 1px solid $neutral-2;
-      border-radius: 8px;
-      font-family: $base-font-family;
-      font-weight: $regular;
-      font-size: 1.8rem;
-      line-height: 28px;
+        padding: 16px;
+        background: $white;
+        border: 1px solid $neutral-2;
+        border-radius: 8px;
+        font-family: $base-font-family;
+        font-weight: $regular;
+        font-size: 1.8rem;
+        line-height: 28px;
+        transition: background-color 0.3s ease-in-out;
 
-      @include bp-small-desktop{
-        padding: 12px;
-        font-size: 1.6rem;
-        line-height: 2.4rem;
-      }
+        &:focus{
+            outline-color: $primary-5;
+            outline-style:solid;
+            outline-width: 2px;
+            border-color: $primary-5;
+        }
+
+        &:hover{
+            transition: background-color 0.3s ease-in-out;
+            background-color: $primary-0;
+        }
+        
+        @include bp-small-desktop{
+            padding: 12px;
+            font-size: 1.6rem;
+            line-height: 2.4rem;
+        }
     }
-  }
-  
-  button, .button{
-      padding: 20px 32px;
-      border: 0px;
-      background: $primary-5;
-      border-radius: 8px;
-      font-family: $base-font-family;
-      font-weight: $semibold;
-      font-size: 1.8rem;
-      line-height: 2.4rem;
-      color:$white;
-      cursor: pointer;
-      text-decoration: none;
+}
 
-      &.permalink{
+button, .button{
+    padding: 20px 32px;
+    border: 0px;
+    background: $primary-5;
+    border-radius: 8px;
+    font-family: $base-font-family;
+    font-weight: $semibold;
+    font-size: 1.8rem;
+    line-height: 2.4rem;
+    color:$white;
+    cursor: pointer;
+    text-decoration: none;
+    
+    &.permalink{
         background-color: $neutral-1;
         color: $neutral-7;
         font-size: 1.4rem;
         line-height: 2.0rem;
         display: block;
-
+        
         &:hover{
             background-color: $neutral-2;
         }
-      }
-  
-      &:hover{
-          background-color: $primary-6;
-      }
-
-      @include bp-small-desktop{
+    }
+    
+    &:hover{
+        background-color: $primary-6;
+    }
+    
+    @include bp-small-desktop{
         padding: 16px 24px;
         font-size: 1.6rem;
         line-height: 2rem;
-      }
-  }
+    }
+}
 //Global Wrapper
 .wrapper{
     display: flex;
@@ -154,7 +167,7 @@ label{
     align-items: stretch;
     justify-content: center;
     height: 100vh;
-
+    
     @include bp-tablet{
         height: auto;
         flex-flow: column nowrap;
@@ -162,28 +175,28 @@ label{
 }
 //Left Column
 .leftCol{
-  flex: 0.7;
-  display: flex;
-  flex-flow: column nowrap;
-  justify-content: flex-start;
-  align-self: stretch;
-  padding: 64px;
-
-  @include bp-small-desktop{
-    padding: 48px;
-    flex-grow: 1.2;
-  }
-  @include bp-tablet{
-    padding: 32px;
-  }
-
-  .content{
+    flex: 0.7;
     display: flex;
     flex-flow: column nowrap;
-    flex-grow: 1;
+    justify-content: flex-start;
     align-self: stretch;
-    justify-content: center;
-  }
+    padding: 64px;
+    
+    @include bp-small-desktop{
+        padding: 48px;
+        flex-grow: 1.2;
+    }
+    @include bp-tablet{
+        padding: 32px;
+    }
+    
+    .content{
+        display: flex;
+        flex-flow: column nowrap;
+        flex-grow: 1;
+        align-self: stretch;
+        justify-content: center;
+    }
 }
 header{
     h1{
@@ -194,7 +207,7 @@ header{
         margin-bottom: 16px;
         margin-top: 0px;
         color: $black;
-
+        
         @include bp-small-desktop{
             font-size: 3.2rem;
             line-height: 4rem;
@@ -213,9 +226,36 @@ header{
         }
     }
     margin-bottom: 12px;
-
+    
     @include bp-small-desktop{
         margin-bottom: 4px;
+    }
+    
+    #response-container{
+        h3{
+            font-family: $title-font-family;
+            font-weight: $bold;
+            font-size: 3.2rem;
+            line-height: 40px;
+            margin-bottom: 16px;
+            margin-top: 0px;
+            color: $black;
+            
+            @include bp-small-desktop{
+                font-size: 2.8rem;
+                line-height: 3.6rem;
+            }
+        }
+        
+        li{
+            margin-bottom: 8px;
+        }
+        
+        p, ul{
+            font-size: 1.4rem;
+            line-height: 2rem;
+        }
+        
     }
 }
 //Logo DIV
@@ -232,7 +272,7 @@ header{
         letter-spacing: 0.02em;
         display: block;
         color: $primary-6;
-      } 
+    } 
 }
 
 #feelingsCheckboxes{
@@ -258,7 +298,7 @@ header{
             color: $primary-9;
             font-weight: $regular;
         }
-
+        
         @include bp-small-desktop{
             padding: 8px;
         };
@@ -279,12 +319,12 @@ header{
     font-size: 1.4rem;
     line-height: 20px;
     color:$neutral-8;
-
+    
     h3{
         color:$neutral-7;
         text-align: center;
     }
-
+    
     @include bp-small-desktop{
         padding: 48px;
     }
@@ -293,37 +333,93 @@ header{
     }
 }
 //Palette Container
-#palette{
+#palette, #placeholder-template{
     margin-top: 32px;
     margin-bottom: 32px;
     display: flex;
     flex-flow: row wrap;
     align-items: center;
+    width: 100%;
 }
 .color-box{
-  width: 96px;
-  height: 80px;
-  border: 1px solid rgba(0,0,0,0.1);
-  display: inline-block;
-  margin: 4px;
-  border-radius: 8px;
-  padding: 12px 12px;
-  animation: fadeIn 200ms ease-in;
-  box-sizing: border-box;
+    min-width: 20%;
+    height: 128px;
+    border: 1px solid rgba(0,0,0,0.1);
+    margin: 8px;
+    border-radius: 8px;
+    padding: 12px 12px;
+    animation: fadeIn 200ms ease-in;
+    box-sizing: border-box;
+    flex: 1 1 20%;
+    display: flex;
+    align-items: flex-start;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: box-shadow 0.3s ease-in-out;
+    cursor: pointer;
 
-  @include bp-tablet{
-    width: 80px;
-    height: 72px;
-  }
+    &:hover{box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15), 0 20px 60px rgba(0, 0, 0, 0.1);}
+    
+    @include bp-tablet{
+        width: 80px;
+        height: 72px;
+    }
+    
+    span{
+        &.hex{
+            padding: 4px;
+            background-color: rgba(255,255,255,.8);
+            border: 1px solid rgba(255,255,255,.7);
+            border-radius: 4px;
+            font-size:1.2rem;
+            font-weight: $semibold;
+        }
+        &.color-label{
+            padding: 4px;
+            background-color: rgba(0,0,0,.1);
+            border: 1px solid rgba(0,0,0,.05);
+            border-radius: 4px;
+            font-size:1.2rem;
+            font-weight: $regular;
+            color: $white;
+        }
+        
+        }
+    }
 
-  span{
-    padding: 4px;
-    background-color: rgba(255,255,255,.8);
-    border: 1px solid rgba(255,255,255,.7);
-    border-radius: 4px;
-    font-size:1.2rem;
-    font-weight: $semibold;
-  }
+.color-picker{
+    height: 200px !important;
+    width: 320px !important;
+    visibility: visible;
+    opacity: 1;
+    font-family: $base-font-family !important;
+
+    .pcr-selection{
+        .pcr-color-preview{
+            margin-right: 0 !important;
+        }
+
+        .pcr-color-palette{
+            height: 100% !important;
+        }
+
+        .pcr-save{
+            font-size: 1.2rem !important;
+            background: $primary-5;
+        }
+
+    }
+    .pcr-swatches{
+        display: none;
+    }
+    .pcr-interaction{
+        font-size: 1.2rem !important;
+        .pcr-result{
+            border:1px solid $neutral-1;
+            padding:8px;
+            font-size: 1.2rem;
+        }
+    }
 }
 
 #response-container{
@@ -337,8 +433,8 @@ header{
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
 @keyframes fadeIn {

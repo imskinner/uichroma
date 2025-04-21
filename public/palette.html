@@ -3,37 +3,37 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/classic.min.css">
   <link rel="stylesheet" href="../css/style.css">
   <link rel="icon" type="image/png" sizes="32x32" href="../img/favicon.png">
   <title>Palett.ai - Generate Colors For App User Interfaces - UI Color Generator</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js"></script>
+
 </head>
 <body>
     <div class="wrapper">
         <section class="leftCol">
-            <section class="logo"><img src="../img/logo-palettai.png" alt="Pallet.ai" height="40"></section>
+            <section class="logo"><img src="../img/logo.svg" alt="UI Chroma" height="28"></section>
             <section class="content">
               <header>
-                <h1>Discover Inspiring Colors for Your Next Design</h1>
-                <p>Instantly create beautiful UI color schemes with this AI-powered palette generator. Input keywords and traits, and generates endless variations to inspire your next project.</p>
+                <div id="response-container"></div>
               </header>
-              <section>
-                
-                
+            <section>
                 <a href="../"><button>Start new palette</button></a>
               </section>
             </section>
         </section>
         <section class="rightCol">
             <div id="loader" class="loader" style="display: none;"></div>
-            <div id="palette"></div>
-            <div id="response-container"></div>
+            <div id="palette" style="position: relative;"></div>
             <div id="permalink-container"></div>
 
         </section>
     </div>
-  <script src="../client.js"></script>
+    <input type="color" id="color-picker" style="display: none;">
+  <script src="../client.js" defer></script>
 </body>
 </html>

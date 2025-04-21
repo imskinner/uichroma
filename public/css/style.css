@@ -27,12 +27,12 @@ label {
   line-height: 1.8rem;
   letter-spacing: 0.02em;
   margin-bottom: 4px;
-  color: #0060CC;
+  color: #0072C6;
 }
 
 .loader {
   border: 2px solid #CECCCA;
-  border-top: 2px solid #0077FE;
+  border-top: 2px solid #008CF4;
   border-radius: 50%;
   display: none;
   width: 3.2rem;
@@ -57,6 +57,17 @@ label {
   font-weight: 400;
   font-size: 1.8rem;
   line-height: 28px;
+  transition: background-color 0.3s ease-in-out;
+}
+.inputText input[type=text]:focus {
+  outline-color: #008CF4;
+  outline-style: solid;
+  outline-width: 2px;
+  border-color: #008CF4;
+}
+.inputText input[type=text]:hover {
+  transition: background-color 0.3s ease-in-out;
+  background-color: #E5F4FF;
 }
 @media screen and (max-width: 1366px) {
   .inputText input[type=text] {
@@ -69,7 +80,7 @@ label {
 button, .button {
   padding: 20px 32px;
   border: 0px;
-  background: #0077FE;
+  background: #008CF4;
   border-radius: 8px;
   font-family: "Inter", sans-serif;
   font-weight: 500;
@@ -90,7 +101,7 @@ button.permalink:hover, .button.permalink:hover {
   background-color: #CECCCA;
 }
 button:hover, .button:hover {
-  background-color: #0060CC;
+  background-color: #0072C6;
 }
 @media screen and (max-width: 1366px) {
   button, .button {
@@ -179,6 +190,28 @@ header p {
     margin-bottom: 4px;
   }
 }
+header #response-container h3 {
+  font-family: "Epilogue", sans-serif;
+  font-weight: 700;
+  font-size: 3.2rem;
+  line-height: 40px;
+  margin-bottom: 16px;
+  margin-top: 0px;
+  color: #1B1A18;
+}
+@media screen and (max-width: 1366px) {
+  header #response-container h3 {
+    font-size: 2.8rem;
+    line-height: 3.6rem;
+  }
+}
+header #response-container li {
+  margin-bottom: 8px;
+}
+header #response-container p, header #response-container ul {
+  font-size: 1.4rem;
+  line-height: 2rem;
+}
 
 .logo {
   margin-bottom: 48px;
@@ -191,7 +224,7 @@ header p {
   line-height: 18px;
   letter-spacing: 0.02em;
   display: block;
-  color: #0060CC;
+  color: #0072C6;
 }
 
 #feelingsCheckboxes {
@@ -204,18 +237,18 @@ header p {
   margin-right: 8px;
   margin-bottom: 8px;
   padding: 12px;
-  background-color: #E6F1FF;
+  background-color: #E5F4FF;
   border-radius: 8px;
 }
 #feelingsCheckboxes div:hover {
-  background-color: #BDDCFF;
+  background-color: #B5E0FF;
 }
 #feelingsCheckboxes div input {
   cursor: pointer;
 }
 #feelingsCheckboxes div label {
   cursor: pointer;
-  color: #002147;
+  color: #001D33;
   font-weight: 400;
 }
 @media screen and (max-width: 1366px) {
@@ -253,24 +286,34 @@ header p {
   }
 }
 
-#palette {
+#palette, #placeholder-template {
   margin-top: 32px;
   margin-bottom: 32px;
   display: flex;
   flex-flow: row wrap;
   align-items: center;
+  width: 100%;
 }
 
 .color-box {
-  width: 96px;
-  height: 80px;
+  min-width: 20%;
+  height: 128px;
   border: 1px solid rgba(0, 0, 0, 0.1);
-  display: inline-block;
-  margin: 4px;
+  margin: 8px;
   border-radius: 8px;
   padding: 12px 12px;
   animation: fadeIn 200ms ease-in;
   box-sizing: border-box;
+  flex: 1 1 20%;
+  display: flex;
+  align-items: flex-start;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: box-shadow 0.3s ease-in-out;
+  cursor: pointer;
+}
+.color-box:hover {
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15), 0 20px 60px rgba(0, 0, 0, 0.1);
 }
 @media screen and (max-width: 800px) {
   .color-box {
@@ -278,13 +321,51 @@ header p {
     height: 72px;
   }
 }
-.color-box span {
+.color-box span.hex {
   padding: 4px;
   background-color: rgba(255, 255, 255, 0.8);
   border: 1px solid rgba(255, 255, 255, 0.7);
   border-radius: 4px;
   font-size: 1.2rem;
   font-weight: 500;
+}
+.color-box span.color-label {
+  padding: 4px;
+  background-color: rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+  font-size: 1.2rem;
+  font-weight: 400;
+  color: #FFFFFF;
+}
+
+.color-picker {
+  height: 200px !important;
+  width: 320px !important;
+  visibility: visible;
+  opacity: 1;
+  font-family: "Inter", sans-serif !important;
+}
+.color-picker .pcr-selection .pcr-color-preview {
+  margin-right: 0 !important;
+}
+.color-picker .pcr-selection .pcr-color-palette {
+  height: 100% !important;
+}
+.color-picker .pcr-selection .pcr-save {
+  font-size: 1.2rem !important;
+  background: #008CF4;
+}
+.color-picker .pcr-swatches {
+  display: none;
+}
+.color-picker .pcr-interaction {
+  font-size: 1.2rem !important;
+}
+.color-picker .pcr-interaction .pcr-result {
+  border: 1px solid #EEEDEC;
+  padding: 8px;
+  font-size: 1.2rem;
 }
 
 #response-container {
