@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Configurar Projeto</title>
+    <style>
+      body { font-family: sans-serif; padding: 16px; }
+      input, textarea, select { width: 100%; margin-top: 8px; padding: 8px; }
+      button { margin-top: 16px; padding: 10px 16px; cursor: pointer; }
+    </style>
+  </head>
+  <body>
+    <h2>Configurar Projeto de UI</h2>
+    <label>Nome do Projeto:</label>
+    <input id="projectName" type="text" placeholder="Meu Projeto de UI" />
+
+    <label>Descrição do Projeto:</label>
+    <textarea id="projectDescription" rows="3" placeholder="Descreva brevemente seu projeto..."></textarea>
+
+    <label>Fonte para Título:</label>
+    <select id="titleFont">
+      <option value="Roboto-Bold">Roboto, Bold</option>
+      <option value="OpenSans-Bold">Open Sans, Bold</option>
+      <!-- Add more font options dynamically if needed -->
+    </select>
+
+    <label>Fonte para Corpo:</label>
+    <select id="bodyFont">
+      <option value="Roboto-Regular">Roboto, Regular</option>
+      <option value="OpenSans-Regular">Open Sans, Regular</option>
+      <!-- Add more font options dynamically if needed -->
+    </select>
+
+    <button id="submit">Criar Projeto</button>
+
+    <script>
+      async function loadFonts() {
+        // Request fonts from the plugin
+        parent.postMessage({ pluginMessage: { type: 'get-fonts' } }, '*');
+
+        // Listen for the response from the plugin
+        window.onmessage = (event) => {
+          if (event.data.pluginMessage && event.data.pluginMessage.type === 'fonts') {
+            const fonts = event.data.pluginMessage.fonts;
+            const titleFontSelect = document.getElementById('titleFont');
+            const bodyFontSelect = document.getElementById('bodyFont');
+
+            // Clear existing options
+            titleFontSelect.innerHTML = '';
+            bodyFontSelect.innerHTML = '';
+
+            // Populate the dropdowns with font options
+            fonts.forEach(font => {
+              if (font.fontName && font.fontName.family && font.fontName.style) {
+                const option = document.createElement('option');
+                option.value = `${font.fontName.family}-${font.fontName.style}`;
+                option.textContent = `${font.fontName.family}, ${font.fontName.style}`;
+                titleFontSelect.appendChild(option.cloneNode(true));
+                bodyFontSelect.appendChild(option);
+              }
+            });
+          }
+        };
+      }
+
+      document.getElementById('submit').onclick = () => {
+        const projectName = document.getElementById('projectName').value;
+        const projectDescription = document.getElementById('projectDescription').value;
+        const titleFont = document.getElementById('titleFont').value;
+        const bodyFont = document.getElementById('bodyFont').value;
+        parent.postMessage(
+          { pluginMessage: { type: 'create-styles-components', projectName, projectDescription, titleFont, bodyFont } }, '*');
+      };
+
+      loadFonts();
+    </script>
+  </body>
+</html>

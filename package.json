@@ -3,7 +3,9 @@
     "version": "1.0.0",
     "main": "server.js",
     "scripts": {
-        "start": "node server.js"
+        "start": "node server.js",
+        "deploy": "firebase deploy",
+        "firebase:init": "firebase init"
     },
     "dependencies": {
         "body-parser": "^1.19.0",
@@ -14,6 +16,10 @@
         "express-session": "^1.17.3",
         "mysql2": "^2.3.3",
         "node-fetch": "^2.6.7",
-        "pg": "^8.10.0"
+        "pg": "^8.10.0",
+        "firebase": "^10.6.0"
+    },
+    "devDependencies": {
+        "firebase-tools": "^12.9.1"
     }
 }
