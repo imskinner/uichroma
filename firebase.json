@@ -7,10 +7,16 @@
       "**/node_modules/**"
     ],
     "rewrites": [
-      {
-        "source": "**",
-        "destination": "/index.html"
-      }
+      { "source": "/api/**", "function": "app" },
+      { "source": "/generatePalette", "function": "app" },
+      { "source": "/palette/**/data", "function": "app" },
+      { "source": "/palette/**", "destination": "/palette.html" },
+      { "source": "**", "destination": "/index.html" }
     ]
+  },
+  "functions": {
+    "source": "functions",
+    "runtime": "nodejs18",
+    "predeploy": ["npm --prefix \"$RESOURCE_DIR\" install"]
   }
 } 

@@ -224,7 +224,9 @@ function updateUI(data) {
   colors = normalizePaletteColors(colors);
   // Update page title with keywords
   const title = document.getElementById('palette-title');
-  title.innerText = `Your Color Palette for ${keywords}`;
+  if (keywords) {
+    title.innerText = `Your Color Palette for ${keywords}`;
+  }
   // Prepare description list
   const descUl = document.getElementById('descriptions');
   descUl.innerHTML = '';
@@ -266,7 +268,11 @@ function updateUI(data) {
   // Update permalink
   const permalinkContainer = document.getElementById('permalink-container');
   const base = window.location.origin;
-  permalinkContainer.innerHTML = `<a href="${base}/palette/${permalink}" class="button permalink">${base}/palette/${permalink}</a>`;
+  if (permalink) {
+    permalinkContainer.innerHTML = `<a href="${base}/palette/${permalink}" class="button permalink">${base}/palette/${permalink}</a>`;
+  } else {
+    permalinkContainer.innerHTML = '';
+  }
 }
 
 // Função para obter a paleta atual
@@ -342,94 +348,97 @@ if(!(window.location.pathname.split('/')[2])){
       body: JSON.stringify({ feelings }),
     });
     
-    const data = await response.json();
     loader.style.display = "none"; // Hide loader
-    //updateUI(data);
-    window.location.href = `/palette/${data.permalink}`;
-  })};
-  
-  document.addEventListener('DOMContentLoaded', async () => {
-    //Picker
-    const colorBoxes = document.querySelectorAll('.color-box');
-    colorBoxes.forEach((colorBox) => {
-      colorBox.addEventListener('click', (event) => {
-        event.stopPropagation();
-        const rect = colorBox.getBoundingClientRect();
-        const top = rect.top + window.scrollY;
-        const left = rect.left + window.scrollX;
-        openColorPicker(colorBox, top, left);
-      });
-    });
-    
-    document.body.addEventListener('click', () => {
-      const existingPickr = document.querySelector('.pickr');
-      if (existingPickr) existingPickr.remove();
-    });
-    
-    //Show existing palette on /palette
-    const paletteId = window.location.pathname.split('/')[2];
-    if (paletteId) {
-      await showPalette(paletteId);
+    if (!response.ok) {
+      const errText = await response.text();
+      console.error('Generate palette failed:', errText);
+      alert('Error generating palette: ' + errText);
+      return;
     }
-    
-    //Generate color types checkboxes
-    const predefinedFeelings = [
-      "Vibrant",
-      "Pastel",
-      "Earthy/Natural",
-      "Cool",
-      "Warm",
-      "Jewel Tones",
-      "Muted",
-      "Romantic",
-      "Dark",
-      "Hyper Color",
-      "Light",
-      "Retro",
-      "Tropical",
-      "Minimalist"
-    ]
-    
-    const feelingsCheckboxesContainer = document.getElementById("feelingsCheckboxes");
-    predefinedFeelings.forEach(feeling => {
-      const checkboxField = createCheckboxField(feeling);
-      feelingsCheckboxesContainer.appendChild(checkboxField);
+    const data = await response.json();
+    if (!data.permalink) {
+      console.error('Missing permalink in response', data);
+      alert('Failed to generate palette. Please try again.');
+      return;
+    }
+    window.location.href = `/palette/${data.permalink}`;
+  });
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  //Picker
+  const colorBoxes = document.querySelectorAll('.color-box');
+  colorBoxes.forEach((colorBox) => {
+    colorBox.addEventListener('click', (event) => {
+      event.stopPropagation();
+      const rect = colorBox.getBoundingClientRect();
+      const top = rect.top + window.scrollY;
+      const left = rect.left + window.scrollX;
+      openColorPicker(colorBox, top, left);
     });
   });
   
-  //Show Palette
-  async function showPalette(paletteId) {
-    loader.style.display = "inline-block"; // Show loader
-    try {
-      const response = await fetch(`/palette/${paletteId}/data`);
-      console.log(response);
-      const data = await response.json();
-      loader.style.display = "none"; // Hide loader
-      updateUI(data);
-    } catch (error) {
-      console.error(error);
-    }
+  document.body.addEventListener('click', () => {
+    const existingPickr = document.querySelector('.pickr');
+    if (existingPickr) existingPickr.remove();
+  });
+  
+  //Show existing palette on /palette
+  const paletteId = window.location.pathname.split('/')[2];
+  if (paletteId && paletteId !== 'undefined') {
+    await showPalette(paletteId);
   }
   
-  //Copy permalink to clipboard
-  function copyPermalinkToClipboard(event) {
-    event.preventDefault();
-    const linkElement = event.target;
-    
-    // Copy permalink to clipboard
-    const textToCopy = linkElement.text;
-    navigator.clipboard.writeText(textToCopy).then(
-      () => {
-        // Change button text
-        linkElement.textContent = "Link copied to clipboard";
-        
-        // Revert to original text after 3s
-        setTimeout(() => {
-          linkElement.textContent = textToCopy;
-        }, 3000);
-      },
-      (err) => {
-        console.error("Error copying permalink to clipboard:", err);
-      }
-      );
+  //Generate color types checkboxes
+  const predefinedFeelings = [
+    "Vibrant",            // high saturation & contrast
+    "Muted",              // low chroma, soft sophistication
+    "Pastel",             // light, low‑saturation “soft” tones
+    "Earthy",             // natural terracottas, ochres, mossy greens
+    "Warm",               // reds, oranges, yellows – cozy & inviting
+    "Cool",               // blues, greens, purples – calm & modern
+    "Neutral",            // greys, beiges, whites, blacks – clean base
+    "Monochromatic",      // variations of one hue for ultra‑cohesion
+    "Analogous",          // three adjacent hues – gentle harmony
+    "Complementary",      // opposite hues – maximum contrast
+    "Split-Complementary",// hue + the two adjacent to its complement
+    "Triadic",            // three equidistant hues – balanced vibrancy
+    "Duotone"             // only two main colors – bold graphic impact
+  ];
+  
+  const feelingsCheckboxesContainer = document.getElementById("feelingsCheckboxes");
+  predefinedFeelings.forEach(feeling => {
+    const checkboxField = createCheckboxField(feeling);
+    feelingsCheckboxesContainer.appendChild(checkboxField);
+  });
+});
+
+//Show Palette
+async function showPalette(paletteId) {
+  loader.style.display = "inline-block"; // Show loader
+  try {
+    const response = await fetch(`/palette/${paletteId}/data`);
+    loader.style.display = "none";
+    if (!response.ok) {
+      console.error(`Failed to load palette data: ${response.status}`);
+      return;
     }
+    const data = await response.json();
+    updateUI(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+//Copy permalink to clipboard
+function copyPermalinkToClipboard(event) {
+  event.preventDefault();
+  const linkElement = event.target;
+  const textToCopy = linkElement.text;
+  navigator.clipboard.writeText(textToCopy)
+    .then(() => {
+      linkElement.textContent = "Link copied to clipboard";
+      setTimeout(() => linkElement.textContent = textToCopy, 3000);
+    })
+    .catch(err => console.error("Error copying permalink to clipboard:", err));
+}
