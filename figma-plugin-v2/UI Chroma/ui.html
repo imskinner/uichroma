@@ -75,8 +75,13 @@
           });
         }
 
+        if (msg.type === 'progress') {
+          setStatus(msg.message, '');
+        }
+
         if (msg.type === 'done') {
-          setStatus('Styles and components created successfully!', 'success');
+          const count = msg.styleCount ? ` (${msg.styleCount} colour styles)` : '';
+          setStatus(`Done! UI kit and landing page created${count}.`, 'success');
           submitBtn.disabled = false;
         }
 
