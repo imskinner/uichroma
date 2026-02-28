@@ -150,14 +150,20 @@ async function createTextStyles(titleFont, bodyFont) {
   return tsMap;
 }
 
-// Apply a paint style by name, returns true if applied
+// Apply a paint style by name.
+// Always sets node.fills directly (works on detached nodes) AND links the
+// named style so it shows in Figma's inspector.  Returns true if the style
+// was found in the map.
 async function applyFill(node, styleMap, colorName, stop) {
   const ps = styleMap[colorName] && styleMap[colorName][String(stop)];
   if (ps) {
+    // Direct fill assignment — guaranteed to apply the colour regardless of
+    // whether the node is already attached to the scene graph.
+    node.fills = [{ type: 'SOLID', color: { ...ps.paints[0].color } }];
+    // Style link — lets Figma show the named style in the inspector.
     await node.setFillStyleIdAsync(ps.id);
     return true;
   }
-  console.warn(`applyFill: no style found for ${colorName}/${stop}`);
   return false;
 }
 
@@ -207,9 +213,6 @@ async function createButtonSet(bodyFont, styleMap) {
       comp.cornerRadius = 8;
       comp.itemSpacing = 8;
 
-      const filled = await applyFill(comp, styleMap, color, stop);
-      if (!filled) comp.fills = [{ type: 'SOLID', color: { r: 0.09, g: 0.45, b: 0.85 } }];
-
       const label = figma.createText();
       label.fontName = bodyFont;
       label.characters = state === 'Disabled' ? 'Disabled' : 'Button';
@@ -219,7 +222,11 @@ async function createButtonSet(bodyFont, styleMap) {
         : [{ type: 'SOLID', color: { r: 0.12, g: 0.12, b: 0.18 } }];
       comp.appendChild(label);
 
+      // Attach to scene graph before styling so setFillStyleIdAsync is reliable
       figma.currentPage.appendChild(comp);
+      const filled = await applyFill(comp, styleMap, color, stop);
+      if (!filled) comp.fills = [{ type: 'SOLID', color: { r: 0.09, g: 0.45, b: 0.85 } }];
+
       components.push(comp);
     }
   }
@@ -299,18 +306,19 @@ async function createBadgeSet(bodyFont, styleMap) {
     comp.cornerRadius = 100;
     comp.itemSpacing = 4;
 
-    const bgFilled = await applyFill(comp, styleMap, type, '90');
-    if (!bgFilled) comp.fills = [{ type: 'SOLID', color: { r: 0.9, g: 0.95, b: 1 } }];
-
     const label = figma.createText();
     label.fontName = bodyFont;
     label.characters = type;
     label.fontSize = 12;
+    comp.appendChild(label);
+
+    // Attach to scene graph first so style links are reliable
+    figma.currentPage.appendChild(comp);
+    const bgFilled = await applyFill(comp, styleMap, type, '90');
+    if (!bgFilled) comp.fills = [{ type: 'SOLID', color: { r: 0.9, g: 0.95, b: 1 } }];
     const textFilled = await applyFill(label, styleMap, type, '30');
     if (!textFilled) label.fills = [{ type: 'SOLID', color: { r: 0.1, g: 0.3, b: 0.7 } }];
 
-    comp.appendChild(label);
-    figma.currentPage.appendChild(comp);
     components.push(comp);
   }
 
@@ -425,7 +433,9 @@ async function createColorPaletteSection(styleMap, bodyFont) {
       swatch.name = stop;
       swatch.resize(36, 36);
       swatch.cornerRadius = 6;
-      await swatch.setFillStyleIdAsync(styleMap[colorName][stop].id);
+      // Use applyFill so fills are set directly (works on detached nodes)
+      // AND the named style is linked for the inspector
+      await applyFill(swatch, styleMap, colorName, stop);
       row.appendChild(swatch);
     }
     wrap.appendChild(row);
