@@ -12,7 +12,7 @@ function hexToHsl(hex) {
   const b = parseInt(hex.slice(5, 7), 16) / 255;
   const max = Math.max(r, g, b), min = Math.min(r, g, b);
   const l = (max + min) / 2;
-  if (max === min) return { h: 0, s: 0, l };
+  if (max === min) return { h: 0, s: 0, l: l };
   const d = max - min;
   const s = d / (1 - Math.abs(2 * l - 1));
   let h = 0;
@@ -23,25 +23,25 @@ function hexToHsl(hex) {
   }
   h = h * 60;
   if (h < 0) h += 360;
-  return { h, s, l };
+  return { h: h, s: s, l: l };
 }
 
 function hslToRgb(h, s, l) {
   const c = (1 - Math.abs(2 * l - 1)) * s;
   const x = c * (1 - Math.abs((h / 60) % 2 - 1));
   const m = l - c / 2;
-  let r, g, b;
-  if      (h < 60)  [r, g, b] = [c, x, 0];
-  else if (h < 120) [r, g, b] = [x, c, 0];
-  else if (h < 180) [r, g, b] = [0, c, x];
-  else if (h < 240) [r, g, b] = [0, x, c];
-  else if (h < 300) [r, g, b] = [x, 0, c];
-  else              [r, g, b] = [c, 0, x];
+  let r = 0, g = 0, b = 0;
+  if      (h < 60)  { r = c; g = x; b = 0; }
+  else if (h < 120) { r = x; g = c; b = 0; }
+  else if (h < 180) { r = 0; g = c; b = x; }
+  else if (h < 240) { r = 0; g = x; b = c; }
+  else if (h < 300) { r = x; g = 0; b = c; }
+  else              { r = c; g = 0; b = x; }
   return { r: r + m, g: g + m, b: b + m };
 }
 
 function extractPermalink(input) {
-  const parts = input.trim().split('/').filter(p => p.length > 0);
+  const parts = input.trim().split('/').filter(function(p) { return p.length > 0; });
   return parts[parts.length - 1] || input.trim();
 }
 
@@ -55,7 +55,7 @@ function getHex(colorData) {
 function normalizeHex(hex) {
   if (!hex) return null;
   const h = hex.trim();
-  return h.startsWith('#') ? h : `#${h}`;
+  return h.startsWith('#') ? h : '#' + h;
 }
 
 function parseFontString(fontStr) {
@@ -69,22 +69,18 @@ function parseFontString(fontStr) {
 // ── API ───────────────────────────────────────────────────────────────────────
 
 async function fetchPalette(permalink) {
-  const res = await fetch(`${API_BASE}/api/getPalette`, {
+  const res = await fetch(API_BASE + '/api/getPalette', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ permalink }),
+    body: JSON.stringify({ permalink: permalink }),
   });
-  if (!res.ok) throw new Error(`Could not fetch palette (${res.status})`);
+  if (!res.ok) throw new Error('Could not fetch palette (' + res.status + ')');
   const data = await res.json();
   if (!data.palette) throw new Error('Palette not found. Check the permalink.');
   return data.palette;
 }
 
 // ── Paint styles ──────────────────────────────────────────────────────────────
-//
-// Returns a styleMap built directly from the styles we create so we never have
-// to do a secondary getLocalPaintStylesAsync() round-trip (which can miss styles
-// that were just created in the same plugin tick).
 
 async function createPaintStyles(colors) {
   if (!colors || typeof colors !== 'object') {
@@ -94,17 +90,19 @@ async function createPaintStyles(colors) {
   const COLOR_KEYS = ['primary', 'secondary', 'accent', 'warning', 'danger', 'success', 'info'];
   const styleMap = {};
 
-  for (const key of COLOR_KEYS) {
+  for (let ki = 0; ki < COLOR_KEYS.length; ki++) {
+    const key = COLOR_KEYS[ki];
     const hex = normalizeHex(getHex(colors[key]));
     if (!hex) continue;
     const label = key.charAt(0).toUpperCase() + key.slice(1);
-    const { h, s } = hexToHsl(hex);
+    const hsl = hexToHsl(hex);
     styleMap[label] = {};
 
-    for (const stop of TONAL_STOPS) {
+    for (let si = 0; si < TONAL_STOPS.length; si++) {
+      const stop = TONAL_STOPS[si];
       const ps = figma.createPaintStyle();
-      ps.name = `Color/${label}/${stop}`;
-      ps.paints = [{ type: 'SOLID', color: hslToRgb(h, s, stop / 100) }];
+      ps.name = 'Color/' + label + '/' + stop;
+      ps.paints = [{ type: 'SOLID', color: hslToRgb(hsl.h, hsl.s, stop / 100) }];
       styleMap[label][String(stop)] = ps;
     }
   }
@@ -112,12 +110,13 @@ async function createPaintStyles(colors) {
   // Neutral — near-black tonal scale derived from primary hue, very low saturation
   const neutralHex = normalizeHex(getHex(colors.neutral) || getHex(colors.primary));
   if (neutralHex) {
-    const { h: neutralH } = hexToHsl(neutralHex);
+    const neutralHsl = hexToHsl(neutralHex);
     styleMap['Neutral'] = {};
-    for (const stop of NEUTRAL_STOPS) {
+    for (let si = 0; si < NEUTRAL_STOPS.length; si++) {
+      const stop = NEUTRAL_STOPS[si];
       const ps = figma.createPaintStyle();
-      ps.name = `Color/Neutral/${stop}`;
-      ps.paints = [{ type: 'SOLID', color: hslToRgb(neutralH, 0.05, stop / 100) }];
+      ps.name = 'Color/Neutral/' + stop;
+      ps.paints = [{ type: 'SOLID', color: hslToRgb(neutralHsl.h, 0.05, stop / 100) }];
       styleMap['Neutral'][String(stop)] = ps;
     }
   }
@@ -139,34 +138,38 @@ async function createTextStyles(titleFont, bodyFont) {
     { name: 'Type/Label',      font: bodyFont,  size: 12, lineHeight: 140 },
   ];
   const tsMap = {};
-  for (const { name, font, size, lineHeight } of defs) {
+  for (let i = 0; i < defs.length; i++) {
+    const def = defs[i];
     const ts = figma.createTextStyle();
-    ts.name = name;
-    ts.fontName = font;
-    ts.fontSize = size;
-    ts.lineHeight = { unit: 'PERCENT', value: lineHeight };
-    tsMap[name] = ts;
+    ts.name = def.name;
+    ts.fontName = def.font;
+    ts.fontSize = def.size;
+    ts.lineHeight = { unit: 'PERCENT', value: def.lineHeight };
+    tsMap[def.name] = ts;
   }
   return tsMap;
 }
 
 // Apply a paint style by name.
-// Always sets node.fills directly (works on detached nodes) AND links the
-// named style so it shows in Figma's inspector.  Returns true if the style
-// was found in the map.
+// IMPORTANT: node must already be attached to the scene graph (via a parent
+// chain reaching figma.currentPage) before this is called, so that
+// setFillStyleIdAsync can register the link in the document.
 async function applyFill(node, styleMap, colorName, stop) {
-  const ps = styleMap[colorName] && styleMap[colorName][String(stop)];
-  if (ps) {
-    // Direct fill assignment — guaranteed to apply the colour regardless of
-    // whether the node is already attached to the scene graph.
-    // Avoid object spread — not supported in Figma's plugin sandbox.
-    const c = ps.paints[0].color;
-    node.fills = [{ type: 'SOLID', color: { r: c.r, g: c.g, b: c.b } }];
-    // Style link — lets Figma show the named style in the inspector.
+  const bucket = styleMap[colorName];
+  const ps = bucket && bucket[String(stop)];
+  if (!ps) return false;
+
+  // Set the raw fill first so the colour is always visible.
+  const c = ps.paints[0].color;
+  node.fills = [{ type: 'SOLID', color: { r: c.r, g: c.g, b: c.b } }];
+
+  // Link the named style so it shows in Figma's inspector.
+  try {
     await node.setFillStyleIdAsync(ps.id);
-    return true;
+  } catch (e) {
+    console.error('setFillStyleIdAsync failed for ' + colorName + '/' + stop + ':', e);
   }
-  return false;
+  return true;
 }
 
 // ── Tiny helpers ──────────────────────────────────────────────────────────────
@@ -201,10 +204,14 @@ async function createButtonSet(bodyFont, styleMap) {
   ];
 
   const components = [];
-  for (const color of colors) {
-    for (const { state, stop } of states) {
+  for (let ci = 0; ci < colors.length; ci++) {
+    const color = colors[ci];
+    for (let si = 0; si < states.length; si++) {
+      const state = states[si].state;
+      const stop  = states[si].stop;
+
       const comp = figma.createComponent();
-      comp.name = `Color=${color}, State=${state}`;
+      comp.name = 'Color=' + color + ', State=' + state;
       comp.layoutMode = 'HORIZONTAL';
       comp.primaryAxisAlignItems = 'CENTER';
       comp.counterAxisAlignItems = 'CENTER';
@@ -215,6 +222,12 @@ async function createButtonSet(bodyFont, styleMap) {
       comp.cornerRadius = 8;
       comp.itemSpacing = 8;
 
+      // Attach to scene graph BEFORE styling
+      figma.currentPage.appendChild(comp);
+
+      const filled = await applyFill(comp, styleMap, color, stop);
+      if (!filled) comp.fills = [{ type: 'SOLID', color: { r: 0.09, g: 0.45, b: 0.85 } }];
+
       const label = figma.createText();
       label.fontName = bodyFont;
       label.characters = state === 'Disabled' ? 'Disabled' : 'Button';
@@ -223,11 +236,6 @@ async function createButtonSet(bodyFont, styleMap) {
         ? [{ type: 'SOLID', color: { r: 1, g: 1, b: 1 } }]
         : [{ type: 'SOLID', color: { r: 0.12, g: 0.12, b: 0.18 } }];
       comp.appendChild(label);
-
-      // Attach to scene graph before styling so setFillStyleIdAsync is reliable
-      figma.currentPage.appendChild(comp);
-      const filled = await applyFill(comp, styleMap, color, stop);
-      if (!filled) comp.fills = [{ type: 'SOLID', color: { r: 0.09, g: 0.45, b: 0.85 } }];
 
       components.push(comp);
     }
@@ -245,9 +253,10 @@ async function createInputSet(bodyFont, styleMap) {
   const states = ['Default', 'Focused', 'Error', 'Disabled'];
   const components = [];
 
-  for (const state of states) {
+  for (let si = 0; si < states.length; si++) {
+    const state = states[si];
     const comp = figma.createComponent();
-    comp.name = `State=${state}`;
+    comp.name = 'State=' + state;
     comp.layoutMode = 'HORIZONTAL';
     comp.counterAxisAlignItems = 'CENTER';
     comp.primaryAxisSizingMode = 'FIXED';
@@ -272,6 +281,8 @@ async function createInputSet(bodyFont, styleMap) {
     comp.strokeWeight = state === 'Focused' ? 2 : 1;
     comp.strokeAlign = 'INSIDE';
 
+    figma.currentPage.appendChild(comp);
+
     const placeholder = figma.createText();
     placeholder.fontName = bodyFont;
     placeholder.characters = state === 'Disabled' ? 'Disabled input' : 'Placeholder text…';
@@ -279,7 +290,6 @@ async function createInputSet(bodyFont, styleMap) {
     placeholder.fills = [{ type: 'SOLID', color: { r: 0.6, g: 0.6, b: 0.65 } }];
     comp.appendChild(placeholder);
 
-    figma.currentPage.appendChild(comp);
     components.push(comp);
   }
 
@@ -295,9 +305,10 @@ async function createBadgeSet(bodyFont, styleMap) {
   const types = ['Primary', 'Success', 'Warning', 'Danger', 'Info'];
   const components = [];
 
-  for (const type of types) {
+  for (let ti = 0; ti < types.length; ti++) {
+    const type = types[ti];
     const comp = figma.createComponent();
-    comp.name = `Type=${type}`;
+    comp.name = 'Type=' + type;
     comp.layoutMode = 'HORIZONTAL';
     comp.primaryAxisAlignItems = 'CENTER';
     comp.counterAxisAlignItems = 'CENTER';
@@ -308,16 +319,18 @@ async function createBadgeSet(bodyFont, styleMap) {
     comp.cornerRadius = 100;
     comp.itemSpacing = 4;
 
+    // Attach to scene graph BEFORE styling
+    figma.currentPage.appendChild(comp);
+
+    const bgFilled = await applyFill(comp, styleMap, type, '90');
+    if (!bgFilled) comp.fills = [{ type: 'SOLID', color: { r: 0.9, g: 0.95, b: 1 } }];
+
     const label = figma.createText();
     label.fontName = bodyFont;
     label.characters = type;
     label.fontSize = 12;
     comp.appendChild(label);
 
-    // Attach to scene graph first so style links are reliable
-    figma.currentPage.appendChild(comp);
-    const bgFilled = await applyFill(comp, styleMap, type, '90');
-    if (!bgFilled) comp.fills = [{ type: 'SOLID', color: { r: 0.9, g: 0.95, b: 1 } }];
     const textFilled = await applyFill(label, styleMap, type, '30');
     if (!textFilled) label.fills = [{ type: 'SOLID', color: { r: 0.1, g: 0.3, b: 0.7 } }];
 
@@ -331,8 +344,9 @@ async function createBadgeSet(bodyFont, styleMap) {
 }
 
 // ── Component: Card ───────────────────────────────────────────────────────────
+// parent must already be in the scene graph.
 
-async function createCardComponent(bodyFont, titleFont, styleMap) {
+async function createCardComponent(bodyFont, titleFont, styleMap, parent) {
   const comp = figma.createComponent();
   comp.name = 'Card';
   comp.layoutMode = 'VERTICAL';
@@ -354,15 +368,18 @@ async function createCardComponent(bodyFont, titleFont, styleMap) {
     blendMode: 'NORMAL',
   }];
 
-  // Image placeholder rectangle
+  // Attach to scene graph FIRST — required before setFillStyleIdAsync
+  parent.appendChild(comp);
+
+  // Image placeholder — add to comp before styling
   const imgRect = figma.createRectangle();
   imgRect.resize(252, 140);
   imgRect.cornerRadius = 8;
+  comp.appendChild(imgRect);
   const imgFilled = await applyFill(imgRect, styleMap, 'Primary', '90');
   if (!imgFilled) imgRect.fills = [{ type: 'SOLID', color: { r: 0.9, g: 0.94, b: 1 } }];
-  comp.appendChild(imgRect);
 
-  // Tag pill
+  // Tag pill — add to comp before styling
   const tag = figma.createFrame();
   tag.layoutMode = 'HORIZONTAL';
   tag.primaryAxisSizingMode = 'AUTO';
@@ -370,6 +387,7 @@ async function createCardComponent(bodyFont, titleFont, styleMap) {
   tag.paddingLeft = tag.paddingRight = 10;
   tag.paddingTop = tag.paddingBottom = 4;
   tag.cornerRadius = 100;
+  comp.appendChild(tag);
   const tagFilled = await applyFill(tag, styleMap, 'Accent', '90');
   if (!tagFilled) tag.fills = [{ type: 'SOLID', color: { r: 0.9, g: 1, b: 0.93 } }];
 
@@ -377,10 +395,9 @@ async function createCardComponent(bodyFont, titleFont, styleMap) {
   tagText.fontName = bodyFont;
   tagText.characters = 'New';
   tagText.fontSize = 11;
+  tag.appendChild(tagText);
   const tagTextFilled = await applyFill(tagText, styleMap, 'Accent', '30');
   if (!tagTextFilled) tagText.fills = [{ type: 'SOLID', color: { r: 0.08, g: 0.45, b: 0.28 } }];
-  tag.appendChild(tagText);
-  comp.appendChild(tag);
 
   const cardTitle = figma.createText();
   cardTitle.fontName = titleFont;
@@ -396,13 +413,13 @@ async function createCardComponent(bodyFont, titleFont, styleMap) {
   cardBody.fills = [{ type: 'SOLID', color: { r: 0.4, g: 0.4, b: 0.46 } }];
   comp.appendChild(cardBody);
 
-  figma.currentPage.appendChild(comp);
   return comp;
 }
 
 // ── UI Kit sections ───────────────────────────────────────────────────────────
+// parent must already be in the scene graph.
 
-async function createColorPaletteSection(styleMap, bodyFont) {
+async function createColorPaletteSection(styleMap, bodyFont, parent) {
   const wrap = figma.createFrame();
   wrap.name = 'Colour Palette';
   wrap.layoutMode = 'VERTICAL';
@@ -411,7 +428,13 @@ async function createColorPaletteSection(styleMap, bodyFont) {
   wrap.itemSpacing = 10;
   wrap.fills = [];
 
-  for (const colorName of Object.keys(styleMap).sort()) {
+  // Attach wrap to parent FIRST so descendant nodes are in scene graph
+  parent.appendChild(wrap);
+
+  const colorNames = Object.keys(styleMap).sort();
+  for (let ci = 0; ci < colorNames.length; ci++) {
+    const colorName = colorNames[ci];
+
     const row = figma.createFrame();
     row.name = colorName;
     row.layoutMode = 'HORIZONTAL';
@@ -420,6 +443,7 @@ async function createColorPaletteSection(styleMap, bodyFont) {
     row.counterAxisAlignItems = 'CENTER';
     row.itemSpacing = 6;
     row.fills = [];
+    wrap.appendChild(row);  // row in scene
 
     const nameLabel = figma.createText();
     nameLabel.fontName = bodyFont;
@@ -429,23 +453,21 @@ async function createColorPaletteSection(styleMap, bodyFont) {
     nameLabel.fills = [{ type: 'SOLID', color: { r: 0.45, g: 0.45, b: 0.5 } }];
     row.appendChild(nameLabel);
 
-    const stops = Object.keys(styleMap[colorName]).sort((a, b) => parseInt(a) - parseInt(b));
-    for (const stop of stops) {
+    const stops = Object.keys(styleMap[colorName]).sort(function(a, b) { return parseInt(a) - parseInt(b); });
+    for (let si = 0; si < stops.length; si++) {
+      const stop = stops[si];
       const swatch = figma.createRectangle();
       swatch.name = stop;
       swatch.resize(36, 36);
       swatch.cornerRadius = 6;
-      // Use applyFill so fills are set directly (works on detached nodes)
-      // AND the named style is linked for the inspector
+      row.appendChild(swatch);  // swatch in scene — setFillStyleIdAsync will work
       await applyFill(swatch, styleMap, colorName, stop);
-      row.appendChild(swatch);
     }
-    wrap.appendChild(row);
   }
-  return wrap;
 }
 
-async function createTypographySection(titleFont, bodyFont, tsMap) {
+// parent must already be in the scene graph.
+async function createTypographySection(titleFont, bodyFont, tsMap, parent) {
   const wrap = figma.createFrame();
   wrap.name = 'Typography Samples';
   wrap.layoutMode = 'VERTICAL';
@@ -453,6 +475,9 @@ async function createTypographySection(titleFont, bodyFont, tsMap) {
   wrap.counterAxisSizingMode = 'AUTO';
   wrap.itemSpacing = 14;
   wrap.fills = [];
+
+  // Attach wrap to parent FIRST
+  parent.appendChild(wrap);
 
   const samples = [
     { text: 'Heading 1 — Display',                                    tsKey: 'Type/Heading 1',  font: titleFont, size: 40 },
@@ -463,28 +488,29 @@ async function createTypographySection(titleFont, bodyFont, tsMap) {
     { text: 'Caption — Labels, hints, and metadata',                  tsKey: 'Type/Caption',    font: bodyFont,  size: 11 },
   ];
 
-  for (const { text, tsKey, font, size } of samples) {
+  for (let i = 0; i < samples.length; i++) {
+    const sample = samples[i];
     const t = figma.createText();
-    // fontName must be set before characters when font differs from default
-    t.fontName = font;
-    t.fontSize = size;
-    t.characters = text;
-    // Apply the named text style (makes it appear in Figma's Styles panel)
-    if (tsMap && tsMap[tsKey]) {
-      await t.setTextStyleIdAsync(tsMap[tsKey].id);
+    t.fontName = sample.font;
+    t.fontSize = sample.size;
+    t.characters = sample.text;
+    wrap.appendChild(t);  // in scene before setTextStyleIdAsync
+    if (tsMap && tsMap[sample.tsKey]) {
+      try {
+        await t.setTextStyleIdAsync(tsMap[sample.tsKey].id);
+      } catch (e) {
+        console.error('setTextStyleIdAsync failed:', e);
+      }
     }
-    // Fills are not part of text styles — set after applying style
     t.fills = [{ type: 'SOLID', color: { r: 0.08, g: 0.08, b: 0.12 } }];
-    wrap.appendChild(t);
   }
-  return wrap;
 }
 
 // ── UI Kit master frame ───────────────────────────────────────────────────────
 
 async function createUIKitFrame(styleMap, tsMap, titleFont, bodyFont, pageName) {
   const outer = figma.createFrame();
-  outer.name = `${pageName} — UI Kit`;
+  outer.name = pageName + ' — UI Kit';
   outer.layoutMode = 'VERTICAL';
   outer.primaryAxisSizingMode = 'AUTO';
   outer.counterAxisSizingMode = 'AUTO';
@@ -492,9 +518,11 @@ async function createUIKitFrame(styleMap, tsMap, titleFont, bodyFont, pageName) 
   outer.paddingLeft = outer.paddingRight = 48;
   outer.paddingTop = outer.paddingBottom = 48;
   outer.fills = [{ type: 'SOLID', color: { r: 0.96, g: 0.96, b: 0.97 } }];
+
+  // Attach outer to page FIRST — everything else hangs off it
   figma.currentPage.appendChild(outer);
 
-  // Helper: white card section wrapper
+  // Helper: white card section wrapper — immediately appended to outer
   function makeSection(name) {
     const f = figma.createFrame();
     f.name = name;
@@ -506,20 +534,20 @@ async function createUIKitFrame(styleMap, tsMap, titleFont, bodyFont, pageName) 
     f.paddingTop = f.paddingBottom = 28;
     f.cornerRadius = 12;
     f.fills = [{ type: 'SOLID', color: { r: 1, g: 1, b: 1 } }];
+    outer.appendChild(f);  // immediately in scene
     return f;
   }
 
   // ── Colour Palette ──
   const palSection = makeSection('Colours');
   palSection.appendChild(sectionLabel('COLOUR PALETTE', bodyFont));
-  palSection.appendChild(await createColorPaletteSection(styleMap, bodyFont));
-  outer.appendChild(palSection);
+  // createColorPaletteSection appends directly to palSection (already in scene)
+  await createColorPaletteSection(styleMap, bodyFont, palSection);
 
   // ── Typography ──
   const typoSection = makeSection('Typography');
   typoSection.appendChild(sectionLabel('TYPOGRAPHY', bodyFont));
-  typoSection.appendChild(await createTypographySection(titleFont, bodyFont, tsMap));
-  outer.appendChild(typoSection);
+  await createTypographySection(titleFont, bodyFont, tsMap, typoSection);
 
   // ── Components ──
   const compSection = makeSection('Components');
@@ -538,10 +566,8 @@ async function createUIKitFrame(styleMap, tsMap, titleFont, bodyFont, pageName) 
   compSection.appendChild(inputSet);
 
   compSection.appendChild(sectionLabel('CARD', bodyFont));
-  const card = await createCardComponent(bodyFont, titleFont, styleMap);
-  compSection.appendChild(card);
-
-  outer.appendChild(compSection);
+  // createCardComponent appends comp directly to compSection (already in scene)
+  await createCardComponent(bodyFont, titleFont, styleMap, compSection);
 
   outer.x = 0;
   outer.y = 0;
@@ -554,15 +580,17 @@ async function createLandingPage(styleMap, titleFont, bodyFont, pageName) {
   const W = 1440;
 
   const page = figma.createFrame();
-  page.name = `${pageName} — Landing Page`;
+  page.name = pageName + ' — Landing Page';
   page.layoutMode = 'VERTICAL';
   page.primaryAxisSizingMode = 'AUTO';
   page.counterAxisSizingMode = 'AUTO';
   page.itemSpacing = 0;
   page.fills = [{ type: 'SOLID', color: { r: 1, g: 1, b: 1 } }];
+
+  // Attach to scene graph FIRST
   figma.currentPage.appendChild(page);
 
-  // ── Helper for full-width section frames ────────────────────────────────────
+  // Helper: creates a full-width section and IMMEDIATELY appends to page
   function makeSection(name, layoutMode, height) {
     const s = figma.createFrame();
     s.name = name;
@@ -570,6 +598,7 @@ async function createLandingPage(styleMap, titleFont, bodyFont, pageName) {
     s.primaryAxisSizingMode = height ? 'FIXED' : 'AUTO';
     s.counterAxisSizingMode = 'FIXED';
     s.resize(W, height || 100);
+    page.appendChild(s);  // in scene immediately
     return s;
   }
 
@@ -598,16 +627,17 @@ async function createLandingPage(styleMap, titleFont, bodyFont, pageName) {
     linksRow.counterAxisSizingMode = 'AUTO';
     linksRow.fills = [];
     linksRow.itemSpacing = 32;
-    for (const lnk of ['Features', 'Pricing', 'About', 'Contact']) {
+    nav.appendChild(linksRow);
+
+    const links = ['Features', 'Pricing', 'About', 'Contact'];
+    for (let i = 0; i < links.length; i++) {
       const t = figma.createText();
       t.fontName = bodyFont;
-      t.characters = lnk;
+      t.characters = links[i];
       t.fontSize = 14;
-      t.fills = [{ type: 'SOLID', color: { r: 1, g: 1, b: 1 }, opacity: 0.85 }];
+      t.fills = [{ type: 'SOLID', color: { r: 1, g: 1, b: 1 } }];
       linksRow.appendChild(t);
     }
-    nav.appendChild(linksRow);
-    page.appendChild(nav);
   }
 
   // ── Hero ─────────────────────────────────────────────────────────────────────
@@ -622,7 +652,7 @@ async function createLandingPage(styleMap, titleFont, bodyFont, pageName) {
     const heroBgFilled = await applyFill(hero, styleMap, 'Primary', '95');
     if (!heroBgFilled) hero.fills = [{ type: 'SOLID', color: { r: 0.93, g: 0.96, b: 1 } }];
 
-    // Announcement pill
+    // Announcement pill — in scene via hero
     const pill = figma.createFrame();
     pill.layoutMode = 'HORIZONTAL';
     pill.primaryAxisSizingMode = 'AUTO';
@@ -630,17 +660,17 @@ async function createLandingPage(styleMap, titleFont, bodyFont, pageName) {
     pill.paddingLeft = pill.paddingRight = 14;
     pill.paddingTop = pill.paddingBottom = 6;
     pill.cornerRadius = 100;
+    hero.appendChild(pill);
     const pillFilled = await applyFill(pill, styleMap, 'Accent', '80');
     if (!pillFilled) pill.fills = [{ type: 'SOLID', color: { r: 0.85, g: 1, b: 0.9 } }];
 
     const pillText = figma.createText();
     pillText.fontName = bodyFont;
-    pillText.characters = '✨ Introducing something amazing';
+    pillText.characters = 'Introducing something amazing';
     pillText.fontSize = 13;
+    pill.appendChild(pillText);
     const pillTextFilled = await applyFill(pillText, styleMap, 'Accent', '20');
     if (!pillTextFilled) pillText.fills = [{ type: 'SOLID', color: { r: 0.08, g: 0.38, b: 0.22 } }];
-    pill.appendChild(pillText);
-    hero.appendChild(pill);
 
     const h1 = figma.createText();
     h1.fontName = titleFont;
@@ -665,8 +695,9 @@ async function createLandingPage(styleMap, titleFont, bodyFont, pageName) {
     ctaRow.counterAxisSizingMode = 'AUTO';
     ctaRow.fills = [];
     ctaRow.itemSpacing = 16;
+    hero.appendChild(ctaRow);
 
-    function makeBtn(label, font, size) {
+    function makeBtn(text, font, size) {
       const btn = figma.createFrame();
       btn.layoutMode = 'HORIZONTAL';
       btn.primaryAxisAlignItems = 'CENTER';
@@ -676,29 +707,25 @@ async function createLandingPage(styleMap, titleFont, bodyFont, pageName) {
       btn.paddingLeft = btn.paddingRight = 28;
       btn.paddingTop = btn.paddingBottom = 14;
       btn.cornerRadius = 8;
+      ctaRow.appendChild(btn);  // in scene via ctaRow → hero → page
       const t = figma.createText();
       t.fontName = font;
-      t.characters = label;
+      t.characters = text;
       t.fontSize = size || 15;
       btn.appendChild(t);
-      return { btn, t };
+      return { btn: btn, t: t };
     }
 
-    const { btn: btn1, t: btn1Text } = makeBtn('Get Started Free', titleFont, 15);
-    const btn1Filled = await applyFill(btn1, styleMap, 'Primary', '50');
-    if (!btn1Filled) btn1.fills = [{ type: 'SOLID', color: { r: 0.09, g: 0.35, b: 0.75 } }];
-    btn1Text.fills = [{ type: 'SOLID', color: { r: 1, g: 1, b: 1 } }];
+    const r1 = makeBtn('Get Started Free', titleFont, 15);
+    const btn1Filled = await applyFill(r1.btn, styleMap, 'Primary', '50');
+    if (!btn1Filled) r1.btn.fills = [{ type: 'SOLID', color: { r: 0.09, g: 0.35, b: 0.75 } }];
+    r1.t.fills = [{ type: 'SOLID', color: { r: 1, g: 1, b: 1 } }];
 
-    const { btn: btn2, t: btn2Text } = makeBtn('View Demo →', bodyFont, 15);
-    btn2.fills = [{ type: 'SOLID', color: { r: 1, g: 1, b: 1 } }];
-    btn2.strokes = [{ type: 'SOLID', color: { r: 0.8, g: 0.8, b: 0.85 } }];
-    btn2.strokeWeight = 1.5;
-    btn2Text.fills = [{ type: 'SOLID', color: { r: 0.1, g: 0.1, b: 0.18 } }];
-
-    ctaRow.appendChild(btn1);
-    ctaRow.appendChild(btn2);
-    hero.appendChild(ctaRow);
-    page.appendChild(hero);
+    const r2 = makeBtn('View Demo', bodyFont, 15);
+    r2.btn.fills = [{ type: 'SOLID', color: { r: 1, g: 1, b: 1 } }];
+    r2.btn.strokes = [{ type: 'SOLID', color: { r: 0.8, g: 0.8, b: 0.85 } }];
+    r2.btn.strokeWeight = 1.5;
+    r2.t.fills = [{ type: 'SOLID', color: { r: 0.1, g: 0.1, b: 0.18 } }];
   }
 
   // ── Features ─────────────────────────────────────────────────────────────────
@@ -729,12 +756,16 @@ async function createLandingPage(styleMap, titleFont, bodyFont, pageName) {
     grid.resize(W - 160, 100);
     grid.itemSpacing = 24;
     grid.fills = [];
+    section.appendChild(grid);
 
-    for (const item of [
-      { icon: '🎨', title: 'Colour System',  desc: 'Cohesive tonal palettes generated from your brand colors.' },
-      { icon: '⚡', title: 'Fast Setup',     desc: 'Import your palette and start designing in minutes.' },
-      { icon: '♿', title: 'Accessible',     desc: 'WCAG-compliant contrast ratios built in from the start.' },
-    ]) {
+    const featureItems = [
+      { icon: 'Palette', title: 'Colour System',  desc: 'Cohesive tonal palettes generated from your brand colors.' },
+      { icon: 'Flash',   title: 'Fast Setup',     desc: 'Import your palette and start designing in minutes.' },
+      { icon: 'Shield',  title: 'Accessible',     desc: 'WCAG-compliant contrast ratios built in from the start.' },
+    ];
+
+    for (let i = 0; i < featureItems.length; i++) {
+      const item = featureItems[i];
       const card = figma.createFrame();
       card.layoutMode = 'VERTICAL';
       card.primaryAxisSizingMode = 'AUTO';
@@ -745,33 +776,31 @@ async function createLandingPage(styleMap, titleFont, bodyFont, pageName) {
       card.cornerRadius = 12;
       card.itemSpacing = 12;
       card.layoutGrow = 1;
+      grid.appendChild(card);  // in scene via grid → section → page
       const cardFilled = await applyFill(card, styleMap, 'Primary', '95');
       if (!cardFilled) card.fills = [{ type: 'SOLID', color: { r: 0.94, g: 0.96, b: 1 } }];
 
-      const icon = figma.createText();
-      icon.fontName = bodyFont;
-      icon.characters = item.icon;
-      icon.fontSize = 32;
-      card.appendChild(icon);
+      const iconT = figma.createText();
+      iconT.fontName = bodyFont;
+      iconT.characters = item.icon;
+      iconT.fontSize = 14;
+      iconT.fills = [{ type: 'SOLID', color: { r: 0.3, g: 0.3, b: 0.36 } }];
+      card.appendChild(iconT);
 
-      const title = figma.createText();
-      title.fontName = titleFont;
-      title.characters = item.title;
-      title.fontSize = 18;
-      title.fills = [{ type: 'SOLID', color: { r: 0.07, g: 0.07, b: 0.1 } }];
-      card.appendChild(title);
+      const titleT = figma.createText();
+      titleT.fontName = titleFont;
+      titleT.characters = item.title;
+      titleT.fontSize = 18;
+      titleT.fills = [{ type: 'SOLID', color: { r: 0.07, g: 0.07, b: 0.1 } }];
+      card.appendChild(titleT);
 
-      const desc = figma.createText();
-      desc.fontName = bodyFont;
-      desc.characters = item.desc;
-      desc.fontSize = 14;
-      desc.fills = [{ type: 'SOLID', color: { r: 0.38, g: 0.38, b: 0.46 } }];
-      card.appendChild(desc);
-
-      grid.appendChild(card);
+      const descT = figma.createText();
+      descT.fontName = bodyFont;
+      descT.characters = item.desc;
+      descT.fontSize = 14;
+      descT.fills = [{ type: 'SOLID', color: { r: 0.38, g: 0.38, b: 0.46 } }];
+      card.appendChild(descT);
     }
-    section.appendChild(grid);
-    page.appendChild(section);
   }
 
   // ── Stats strip ───────────────────────────────────────────────────────────────
@@ -786,11 +815,14 @@ async function createLandingPage(styleMap, titleFont, bodyFont, pageName) {
     const statsBgFilled = await applyFill(stats, styleMap, 'Primary', '90');
     if (!statsBgFilled) stats.fills = [{ type: 'SOLID', color: { r: 0.87, g: 0.93, b: 1 } }];
 
-    for (const { number, label } of [
+    const statItems = [
       { number: '10,000+', label: 'Designers' },
       { number: '50,000+', label: 'Palettes Created' },
       { number: '4.9 / 5',  label: 'Average Rating' },
-    ]) {
+    ];
+
+    for (let i = 0; i < statItems.length; i++) {
+      const si = statItems[i];
       const item = figma.createFrame();
       item.layoutMode = 'VERTICAL';
       item.primaryAxisSizingMode = 'AUTO';
@@ -799,25 +831,23 @@ async function createLandingPage(styleMap, titleFont, bodyFont, pageName) {
       item.counterAxisAlignItems = 'CENTER';
       item.itemSpacing = 6;
       item.fills = [];
+      stats.appendChild(item);
 
       const num = figma.createText();
       num.fontName = titleFont;
-      num.characters = number;
+      num.characters = si.number;
       num.fontSize = 36;
+      item.appendChild(num);
       const numFilled = await applyFill(num, styleMap, 'Primary', '40');
       if (!numFilled) num.fills = [{ type: 'SOLID', color: { r: 0.09, g: 0.27, b: 0.65 } }];
-      item.appendChild(num);
 
       const lbl = figma.createText();
       lbl.fontName = bodyFont;
-      lbl.characters = label;
+      lbl.characters = si.label;
       lbl.fontSize = 14;
       lbl.fills = [{ type: 'SOLID', color: { r: 0.35, g: 0.35, b: 0.42 } }];
       item.appendChild(lbl);
-
-      stats.appendChild(item);
     }
-    page.appendChild(stats);
   }
 
   // ── CTA banner ────────────────────────────────────────────────────────────────
@@ -845,7 +875,7 @@ async function createLandingPage(styleMap, titleFont, bodyFont, pageName) {
     ctaSub.characters = 'Join thousands of designers using UI Chroma.';
     ctaSub.fontSize = 16;
     ctaSub.textAlignHorizontal = 'CENTER';
-    ctaSub.fills = [{ type: 'SOLID', color: { r: 1, g: 1, b: 1 }, opacity: 0.75 }];
+    ctaSub.fills = [{ type: 'SOLID', color: { r: 1, g: 1, b: 1 } }];
     cta.appendChild(ctaSub);
 
     const ctaBtn = figma.createFrame();
@@ -858,16 +888,15 @@ async function createLandingPage(styleMap, titleFont, bodyFont, pageName) {
     ctaBtn.paddingTop = ctaBtn.paddingBottom = 16;
     ctaBtn.cornerRadius = 8;
     ctaBtn.fills = [{ type: 'SOLID', color: { r: 1, g: 1, b: 1 } }];
+    cta.appendChild(ctaBtn);
 
     const ctaBtnText = figma.createText();
     ctaBtnText.fontName = titleFont;
-    ctaBtnText.characters = "Get Started — It's Free";
+    ctaBtnText.characters = "Get Started - It's Free";
     ctaBtnText.fontSize = 16;
+    ctaBtn.appendChild(ctaBtnText);
     const ctaBtnTextFilled = await applyFill(ctaBtnText, styleMap, 'Secondary', '40');
     if (!ctaBtnTextFilled) ctaBtnText.fills = [{ type: 'SOLID', color: { r: 0.14, g: 0.14, b: 0.32 } }];
-    ctaBtn.appendChild(ctaBtnText);
-    cta.appendChild(ctaBtn);
-    page.appendChild(cta);
   }
 
   // ── Footer ─────────────────────────────────────────────────────────────────
@@ -891,12 +920,10 @@ async function createLandingPage(styleMap, titleFont, bodyFont, pageName) {
 
     const footerCopy = figma.createText();
     footerCopy.fontName = bodyFont;
-    footerCopy.characters = `© ${new Date().getFullYear()} All rights reserved.`;
+    footerCopy.characters = String(new Date().getFullYear()) + ' All rights reserved.';
     footerCopy.fontSize = 12;
     footerCopy.fills = [{ type: 'SOLID', color: { r: 0.5, g: 0.5, b: 0.55 } }];
     footer.appendChild(footerCopy);
-
-    page.appendChild(footer);
   }
 
   page.y = 0;
@@ -905,16 +932,18 @@ async function createLandingPage(styleMap, titleFont, bodyFont, pageName) {
 
 // ── Message handler ───────────────────────────────────────────────────────────
 
-figma.ui.onmessage = async (msg) => {
+figma.ui.onmessage = async function(msg) {
   if (msg.type === 'get-fonts') {
     const fonts = await figma.listAvailableFontsAsync();
-    figma.ui.postMessage({ type: 'fonts', fonts });
+    figma.ui.postMessage({ type: 'fonts', fonts: fonts });
     return;
   }
 
   if (msg.type === 'create-styles-components') {
     try {
-      const { projectName, titleFont, bodyFont } = msg;
+      const projectName = msg.projectName;
+      const titleFont   = msg.titleFont;
+      const bodyFont    = msg.bodyFont;
       const permalink = extractPermalink(msg.permalink);
 
       figma.ui.postMessage({ type: 'progress', message: 'Fetching palette…' });
@@ -930,11 +959,11 @@ figma.ui.onmessage = async (msg) => {
         await figma.loadFontAsync(bodyFontName);
       }
 
-      // Create document-level styles BEFORE switching pages (avoids timing quirks)
+      // Create document-level styles BEFORE switching pages
       figma.ui.postMessage({ type: 'progress', message: 'Creating colour styles…' });
-      // createPaintStyles returns the styleMap directly — no secondary lookup needed
       const styleMap = await createPaintStyles(colors);
-      const styleCount = Object.values(styleMap).reduce((n, stops) => n + Object.keys(stops).length, 0);
+      const styleCount = Object.values(styleMap).reduce(function(n, stops) { return n + Object.keys(stops).length; }, 0);
+      console.log('Paint styles created:', styleCount, 'Keys:', Object.keys(styleMap));
 
       figma.ui.postMessage({ type: 'progress', message: 'Creating text styles…' });
       const tsMap = await createTextStyles(titleFontName, bodyFontName);
@@ -944,7 +973,7 @@ figma.ui.onmessage = async (msg) => {
       newPage.name = projectName || palette.keywords || 'UI Chroma';
       await figma.setCurrentPageAsync(newPage);
 
-      figma.ui.postMessage({ type: 'progress', message: `${styleCount} colour + ${Object.keys(tsMap).length} text styles added. Building UI kit…` });
+      figma.ui.postMessage({ type: 'progress', message: styleCount + ' colour styles created. Building UI kit…' });
 
       const uiKit = await createUIKitFrame(styleMap, tsMap, titleFontName, bodyFontName, newPage.name);
 
@@ -954,7 +983,7 @@ figma.ui.onmessage = async (msg) => {
       landing.x = uiKit.width + 80;
 
       figma.viewport.scrollAndZoomIntoView([uiKit, landing]);
-      figma.ui.postMessage({ type: 'done', styleCount });
+      figma.ui.postMessage({ type: 'done', styleCount: styleCount });
     } catch (error) {
       console.error(error);
       figma.ui.postMessage({ type: 'error', message: error.message || String(error) });
