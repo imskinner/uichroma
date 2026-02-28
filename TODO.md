@@ -66,6 +66,11 @@
 - [ ] Add a "Regenerate" button on the palette page that re-runs the original keywords and redirects to a new palette.
 - [ ] Add a per-swatch "Regenerate this color" button that calls a new endpoint `/regenerateColor` with the role (e.g., `"accent"`) and original keywords, returning a single replacement hex.
 
+## Urgent: Before March 2026
+
+- [ ] **Migrate OpenAI key off `functions.config()`** — Google is decommissioning the Runtime Config API in March 2026. Migrate to Firebase Functions params: `npm install firebase-functions@latest` in `functions/`, replace `functions.config().openai.key` with `defineSecret('OPENAI_KEY')` or an env param, and re-set the secret via `firebase functions:secrets:set OPENAI_KEY`.
+- [ ] **Upgrade `firebase-functions` SDK** — currently on v4.9.0; upgrade to v5+ is required for the params/secrets API used above.
+
 ## Production Hardening
 
 - [ ] **Add rate limiting** to `POST /generatePalette` — e.g., max 5 requests per IP per 10 minutes. Use `express-rate-limit` package.
