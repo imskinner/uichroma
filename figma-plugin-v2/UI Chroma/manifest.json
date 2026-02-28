@@ -12,7 +12,8 @@
   ],
   "networkAccess": {
     "allowedDomains": [
-      "none"
+      "https://www.uichroma.com",
+      "http://localhost:3000"
     ]
   }
 }

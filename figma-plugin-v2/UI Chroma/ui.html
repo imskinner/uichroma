@@ -2,77 +2,108 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>Configurar Projeto</title>
+    <title>UI Chroma</title>
     <style>
-      body { font-family: sans-serif; padding: 16px; }
-      input, textarea, select { width: 100%; margin-top: 8px; padding: 8px; }
-      button { margin-top: 16px; padding: 10px 16px; cursor: pointer; }
+      body { font-family: sans-serif; padding: 16px; font-size: 13px; }
+      label { display: block; margin-top: 12px; font-weight: 600; }
+      input, textarea, select { width: 100%; margin-top: 4px; padding: 7px 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; }
+      button { margin-top: 16px; width: 100%; padding: 10px; cursor: pointer; background: #18a0fb; color: #fff; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; }
+      button:disabled { background: #aaa; cursor: not-allowed; }
+      #status { margin-top: 12px; font-size: 12px; min-height: 18px; }
+      #status.error { color: #e53e3e; }
+      #status.success { color: #38a169; }
+      hr { border: none; border-top: 1px solid #eee; margin: 16px 0; }
     </style>
   </head>
   <body>
-    <h2>Configurar Projeto de UI</h2>
-    <label>Nome do Projeto:</label>
-    <input id="projectName" type="text" placeholder="Meu Projeto de UI" />
+    <h3 style="margin:0 0 4px">UI Chroma</h3>
+    <p style="margin:0 0 12px;color:#666">Import a palette and create Figma styles</p>
 
-    <label>Descrição do Projeto:</label>
-    <textarea id="projectDescription" rows="3" placeholder="Descreva brevemente seu projeto..."></textarea>
+    <label for="permalink">Palette Permalink *</label>
+    <input id="permalink" type="text" placeholder="e.g. a1b2c3d4e5f6..." />
 
-    <label>Fonte para Título:</label>
+    <hr />
+
+    <label for="projectName">Page Name</label>
+    <input id="projectName" type="text" placeholder="My UI Project" />
+
+    <label for="titleFont">Title Font</label>
     <select id="titleFont">
+      <option value="Inter-Bold">Inter, Bold</option>
       <option value="Roboto-Bold">Roboto, Bold</option>
-      <option value="OpenSans-Bold">Open Sans, Bold</option>
-      <!-- Add more font options dynamically if needed -->
     </select>
 
-    <label>Fonte para Corpo:</label>
+    <label for="bodyFont">Body Font</label>
     <select id="bodyFont">
+      <option value="Inter-Regular">Inter, Regular</option>
       <option value="Roboto-Regular">Roboto, Regular</option>
-      <option value="OpenSans-Regular">Open Sans, Regular</option>
-      <!-- Add more font options dynamically if needed -->
     </select>
 
-    <button id="submit">Criar Projeto</button>
+    <button id="submit">Create Styles &amp; Components</button>
+    <div id="status"></div>
 
     <script>
-      async function loadFonts() {
-        // Request fonts from the plugin
-        parent.postMessage({ pluginMessage: { type: 'get-fonts' } }, '*');
+      const statusEl = document.getElementById('status');
+      const submitBtn = document.getElementById('submit');
 
-        // Listen for the response from the plugin
-        window.onmessage = (event) => {
-          if (event.data.pluginMessage && event.data.pluginMessage.type === 'fonts') {
-            const fonts = event.data.pluginMessage.fonts;
-            const titleFontSelect = document.getElementById('titleFont');
-            const bodyFontSelect = document.getElementById('bodyFont');
-
-            // Clear existing options
-            titleFontSelect.innerHTML = '';
-            bodyFontSelect.innerHTML = '';
-
-            // Populate the dropdowns with font options
-            fonts.forEach(font => {
-              if (font.fontName && font.fontName.family && font.fontName.style) {
-                const option = document.createElement('option');
-                option.value = `${font.fontName.family}-${font.fontName.style}`;
-                option.textContent = `${font.fontName.family}, ${font.fontName.style}`;
-                titleFontSelect.appendChild(option.cloneNode(true));
-                bodyFontSelect.appendChild(option);
-              }
-            });
-          }
-        };
+      function setStatus(msg, type) {
+        statusEl.textContent = msg;
+        statusEl.className = type || '';
       }
 
-      document.getElementById('submit').onclick = () => {
-        const projectName = document.getElementById('projectName').value;
-        const projectDescription = document.getElementById('projectDescription').value;
-        const titleFont = document.getElementById('titleFont').value;
-        const bodyFont = document.getElementById('bodyFont').value;
-        parent.postMessage(
-          { pluginMessage: { type: 'create-styles-components', projectName, projectDescription, titleFont, bodyFont } }, '*');
+      // Request available fonts from plugin on load
+      parent.postMessage({ pluginMessage: { type: 'get-fonts' } }, '*');
+
+      window.onmessage = (event) => {
+        const msg = event.data.pluginMessage;
+        if (!msg) return;
+
+        if (msg.type === 'fonts') {
+          const fonts = msg.fonts;
+          const titleSelect = document.getElementById('titleFont');
+          const bodySelect = document.getElementById('bodyFont');
+          titleSelect.innerHTML = '';
+          bodySelect.innerHTML = '';
+          fonts.forEach(font => {
+            if (font.fontName && font.fontName.family && font.fontName.style) {
+              const opt = document.createElement('option');
+              opt.value = `${font.fontName.family}-${font.fontName.style}`;
+              opt.textContent = `${font.fontName.family}, ${font.fontName.style}`;
+              titleSelect.appendChild(opt.cloneNode(true));
+              bodySelect.appendChild(opt);
+            }
+          });
+        }
+
+        if (msg.type === 'done') {
+          setStatus('Styles and components created successfully!', 'success');
+          submitBtn.disabled = false;
+        }
+
+        if (msg.type === 'error') {
+          setStatus(msg.message || 'An error occurred.', 'error');
+          submitBtn.disabled = false;
+        }
       };
 
-      loadFonts();
+      submitBtn.onclick = () => {
+        const permalink = document.getElementById('permalink').value.trim();
+        if (!permalink) {
+          setStatus('Please enter a palette permalink.', 'error');
+          return;
+        }
+        setStatus('Fetching palette and creating styles…');
+        submitBtn.disabled = true;
+        parent.postMessage({
+          pluginMessage: {
+            type: 'create-styles-components',
+            permalink,
+            projectName: document.getElementById('projectName').value.trim(),
+            titleFont: document.getElementById('titleFont').value,
+            bodyFont: document.getElementById('bodyFont').value,
+          }
+        }, '*');
+      };
     </script>
   </body>
 </html>

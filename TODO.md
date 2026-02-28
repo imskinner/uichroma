@@ -28,11 +28,11 @@
 
 ## Figma Plugin v2 (Fix to Make Functional)
 
-- [ ] **Fix `manifest.json` network access** — change `"allowedDomains": ["none"]` to include the production URL (e.g., `"https://www.uichroma.com"`) and `"http://localhost:3000"` for dev.
-- [ ] **Add palette fetch to plugin UI** — add a permalink input field to `ui.html` and a "Load Palette" button that sends a `fetch-palette` message.
-- [ ] **Implement palette fetch in `code.js`** — handle `fetch-palette` message: call `/api/getPalette`, receive colors, then create Paint Styles from the returned color data (not random hues).
-- [ ] **Fix Figma component creation logic** — the Button variant creation clones and removes a base component in a way that leaves orphaned nodes; rewrite using `figma.createComponentSet()` directly.
-- [ ] **Use HSL tones from palette** — map the `tones[]` array from the palette response to Figma style lightness stops instead of recomputing them in the plugin.
+- [x] **Fix `manifest.json` network access** — `allowedDomains` now includes `https://www.uichroma.com` and `http://localhost:3000`.
+- [x] **Add palette fetch to plugin UI** — permalink input added to `ui.html`; submit sends permalink to `code.js`. Status area shows progress and errors.
+- [x] **Implement palette fetch in `code.js`** — fetches palette via `POST /api/getPalette`, uses returned hex colors to generate tonal Paint Styles.
+- [x] **Fix Figma component creation logic** — Button variants now created as independent components appended to the page before `combineAsVariants`, eliminating orphaned nodes.
+- [x] **Use HSL tones from palette** — `hexToHsl` + `hslToRgb` used to generate clean tonal stops (10–95) from each palette color's hue and saturation.
 
 ## Feature: Export Options
 
