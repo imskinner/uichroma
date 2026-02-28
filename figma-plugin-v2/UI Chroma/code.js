@@ -116,7 +116,7 @@ async function createButtonComponentSet(bodyFont) {
       comp.cornerRadius = 8;
       comp.itemSpacing = 0;
 
-      const paintStyle = styleMap[color]?.[stop];
+      const paintStyle = styleMap[color] && styleMap[color][stop];
       if (paintStyle) {
         await comp.setFillStyleIdAsync(paintStyle.id);
       } else {
