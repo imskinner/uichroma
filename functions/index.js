@@ -109,7 +109,7 @@ async function generateColorPalette(feelings) {
   }];
   const res = await fetch('https://api.openai.com/v1/chat/completions',{
     method:'POST', headers:{'Content-Type':'application/json','Authorization':`Bearer ${apiKey}`},
-    body:JSON.stringify({model:'gpt-4-turbo-preview', messages:[
+    body:JSON.stringify({model:'gpt-4o', messages:[
       {role:'system', content:'You are a UI/UX designer. Return primary, secondary, accent, warning, danger, success, info as JSON.'},
       {role:'user', content:`Keywords: "${feelings}".`}
     ], functions:paletteFunction, function_call:{name:'generate_palette'}, temperature:0.7})

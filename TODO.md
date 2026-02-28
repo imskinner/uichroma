@@ -2,12 +2,12 @@
 
 ## Bugs (Fix First)
 
-- [ ] **Update OpenAI model** — `gpt-4-turbo-preview` is deprecated. Change to `gpt-4o` or `gpt-4o-mini` in both `server.js` and `functions/index.js`.
-- [ ] **Remove fallback palette silent failure** — when OpenAI errors, the fallback palette renders without any user-visible error. Show an error message instead of a fake palette.
-- [ ] **Fix `vercel.json`** — remove the `POSTGRES_URL` env reference; the app uses Firestore now.
-- [ ] **Fix root route in `server.js`** — line 33 serves `index.html` from `__dirname` (root), not `public/index.html`. This should be `path.join(__dirname, 'public', 'index.html')`.
-- [ ] **Tighten Firestore security rules** — `firestore.rules` currently allows unrestricted public writes. At minimum restrict to reads-only for unauthenticated users.
-- [ ] **Fix color picker on palette page** — Pickr is loaded via CDN in `palette.html` but the Pickr CSS is not loaded in `index.html`. Verify that opening a color picker anywhere that Pickr isn't loaded fails gracefully or load it consistently.
+- [x] **Update OpenAI model** — changed to `gpt-4o` in `server.js` and `functions/index.js`.
+- [x] **Remove fallback palette silent failure** — `generateColorPalette()` now throws on error; `/generatePalette` returns a 500 with a visible message.
+- [x] **Fix `vercel.json`** — removed stale `POSTGRES_URL` env reference.
+- [x] **Fix root route in `server.js`** — corrected to `path.join(__dirname, 'public', 'index.html')`.
+- [x] **Tighten Firestore security rules** — public writes disabled; writes only via Admin SDK.
+- [x] **Fix color picker on palette page** — Pickr CSS and JS now loaded in `index.html` as well.
 
 ## Dead Code Cleanup
 

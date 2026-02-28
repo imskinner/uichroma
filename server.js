@@ -30,7 +30,7 @@ app.use('/img', express.static(path.join(__dirname, 'public', 'img')));
 app.use(bodyParser.json());
 
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // Get a palette from Firestore
@@ -234,7 +234,7 @@ async function generateColorPalette(feelings) {
         'Authorization': `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        model: "gpt-4-turbo-preview",
+        model: "gpt-4o",
         messages: [
           { role: "system", content: "You are a UI/UX designer. Use function generate_palette to return a palette with primary, secondary, accent, warning, danger, success, info, and neutral colors including hex codes and brief descriptions." },
           { role: "user", content: `Keywords: \"${feelings}\".` }
@@ -261,20 +261,7 @@ async function generateColorPalette(feelings) {
     throw new Error('OpenAI did not return a function call');
   } catch (error) {
     console.error(`Error in generateColorPalette: ${error.message}`);
-    // Return a fallback palette
-    return {
-      colors: {
-        primary:   { hex: '#4A90E2', description: 'Fallback primary color' },
-        secondary: { hex: '#50E3C2', description: 'Fallback secondary color' },
-        accent:    { hex: '#F5A623', description: 'Fallback accent color' },
-        warning:   { hex: '#F8E71C', description: 'Fallback warning color' },
-        danger:    { hex: '#FF0000', description: 'Fallback danger color' },
-        success:   { hex: '#7ED321', description: 'Fallback success color' },
-        info:      { hex: '#50BFFF', description: 'Fallback info color' },
-        neutral:   { hex: '#4A4A4A', description: 'Fallback neutral color' }
-      },
-      aiResponse: "Generated a fallback palette due to an error. Please try again later."
-    };
+    throw error;
   }
 }
 

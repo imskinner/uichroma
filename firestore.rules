@@ -4,7 +4,7 @@ service cloud.firestore {
   match /databases/{database}/documents {
     match /palettes/{paletteId} {
       allow read: true;  // Anyone can read palettes
-      allow write: true; // Anyone can write palettes (we can restrict this later if needed)
+      allow write: if false; // Writes only allowed via server-side Admin SDK
     }
   }
 } 
