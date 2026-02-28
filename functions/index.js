@@ -92,8 +92,8 @@ function normalizePaletteColors(colors) {
 
 // Function to call OpenAI
 async function generateColorPalette(feelings) {
-  const apiKey = functions.config().openai.key;
-  if (!apiKey) throw new Error('OpenAI API key is not set in functions config.');
+  const apiKey = process.env.OPENAI_KEY;
+  if (!apiKey) throw new Error('OPENAI_KEY secret is not set.');
   const paletteFunction=[{
     name:'generate_palette',
     description:'Generate a 7-color UI palette (no neutral)',
@@ -148,4 +148,4 @@ app.get('/palette/:permalink/data', async (req,res)=>{
   }catch(err){ console.error(err); res.status(500).send(err.message); }
 });
 
-exports.app = functions.https.onRequest(app); 
+exports.app = functions.runWith({ secrets: ['OPENAI_KEY'] }).https.onRequest(app); 

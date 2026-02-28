@@ -68,8 +68,8 @@
 
 ## Urgent: Before March 2026
 
-- [ ] **Migrate OpenAI key off `functions.config()`** — Google is decommissioning the Runtime Config API in March 2026. Migrate to Firebase Functions params: `npm install firebase-functions@latest` in `functions/`, replace `functions.config().openai.key` with `defineSecret('OPENAI_KEY')` or an env param, and re-set the secret via `firebase functions:secrets:set OPENAI_KEY`.
-- [ ] **Upgrade `firebase-functions` SDK** — currently on v4.9.0; upgrade to v5+ is required for the params/secrets API used above.
+- [x] **Migrate OpenAI key off `functions.config()`** — upgraded `firebase-functions` to v7, stored key in GCP Secret Manager via `functions:secrets:set OPENAI_KEY`, switched to `runWith({ secrets: ['OPENAI_KEY'] })` + `process.env.OPENAI_KEY`.
+- [x] **Upgrade `firebase-functions` SDK** — upgraded from v4.9.0 to v7.
 
 ## Production Hardening
 
