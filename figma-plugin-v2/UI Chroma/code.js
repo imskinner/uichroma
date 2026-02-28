@@ -159,7 +159,9 @@ async function applyFill(node, styleMap, colorName, stop) {
   if (ps) {
     // Direct fill assignment — guaranteed to apply the colour regardless of
     // whether the node is already attached to the scene graph.
-    node.fills = [{ type: 'SOLID', color: { ...ps.paints[0].color } }];
+    // Avoid object spread — not supported in Figma's plugin sandbox.
+    const c = ps.paints[0].color;
+    node.fills = [{ type: 'SOLID', color: { r: c.r, g: c.g, b: c.b } }];
     // Style link — lets Figma show the named style in the inspector.
     await node.setFillStyleIdAsync(ps.id);
     return true;
