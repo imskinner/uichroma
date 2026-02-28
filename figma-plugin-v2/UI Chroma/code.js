@@ -66,6 +66,21 @@ function parseFontString(fontStr) {
     : { family: str, style: 'Regular' };
 }
 
+// Normalize palette colors to a named-key object regardless of storage format.
+// Old palettes stored colors as an array of hex strings (8 entries).
+// New palettes store colors as { primary: { hex, description, h, s, l }, ... }.
+function normalizePaletteColors(colors) {
+  if (!colors) return {};
+  if (!Array.isArray(colors)) return colors;
+  // Old format: [primary, secondary, accent, accent2/info, warning, danger, success, neutral]
+  var keys = ['primary', 'secondary', 'accent', 'info', 'warning', 'danger', 'success', 'neutral'];
+  var obj = {};
+  for (var i = 0; i < Math.min(colors.length, keys.length); i++) {
+    if (colors[i]) obj[keys[i]] = colors[i];
+  }
+  return obj;
+}
+
 // ── API ───────────────────────────────────────────────────────────────────────
 
 async function fetchPalette(permalink) {
@@ -82,10 +97,12 @@ async function fetchPalette(permalink) {
 
 // ── Paint styles ──────────────────────────────────────────────────────────────
 
-async function createPaintStyles(colors) {
-  if (!colors || typeof colors !== 'object') {
-    throw new Error('Invalid palette data — no colors object found.');
+async function createPaintStyles(rawColors) {
+  if (!rawColors) {
+    throw new Error('Invalid palette data — no colors found.');
   }
+  // Normalize: handle both old (array) and new (named object) palette formats
+  const colors = normalizePaletteColors(rawColors);
 
   const COLOR_KEYS = ['primary', 'secondary', 'accent', 'warning', 'danger', 'success', 'info'];
   const styleMap = {};
