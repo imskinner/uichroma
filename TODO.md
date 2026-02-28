@@ -11,14 +11,15 @@
 
 ## Dead Code Cleanup
 
-- [ ] **Remove `exportToFigma()`** from `public/client.js` — references a non-existent `/exportToFigma` route and an undefined `currentPalette` variable.
-- [ ] **Remove `getAuthorizationUrl()`** from `public/client.js` — Figma OAuth was never implemented; contains a hardcoded broken redirect URI.
-- [ ] **Remove unused server routes** — `POST /api/palettes` and `GET /api/palettes` in `server.js` were stubs for user palette history that was never built.
-- [ ] **Delete or archive `createTable.js`** — PostgreSQL schema creation script, no longer relevant.
-- [ ] **Delete or archive `migrate-data.js`** — one-time PostgreSQL→Firestore migration script.
-- [ ] **Remove commented-out code** in `public/client.js` lines 44–45.
-- [ ] **Delete `figma-plugin/`** directory — Plugin v1 has a UI but no `code.js` backend. It cannot function. Either complete it or remove it.
-- [ ] **Remove root-level `palette.html`** — duplicate of `public/palette.html` with broken relative paths.
+- [x] **Remove `exportToFigma()`** from `public/client.js`.
+- [x] **Remove `getAuthorizationUrl()`** from `public/client.js`.
+- [x] **Remove unused `getPalette()`** from `public/client.js` (also never called).
+- [x] **Remove unused server routes** — `POST /api/palettes` and `GET /api/palettes` deleted from `server.js`.
+- [x] **Delete `createTable.js`** — PostgreSQL script removed.
+- [x] **Delete `migrate-data.js`** — one-time migration script removed.
+- [x] **Remove commented-out code** in `public/client.js`.
+- [x] **Delete `figma-plugin/`** directory — incomplete plugin v1 removed.
+- [x] **Remove root-level `palette.html`** — duplicate with broken paths deleted.
 
 ## Wire Up Existing Unconnected Code
 

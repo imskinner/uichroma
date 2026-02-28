@@ -265,39 +265,6 @@ async function generateColorPalette(feelings) {
   }
 }
 
-// Routes
-app.post('/api/palettes', async (req, res) => {
-  try {
-    const { name, colors, userId } = req.body;
-    const docRef = await addDoc(collection(db, 'palettes'), {
-      name,
-      colors,
-      userId,
-      createdAt: new Date()
-    });
-    res.json({ id: docRef.id });
-  } catch (error) {
-    console.error('Error saving palette:', error);
-    res.status(500).json({ error: 'Failed to save palette' });
-  }
-});
-
-app.get('/api/palettes', async (req, res) => {
-  try {
-    const { userId } = req.query;
-    const q = query(collection(db, 'palettes'), where('userId', '==', userId));
-    const querySnapshot = await getDocs(q);
-    const palettes = [];
-    querySnapshot.forEach((doc) => {
-      palettes.push({ id: doc.id, ...doc.data() });
-    });
-    res.json(palettes);
-  } catch (error) {
-    console.error('Error fetching palettes:', error);
-    res.status(500).json({ error: 'Failed to fetch palettes' });
-  }
-});
-
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

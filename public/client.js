@@ -40,10 +40,7 @@ function openColorPicker(colorBoxElement, top, left) {
   pickrDiv.style.top = `${rect.top + window.scrollY}px`;
   pickrDiv.style.left = `${rect.left + window.scrollX}px`;
   pickrDiv.appendChild(pickrContainer);
-  
-  //const paletteContainer = document.getElementById('palette');
-  //paletteContainer.appendChild(pickrDiv);
-  
+
   const pickr = Pickr.create({
     el: pickrContainer,
     appClass: 'color-picker',
@@ -272,49 +269,6 @@ function updateUI(data) {
     permalinkContainer.innerHTML = `<a href="${base}/palette/${permalink}" class="button permalink">${base}/palette/${permalink}</a>`;
   } else {
     permalinkContainer.innerHTML = '';
-  }
-}
-
-// Função para obter a paleta atual
-function getPalette() {
-  const paletteContainer = document.getElementById('palette');
-  const colorBoxes = paletteContainer.querySelectorAll('.color-box');
-  const colors = [];
-  
-  colorBoxes.forEach(colorBox => {
-    const color = colorBox.style.backgroundColor;
-    colors.push(color);
-  });
-  
-  return colors;
-}
-
-function getAuthorizationUrl(palette) {
-  const clientId = 'HHaOzQKGyCGCz4mBZnGYVx'; // Substitua pelo seu client_id
-  const redirectUri = encodeURIComponent(' http://localhost:3000/'); // Substitua pela sua URL de redirecionamento
-  
-  const authorizationUrl = `https://www.figma.com/oauth?client_id=${clientId}&redirect_uri=${redirectUri}&scope=file_read&response_type=code&state=${encodeURIComponent(JSON.stringify({ palette }))}`;
-  
-  return authorizationUrl;
-}
-
-async function exportToFigma() {
-  const response = await fetch('/exportToFigma', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      palette: currentPalette
-    })
-  });
-  
-  if (response.ok) {
-    const data = await response.json();
-    const fileUrl = data.fileUrl;
-    window.open(fileUrl, '_blank');
-  } else {
-    console.error('Error exporting to Figma');
   }
 }
 
