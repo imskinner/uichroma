@@ -37,7 +37,13 @@ function hslToRgb(h, s, l) {
   else if (h < 240) { r = 0; g = x; b = c; }
   else if (h < 300) { r = x; g = 0; b = c; }
   else              { r = c; g = 0; b = x; }
-  return { r: r + m, g: g + m, b: b + m };
+  // Clamp to [0,1] — floating-point rounding can push s slightly above 1.0,
+  // making m a tiny negative number and r/g/b slip below zero.
+  return {
+    r: Math.max(0, Math.min(1, r + m)),
+    g: Math.max(0, Math.min(1, g + m)),
+    b: Math.max(0, Math.min(1, b + m)),
+  };
 }
 
 function extractPermalink(input) {
