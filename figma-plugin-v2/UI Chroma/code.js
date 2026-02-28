@@ -81,8 +81,11 @@ async function createPaintStyles(colors) {
 }
 
 async function createButtonComponentSet(bodyFont) {
-  const [family, style] = (bodyFont || 'Inter-Regular').split('-');
-  const fontName = { family: family || 'Inter', style: style || 'Regular' };
+  const fontStr = bodyFont || 'Inter-Regular';
+  const hyphenIdx = fontStr.indexOf('-');
+  const family = hyphenIdx !== -1 ? fontStr.slice(0, hyphenIdx) : fontStr;
+  const style  = hyphenIdx !== -1 ? fontStr.slice(hyphenIdx + 1) : 'Regular';
+  const fontName = { family, style };
   await figma.loadFontAsync(fontName);
 
   // Build a lookup: styleMap['Primary']['50'] = PaintStyle

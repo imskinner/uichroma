@@ -12,8 +12,11 @@
   ],
   "networkAccess": {
     "allowedDomains": [
-      "https://www.uichroma.com",
+      "https://www.uichroma.com"
+    ],
+    "devAllowedDomains": [
       "http://localhost:3000"
-    ]
+    ],
+    "reasoning": "Fetches color palette data from the UI Chroma API to import into Figma as Paint Styles and components."
   }
 }

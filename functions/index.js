@@ -136,6 +136,21 @@ app.post('/generatePalette', async (req,res)=>{
   }catch(err){ console.error(err); res.status(500).send(err.message); }
 });
 
+// Endpoint: get palette for Figma plugin
+app.post('/api/getPalette', async (req, res) => {
+  try {
+    const { permalink } = req.body;
+    if (!permalink) return res.status(400).json({ error: 'permalink is required' });
+    const doc = await db.collection('palettes').doc(permalink).get();
+    if (!doc.exists) return res.json({ palette: null });
+    const data = doc.data();
+    res.json({ palette: { colors: data.colors, keywords: data.keywords } });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch palette.' });
+  }
+});
+
 // Endpoint: get palette data
 app.get('/palette/:permalink/data', async (req,res)=>{
   try{
