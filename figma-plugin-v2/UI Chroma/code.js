@@ -42,6 +42,21 @@ function hslToRgb(h, s, l) {
   return { r: r + m, g: g + m, b: b + m };
 }
 
+// Accept a full URL like https://www.uichroma.com/palette/<id> or just the bare id
+function extractPermalink(input) {
+  var trimmed = input.trim();
+  // If it contains a slash, grab the last non-empty path segment
+  var parts = trimmed.split('/').filter(function(p) { return p.length > 0; });
+  return parts[parts.length - 1] || trimmed;
+}
+
+// Safely get a hex string from either { hex: '#...' } or a bare '#...' string
+function getHex(colorData) {
+  if (!colorData) return null;
+  if (typeof colorData === 'string') return colorData;
+  return colorData.hex || null;
+}
+
 async function fetchPalette(permalink) {
   const response = await fetch(`${API_BASE}/api/getPalette`, {
     method: 'POST',
@@ -58,25 +73,27 @@ async function createPaintStyles(colors) {
   const COLOR_KEYS = ['primary', 'secondary', 'accent', 'warning', 'danger', 'success', 'info'];
 
   for (const key of COLOR_KEYS) {
-    const colorData = colors[key];
-    if (!colorData || !colorData.hex) continue;
+    const hex = getHex(colors[key]);
+    if (!hex) continue;
     const label = key.charAt(0).toUpperCase() + key.slice(1);
-    const { h, s } = hexToHsl(colorData.hex);
+    const hsl = hexToHsl(hex);
 
     for (const stop of TONAL_STOPS) {
       const paintStyle = figma.createPaintStyle();
       paintStyle.name = `Color/${label}/${stop}`;
-      paintStyle.paints = [{ type: 'SOLID', color: hslToRgb(h, s, stop / 100) }];
+      paintStyle.paints = [{ type: 'SOLID', color: hslToRgb(hsl.h, hsl.s, stop / 100) }];
     }
   }
 
   // Neutral: low saturation, derived from primary hue
-  const primaryHex = (colors.neutral || colors.primary).hex;
-  const { h: neutralH } = hexToHsl(primaryHex);
-  for (const stop of NEUTRAL_STOPS) {
-    const paintStyle = figma.createPaintStyle();
-    paintStyle.name = `Color/Neutral/${stop}`;
-    paintStyle.paints = [{ type: 'SOLID', color: hslToRgb(neutralH, 0.05, stop / 100) }];
+  const neutralHex = getHex(colors.neutral) || getHex(colors.primary);
+  if (neutralHex) {
+    const neutralH = hexToHsl(neutralHex).h;
+    for (const stop of NEUTRAL_STOPS) {
+      const paintStyle = figma.createPaintStyle();
+      paintStyle.name = `Color/Neutral/${stop}`;
+      paintStyle.paints = [{ type: 'SOLID', color: hslToRgb(neutralH, 0.05, stop / 100) }];
+    }
   }
 }
 
@@ -152,7 +169,8 @@ figma.ui.onmessage = async (msg) => {
 
   if (msg.type === 'create-styles-components') {
     try {
-      const { permalink, projectName, titleFont, bodyFont } = msg;
+      const { projectName, titleFont, bodyFont } = msg;
+      const permalink = extractPermalink(msg.permalink);
 
       const palette = await fetchPalette(permalink);
       const colors = palette.colors;
