@@ -23,8 +23,8 @@
 
 ## Wire Up Existing Unconnected Code
 
-- [ ] **Copy permalink to clipboard** — `copyPermalinkToClipboard()` in `client.js` is implemented but never attached to the permalink link. Add `onclick="copyPermalinkToClipboard(event)"` to the generated `<a>` in `updateUI()`.
-- [ ] **Copy hex to clipboard** — add a click-to-copy on the `.hex` span inside each `.color-box`. Reuse the clipboard pattern from `copyPermalinkToClipboard()`.
+- [x] **Copy permalink to clipboard** — wired `copyPermalinkToClipboard()` to the generated permalink `<a>` in `updateUI()`.
+- [x] **Copy hex to clipboard** — `.hex` span in each color box now copies hex on click, shows "Copied!" for 3 seconds, without triggering the color picker.
 
 ## Figma Plugin v2 (Fix to Make Functional)
 

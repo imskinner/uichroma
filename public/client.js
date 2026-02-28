@@ -113,6 +113,17 @@ function createColorBox(color, index) {
   colorBox.className = 'color-box';
   colorBox.style.backgroundColor = color;
   colorBox.innerHTML = `<span class="hex">${color}</span><span class="color-label">${colorLabels[index]}</span>`;
+  colorBox.querySelector('.hex').addEventListener('click', (event) => {
+    event.stopPropagation();
+    const span = event.target;
+    const hex = span.innerText;
+    navigator.clipboard.writeText(hex)
+      .then(() => {
+        span.innerText = 'Copied!';
+        setTimeout(() => { span.innerText = hex; }, 3000);
+      })
+      .catch(err => console.error('Error copying hex to clipboard:', err));
+  });
   colorBox.onclick = (event) => {
     event.stopPropagation();
     const rect = colorBox.getBoundingClientRect();
@@ -266,7 +277,7 @@ function updateUI(data) {
   const permalinkContainer = document.getElementById('permalink-container');
   const base = window.location.origin;
   if (permalink) {
-    permalinkContainer.innerHTML = `<a href="${base}/palette/${permalink}" class="button permalink">${base}/palette/${permalink}</a>`;
+    permalinkContainer.innerHTML = `<a href="${base}/palette/${permalink}" class="button permalink" onclick="copyPermalinkToClipboard(event)">${base}/palette/${permalink}</a>`;
   } else {
     permalinkContainer.innerHTML = '';
   }
