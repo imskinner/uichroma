@@ -1,4 +1,5 @@
-const functions = require('firebase-functions');
+const { onRequest } = require('firebase-functions/v2/https');
+const { defineSecret } = require('firebase-functions/params');
 const admin = require('firebase-admin');
 const express = require('express');
 const cors = require('cors');
@@ -148,4 +149,5 @@ app.get('/palette/:permalink/data', async (req,res)=>{
   }catch(err){ console.error(err); res.status(500).send(err.message); }
 });
 
-exports.app = functions.runWith({ secrets: ['OPENAI_KEY'] }).https.onRequest(app); 
+const openAiKey = defineSecret('OPENAI_KEY');
+exports.app = onRequest({ secrets: [openAiKey] }, app); 
