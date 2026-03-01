@@ -5,23 +5,16 @@ const cors = require('cors');
 const fetch = require('node-fetch');
 const path = require('path');
 const crypto = require('crypto');
-const { initializeApp } = require('firebase/app');
-const { getFirestore, collection, addDoc, query, where, getDocs } = require('firebase/firestore');
+const admin = require('firebase-admin');
 
 const app = express();
 
-// Initialize Firebase
-const firebaseConfig = {
-  apiKey: process.env.FIREBASE_API_KEY,
-  authDomain: process.env.FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.FIREBASE_PROJECT_ID,
-  storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.FIREBASE_APP_ID
-};
-
-const firebaseApp = initializeApp(firebaseConfig);
-const db = getFirestore(firebaseApp);
+// Initialize Firebase Admin SDK with service account credentials
+const serviceAccount = require('./ui-chroma-app-firebase-adminsdk-fbsvc-ecc476714d.json');
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)
+});
+const db = admin.firestore();
 
 app.use(cors());
 app.use(express.static(path.join(__dirname, 'public')));
@@ -36,13 +29,11 @@ app.get('/', (req, res) => {
 // Get a palette from Firestore
 async function getPaletteFromDatabase(permalink) {
   try {
-    const palettesRef = collection(db, 'palettes');
-    const q = query(palettesRef, where('permalink', '==', permalink));
-    const querySnapshot = await getDocs(q);
-    
+    const querySnapshot = await db.collection('palettes')
+      .where('permalink', '==', permalink).get();
+
     if (!querySnapshot.empty) {
-      const paletteDoc = querySnapshot.docs[0];
-      const palette = paletteDoc.data();
+      const palette = querySnapshot.docs[0].data();
       return { colors: palette.colors, aiResponse: palette.ai_response };
     } else {
       return null;
@@ -154,15 +145,14 @@ app.post('/generatePalette', async (req, res) => {
     };
     
     // Add palette to Firestore
-    const palettesRef = collection(db, 'palettes');
-    const docRef = await addDoc(palettesRef, {
+    const docRef = await db.collection('palettes').add({
       keywords: feelings,
       colors: paletteData,
       ai_response: aiResponse,
       created_at: new Date().toISOString(),
       permalink: permalink
     });
-    
+
     res.json({
       permalink,
       colors: paletteData,
@@ -182,13 +172,11 @@ app.post('/generatePalette', async (req, res) => {
 app.get('/palette/:permalink/data', async (req, res) => {
   try {
     const permalink = req.params.permalink;
-    const palettesRef = collection(db, 'palettes');
-    const q = query(palettesRef, where('permalink', '==', permalink));
-    const querySnapshot = await getDocs(q);
-    
+    const querySnapshot = await db.collection('palettes')
+      .where('permalink', '==', permalink).get();
+
     if (!querySnapshot.empty) {
-      const paletteDoc = querySnapshot.docs[0];
-      const palette = paletteDoc.data();
+      const palette = querySnapshot.docs[0].data();
       res.json({ colors: palette.colors, aiResponse: palette.ai_response, keywords: palette.keywords });
     } else {
       res.status(404).json({ error: 'Palette not found.' });

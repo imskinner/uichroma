@@ -11,6 +11,9 @@ ui-debug.log
 .env.local
 .env.*.local
 
+# Firebase service account keys
+*-adminsdk-*.json
+
 # Build files
 build/
 dist/
@@ -24,3 +27,4 @@ dist/
 # OS files
 .DS_Store
 Thumbs.db
+.vercel
