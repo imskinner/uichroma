@@ -582,8 +582,7 @@ async function createLandingPage(styleMap, tsMap, titleFont, bodyFont, pageName,
     if (!pillTextFilled) pillText.fills = [{ type: 'SOLID', color: { r: 0.08, g: 0.38, b: 0.22 } }];
     const h1 = figma.createText();
     h1.fontName = titleFont;
-    h1.characters = 'Build beautiful products
-faster than ever';
+    h1.characters = 'Build beautiful products\nfaster than ever';
     h1.fontSize = 56;
     h1.textAlignHorizontal = 'CENTER';
     h1.fills = [{ type: 'SOLID', color: { r: 0.07, g: 0.07, b: 0.1 } }];
@@ -591,8 +590,7 @@ faster than ever';
     await applyTextStyle(h1, tsMap, 'Type/Display');
     const sub = figma.createText();
     sub.fontName = bodyFont;
-    sub.characters = 'A powerful UI system built from your colour palette.
-Start designing with cohesive, accessible colours from day one.';
+    sub.characters = 'A powerful UI system built from your colour palette.\nStart designing with cohesive, accessible colours from day one.';
     sub.fontSize = 18;
     sub.textAlignHorizontal = 'CENTER';
     sub.fills = [{ type: 'SOLID', color: { r: 0.35, g: 0.35, b: 0.42 } }];
