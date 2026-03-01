@@ -211,6 +211,118 @@ button:hover, .button:hover {
   padding-left: 0px;
 }
 
+#export-section {
+  margin-bottom: 24px;
+}
+#export-section h2 {
+  font-family: "Epilogue", sans-serif;
+  font-weight: 700;
+  font-size: 2.4rem;
+  line-height: 3.2rem;
+  margin-bottom: 16px;
+  margin-top: 0;
+  color: #1B1A18;
+}
+@media screen and (max-width: 1366px) {
+  #export-section h2 {
+    font-size: 2rem;
+    line-height: 2.8rem;
+  }
+}
+#export-section .export-buttons {
+  display: flex;
+  flex-flow: row wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+#export-section .export-option {
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: stretch;
+  border: 1px solid #CECCCA;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #FFFFFF;
+}
+#export-section .export-btn {
+  padding: 12px 16px;
+  background: #FFFFFF;
+  color: #1B1A18;
+  font-family: "Inter", sans-serif;
+  font-weight: 500;
+  font-size: 1.4rem;
+  line-height: 2rem;
+  border: none;
+  border-right: 1px solid #CECCCA;
+  border-radius: 0;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+#export-section .export-btn:hover {
+  background-color: #E5F4FF;
+}
+#export-section .export-btn.active {
+  background-color: #E5F4FF;
+  color: #0072C6;
+}
+#export-section .export-actions {
+  display: flex;
+  flex-flow: row nowrap;
+}
+#export-section .export-actions button {
+  padding: 12px 12px;
+  background: #FFFFFF;
+  color: #6F6B67;
+  font-family: "Inter", sans-serif;
+  font-weight: 400;
+  font-size: 1.2rem;
+  line-height: 2rem;
+  border: none;
+  border-radius: 0;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  white-space: nowrap;
+}
+#export-section .export-actions button:hover {
+  background-color: #FAFAFA;
+  color: #008CF4;
+}
+#export-section .export-actions button + button {
+  border-left: 1px solid #EEEDEC;
+}
+
+#export-preview {
+  background-color: #42403D;
+  color: #FAFAFA;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 24px;
+  overflow-x: auto;
+  max-height: 320px;
+  overflow-y: auto;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 1.2rem;
+  line-height: 1.8rem;
+}
+#export-preview code {
+  white-space: pre;
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+}
+@media screen and (max-width: 1366px) {
+  #export-preview {
+    max-height: 240px;
+    font-size: 1.1rem;
+    line-height: 1.6rem;
+  }
+}
+@media screen and (max-width: 800px) {
+  #export-preview {
+    max-height: 200px;
+  }
+}
+
 .logo {
   margin-bottom: 48px;
 }
@@ -387,4 +499,4 @@ button:hover, .button:hover {
   100% {
     opacity: 100%;
   }
-}/*# sourceMappingURL=style.css.map */
+}

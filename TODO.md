@@ -36,11 +36,11 @@
 
 ## Feature: Export Options
 
-- [ ] Add an "Export" dropdown or button section to the palette page.
-- [ ] Implement **CSS Variables** export — generate `:root { --color-primary: ...; }` block from palette data, copy-to-clipboard + download as `.css`.
-- [ ] Implement **SCSS Variables** export — generate `$color-primary: ...;` block, copy + download as `_palette.scss`.
-- [ ] Implement **Tailwind config** export — generate `colors: { primary: { DEFAULT: '...', 10: '...' } }` object, copy + download as `tailwind.palette.js`.
-- [ ] Implement **JSON export** — expose raw palette JSON as a downloadable file (already structured correctly in Firestore).
+- [x] Add an "Export" dropdown or button section to the palette page.
+- [x] Implement **CSS Variables** export — generate `:root { --color-primary: ...; }` block from palette data, copy-to-clipboard + download as `.css`.
+- [x] Implement **SCSS Variables** export — generate `$color-primary: ...;` block, copy + download as `_palette.scss`.
+- [x] Implement **Tailwind config** export — generate `colors: { primary: { DEFAULT: '...', 10: '...' } }` object, copy + download as `tailwind.palette.js`.
+- [x] Implement **JSON export** — expose raw palette JSON as a downloadable file (already structured correctly in Firestore).
 
 ## Feature: Accessibility Checker
 

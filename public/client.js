@@ -1,3 +1,8 @@
+// Stores normalized palette colors for export functions
+var currentPaletteColors = null;
+
+var PALETTE_KEYS = ["primary","secondary","accent","warning","danger","success","info","neutral"];
+
 function createCheckboxField(feeling) {
   const checkbox = document.createElement("input");
   checkbox.type = "checkbox";
@@ -192,10 +197,9 @@ function generateTonesForColor(h, s, count = 10, minL = 10, maxL = 95) {
 // Normalize palette colors to HSL rules
 function normalizePaletteColors(colors) {
   if (Array.isArray(colors)) return colors;
-  const ORDERED_KEYS = ["primary","secondary","accent","warning","danger","success","info","neutral"];
   const normalized = {};
   const primaryHSL = hexToHSL(colors.primary.hex);
-  ORDERED_KEYS.forEach(key => {
+  PALETTE_KEYS.forEach(key => {
     const orig = colors[key];
     if (!orig) return;
     let h, s, l, hex;
@@ -226,6 +230,121 @@ function normalizePaletteColors(colors) {
   return normalized;
 }
 
+// --- Export generators ---
+
+function generateCSSVariables(colors) {
+  var lines = [':root {'];
+  PALETTE_KEYS.forEach(function(key) {
+    var color = colors[key];
+    if (!color) return;
+    lines.push('  --color-' + key + ': ' + color.hex + ';');
+    if (color.tones && color.tones.length) {
+      color.tones.forEach(function(tone) {
+        lines.push('  --color-' + key + '-' + tone.l + ': ' + tone.hex + ';');
+      });
+    }
+  });
+  lines.push('}');
+  return lines.join('\n');
+}
+
+function generateSCSSVariables(colors) {
+  var lines = ['// UI Chroma Palette — SCSS Variables'];
+  PALETTE_KEYS.forEach(function(key) {
+    var color = colors[key];
+    if (!color) return;
+    lines.push('$color-' + key + ': ' + color.hex + ';');
+    if (color.tones && color.tones.length) {
+      color.tones.forEach(function(tone) {
+        lines.push('$color-' + key + '-' + tone.l + ': ' + tone.hex + ';');
+      });
+    }
+  });
+  return lines.join('\n');
+}
+
+function generateTailwindConfig(colors) {
+  var lines = [
+    '// UI Chroma Palette — Tailwind CSS Config',
+    '// Add to your tailwind.config.js under theme.extend.colors',
+    '',
+    'module.exports = {',
+    '  theme: {',
+    '    extend: {',
+    '      colors: {'
+  ];
+  PALETTE_KEYS.forEach(function(key, idx) {
+    var color = colors[key];
+    if (!color) return;
+    var comma = (idx < PALETTE_KEYS.length - 1) ? ',' : '';
+    lines.push("        '" + key + "': {");
+    lines.push("          DEFAULT: '" + color.hex + "',");
+    if (color.tones && color.tones.length) {
+      color.tones.forEach(function(tone, tIdx) {
+        var toneComma = (tIdx < color.tones.length - 1) ? ',' : '';
+        lines.push("          '" + tone.l + "': '" + tone.hex + "'" + toneComma);
+      });
+    }
+    lines.push('        }' + comma);
+  });
+  lines.push('      }', '    }', '  }', '};');
+  return lines.join('\n');
+}
+
+function generateJSONExport(colors) {
+  var exportObj = {};
+  PALETTE_KEYS.forEach(function(key) {
+    var color = colors[key];
+    if (!color) return;
+    exportObj[key] = {
+      hex: color.hex,
+      h: color.h,
+      s: color.s,
+      l: color.l,
+      tones: (color.tones || []).map(function(t) {
+        return { hex: t.hex, h: t.h, s: t.s, l: t.l };
+      })
+    };
+  });
+  return JSON.stringify(exportObj, null, 2);
+}
+
+var EXPORT_FORMATS = {
+  css:      { generator: generateCSSVariables,  filename: 'palette.css',         mime: 'text/css' },
+  scss:     { generator: generateSCSSVariables,  filename: '_palette.scss',       mime: 'text/x-scss' },
+  tailwind: { generator: generateTailwindConfig, filename: 'tailwind.palette.js', mime: 'application/javascript' },
+  json:     { generator: generateJSONExport,     filename: 'palette.json',        mime: 'application/json' }
+};
+
+function getExportText(format) {
+  if (!currentPaletteColors || !EXPORT_FORMATS[format]) return '';
+  return EXPORT_FORMATS[format].generator(currentPaletteColors);
+}
+
+function copyExportToClipboard(text, btn) {
+  navigator.clipboard.writeText(text)
+    .then(function() {
+      var original = btn.textContent;
+      btn.textContent = 'Copied!';
+      setTimeout(function() { btn.textContent = original; }, 2000);
+    })
+    .catch(function(err) {
+      console.error('Error copying to clipboard:', err);
+    });
+}
+
+function downloadExportFile(text, filename, mimeType) {
+  var blob = new Blob([text], { type: mimeType });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
 function updateUI(data) {
   let { colors, permalink, keywords } = data;
   // Normalize colors using HSL logic before rendering
@@ -247,8 +366,12 @@ function updateUI(data) {
       paletteContainer.appendChild(colorBox);
     });
   } else if (colors && typeof colors === 'object') {
+    // Store for export functions
+    currentPaletteColors = colors;
+    var exportSection = document.getElementById('export-section');
+    if (exportSection) exportSection.style.display = 'block';
+
     // Render structured palettes in a fixed order
-    const ORDERED_KEYS = ["primary","secondary","accent","warning","danger","success","info","neutral"];
     const DISPLAY_LABELS = {
       primary: "Primary",
       secondary: "Secondary",
@@ -259,7 +382,7 @@ function updateUI(data) {
       info: "Info",
       neutral: "Neutral"
     };
-    ORDERED_KEYS.forEach((key, index) => {
+    PALETTE_KEYS.forEach((key, index) => {
       const val = colors[key];
       if (!val) return;
       const { hex, description } = val;
@@ -353,7 +476,51 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (paletteId && paletteId !== 'undefined') {
     await showPalette(paletteId);
   }
-  
+
+  // Export section event listeners (palette page only)
+  if (document.getElementById('export-section')) {
+    document.querySelectorAll('.export-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var format = btn.getAttribute('data-format');
+        var text = getExportText(format);
+        var preview = document.getElementById('export-preview');
+        var code = document.getElementById('export-preview-code');
+
+        // Toggle off if same format already shown
+        if (preview.style.display !== 'none' && preview.getAttribute('data-active-format') === format) {
+          preview.style.display = 'none';
+          preview.removeAttribute('data-active-format');
+          btn.classList.remove('active');
+          return;
+        }
+
+        code.textContent = text;
+        preview.style.display = 'block';
+        preview.setAttribute('data-active-format', format);
+
+        document.querySelectorAll('.export-btn').forEach(function(b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+      });
+    });
+
+    document.querySelectorAll('.export-copy').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var format = btn.getAttribute('data-format');
+        var text = getExportText(format);
+        if (text) copyExportToClipboard(text, btn);
+      });
+    });
+
+    document.querySelectorAll('.export-download').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var format = btn.getAttribute('data-format');
+        var text = getExportText(format);
+        var meta = EXPORT_FORMATS[format];
+        if (text && meta) downloadExportFile(text, meta.filename, meta.mime);
+      });
+    });
+  }
+
   //Generate color types checkboxes
   const predefinedFeelings = [
     "Vibrant",            // high saturation & contrast

@@ -24,6 +24,40 @@
               <article id="palette-description">
                 <ul id="descriptions" class="descriptions-list"></ul>
               </article>
+              <section id="export-section" style="display: none;">
+                <h2>Export Palette</h2>
+                <div class="export-buttons">
+                  <div class="export-option">
+                    <button class="export-btn" data-format="css">CSS Variables</button>
+                    <div class="export-actions">
+                      <button class="export-copy" data-format="css">Copy</button>
+                      <button class="export-download" data-format="css">Download</button>
+                    </div>
+                  </div>
+                  <div class="export-option">
+                    <button class="export-btn" data-format="scss">SCSS Variables</button>
+                    <div class="export-actions">
+                      <button class="export-copy" data-format="scss">Copy</button>
+                      <button class="export-download" data-format="scss">Download</button>
+                    </div>
+                  </div>
+                  <div class="export-option">
+                    <button class="export-btn" data-format="tailwind">Tailwind Config</button>
+                    <div class="export-actions">
+                      <button class="export-copy" data-format="tailwind">Copy</button>
+                      <button class="export-download" data-format="tailwind">Download</button>
+                    </div>
+                  </div>
+                  <div class="export-option">
+                    <button class="export-btn" data-format="json">JSON</button>
+                    <div class="export-actions">
+                      <button class="export-copy" data-format="json">Copy</button>
+                      <button class="export-download" data-format="json">Download</button>
+                    </div>
+                  </div>
+                </div>
+                <pre id="export-preview" style="display: none;"><code id="export-preview-code"></code></pre>
+              </section>
             <section>
                 <a href="../"><button>Start new palette</button></a>
               </section>
