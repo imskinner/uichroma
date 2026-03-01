@@ -210,11 +210,11 @@ function normalizePaletteColors(colors) {
       l = 10;
       hex = hslToHex(h, s, l);
     } else if (["warning","danger","success","info"].includes(key)) {
-      // normalize these colors to L=50
+      // soft clamp L to 35–65 range (preserves mood intent)
       const hslObj = hexToHSL(orig.hex);
       h = hslObj.h;
       s = hslObj.s;
-      l = 50;
+      l = Math.max(35, Math.min(65, hslObj.l));
       hex = hslToHex(h, s, l);
     } else {
       // keep original for primary, secondary, accent
