@@ -222,12 +222,6 @@ function nudgeHue(hue, range) {
   return distToMin <= distToMax ? range.min : range.max;
 }
 
-// Hue distance on the 360° wheel
-function hueDist(a, b) {
-  const d = Math.abs(a - b);
-  return Math.min(d, 360 - d);
-}
-
 // Validate and auto-correct palette colors
 function validatePalette(colors) {
   // 1. Ensure each color has HSL from its hex
@@ -254,62 +248,37 @@ function validatePalette(colors) {
     }
   }
 
-  // 3. Enforce hue separation between primary/secondary/accent (>= 25°)
-  const brandKeys = ['primary','secondary','accent'];
-  for (let i = 0; i < brandKeys.length; i++) {
-    for (let j = i + 1; j < brandKeys.length; j++) {
-      const a = colors[brandKeys[i]];
-      const b = colors[brandKeys[j]];
-      if (!a || !b) continue;
-      if (hueDist(a.h, b.h) < 25) {
-        // Shift the second color away by 25°
-        b.h = (b.h + 25) % 360;
-        b.hex = hslToHex(b.h, b.s, b.l);
-      }
-    }
-  }
-
-  // 4. Soften L normalization for semantic colors: clamp to 35–65 instead of forcing 50
-  for (const key of ['warning','danger','success','info']) {
-    const c = colors[key];
-    if (!c) continue;
-    if (c.l < 35) {
-      c.l = 35;
-      c.hex = hslToHex(c.h, c.s, c.l);
-    } else if (c.l > 65) {
-      c.l = 65;
-      c.hex = hslToHex(c.h, c.s, c.l);
+  // 3. Enforce accent contrast: clamp lightness to 25–55 for CTA usability
+  const accent = colors['accent'];
+  if (accent) {
+    if (accent.l < 25) {
+      accent.l = 25;
+      accent.hex = hslToHex(accent.h, accent.s, accent.l);
+    } else if (accent.l > 55) {
+      accent.l = 55;
+      accent.hex = hslToHex(accent.h, accent.s, accent.l);
     }
   }
 
   return colors;
 }
 
-const PALETTE_SYSTEM_PROMPT = `You are an expert UI color system designer. Generate a cohesive 7-color palette for a user interface based on the user's keywords and mood.
+const PALETTE_SYSTEM_PROMPT = `You are an expert AI color system designer. The user will describe a project, brand, mood, or aesthetic. Generate a cohesive 7-color UI palette that captures their vision.
 
-RULES:
-- Primary, Secondary, and Accent must be visually distinct — at least 30° hue separation between each pair.
-- Primary is the dominant brand color. Secondary complements it. Accent is for highlights and CTAs.
-- Semantic colors must stay in their expected hue families:
-  • Warning: yellow-orange range (H 30–55)
-  • Danger: red range (H 340–360 or 0–15)
-  • Success: green range (H 100–160)
-  • Info: blue range (H 190–240)
-- All colors should have saturation >= 40 unless the mood calls for muted/pastel tones.
-- Lightness for primary/secondary/accent should be 30–60 (usable on white backgrounds with good contrast).
+COLOR ROLES:
+- Primary: The dominant brand color. Can be any hue/lightness that fits the described mood.
+- Secondary: Complements the primary. Should feel cohesive but distinguishable.
+- Accent: Used for call-to-action buttons and interactive highlights. MUST have good contrast on white backgrounds (lightness 25–55, saturation >= 50).
+- Warning: Should feel cautionary. Must be in the yellow-orange family (hue 30–55).
+- Danger: Should feel urgent/negative. Must be in the red family (hue 340–360 or 0–15).
+- Success: Should feel positive/confirmatory. Must be in the green family (hue 100–160).
+- Info: Should feel neutral/informational. Must be in the blue family (hue 190–240).
 
-MOOD INTERPRETATION:
-- "Vibrant" → high saturation (70–100), full lightness range
-- "Muted" → low saturation (25–45), mid lightness
-- "Pastel" → low-mid saturation (30–50), high lightness (65–80)
-- "Earthy" → warm hues (0–60, 20–50), moderate saturation
-- "Warm" → hue range 0–60 (reds, oranges, yellows)
-- "Cool" → hue range 180–300 (blues, greens, purples)
-- "Monochromatic" → all colors from the same hue, vary saturation and lightness
-- "Analogous" → primary/secondary/accent within 30° of each other
-- "Complementary" → primary and secondary ~180° apart
-- "Triadic" → primary/secondary/accent ~120° apart
-- "Duotone" → two dominant hues only, semantic colors still follow their hue families
+GUIDELINES:
+- Interpret the user's prompt holistically — if they say "dark luxury brand", primary could be near-black or deep purple. If they say "playful kids app", use bright saturated colors.
+- Primary and secondary have NO fixed lightness or saturation rules — choose what best matches the prompt.
+- The overall palette should feel intentional and cohesive, like a professional designer chose it.
+- Each color's description should explain how it serves the user's stated vision.
 
 For each color provide a hex code, HSL values (h 0-360, s 0-100, l 0-100), and a brief description explaining the design choice.`;
 
@@ -356,7 +325,7 @@ async function generateColorPalette(feelings) {
         model: "gpt-4o",
         messages: [
           { role: "system", content: PALETTE_SYSTEM_PROMPT },
-          { role: "user", content: `Keywords: "${feelings}".` }
+          { role: "user", content: feelings }
         ],
         functions: paletteFunction,
         function_call: { name: "generate_palette" },

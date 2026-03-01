@@ -3,25 +3,6 @@ var currentPaletteColors = null;
 
 var PALETTE_KEYS = ["primary","secondary","accent","warning","danger","success","info","neutral"];
 
-function createCheckboxField(feeling) {
-  const checkbox = document.createElement("input");
-  checkbox.type = "checkbox";
-  checkbox.id = `feeling-${feeling}`;
-  checkbox.value = feeling;
-  
-  const label = document.createElement("label");
-  label.htmlFor = `feeling-${feeling}`;
-  label.textContent = feeling;
-  
-  const checkboxField = document.createElement("div");
-  checkboxField.className = "checkboxField";
-  
-  checkboxField.appendChild(checkbox);
-  checkboxField.appendChild(label);
-  
-  return checkboxField;
-}
-
 function positionPickr(pickr, top, left) {
   const pickrRoot = pickr.getRoot();
   pickrRoot.app.style.position = 'absolute';
@@ -209,15 +190,7 @@ function normalizePaletteColors(colors) {
       s = 10;
       l = 10;
       hex = hslToHex(h, s, l);
-    } else if (["warning","danger","success","info"].includes(key)) {
-      // soft clamp L to 35–65 range (preserves mood intent)
-      const hslObj = hexToHSL(orig.hex);
-      h = hslObj.h;
-      s = hslObj.s;
-      l = Math.max(35, Math.min(65, hslObj.l));
-      hex = hslToHex(h, s, l);
     } else {
-      // keep original for primary, secondary, accent
       hex = orig.hex;
       const hslObj = hexToHSL(orig.hex);
       h = hslObj.h;
@@ -591,27 +564,15 @@ function updateUI(data) {
 
 if(!(window.location.pathname.split('/')[2])){
   document.getElementById('generate').addEventListener('click', async () => {
+    const feelings = document.getElementById('prompt').value.trim();
+    if (!feelings) return;
+
     const loader = document.getElementById("loader");
     document.getElementById("response-container").innerHTML = "";
     document.getElementById("permalink-container").innerHTML = "";
     document.getElementById("placeholder-template").innerHTML = "";
     document.getElementById("palette").innerHTML = "";
     loader.style.display = "inline-block"; // Show loader
-    
-    const feelingsInput = document.getElementById('feelings').value;
-    const checkboxes = document.querySelectorAll('#feelingsCheckboxes input:checked');
-    let checkedFeelings = '';
-    
-    checkboxes.forEach((checkbox) => {
-      checkedFeelings += ` ${checkbox.value}`;
-    });
-    
-    checkboxes.forEach((checkbox) => {
-      checkbox.checked = false;
-    });
-    
-    const feelings = `${feelingsInput}${checkedFeelings}`;
-    console.log('feelings:', feelings);
     
     const response = await fetch('/generatePalette', {
       method: 'POST',
@@ -707,28 +668,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  //Generate color types checkboxes
-  const predefinedFeelings = [
-    "Vibrant",            // high saturation & contrast
-    "Muted",              // low chroma, soft sophistication
-    "Pastel",             // light, low‑saturation “soft” tones
-    "Earthy",             // natural terracottas, ochres, mossy greens
-    "Warm",               // reds, oranges, yellows – cozy & inviting
-    "Cool",               // blues, greens, purples – calm & modern
-    "Neutral",            // greys, beiges, whites, blacks – clean base
-    "Monochromatic",      // variations of one hue for ultra‑cohesion
-    "Analogous",          // three adjacent hues – gentle harmony
-    "Complementary",      // opposite hues – maximum contrast
-    "Split-Complementary",// hue + the two adjacent to its complement
-    "Triadic",            // three equidistant hues – balanced vibrancy
-    "Duotone"             // only two main colors – bold graphic impact
-  ];
-  
-  const feelingsCheckboxesContainer = document.getElementById("feelingsCheckboxes");
-  predefinedFeelings.forEach(feeling => {
-    const checkboxField = createCheckboxField(feeling);
-    feelingsCheckboxesContainer.appendChild(checkboxField);
-  });
 });
 
 //Show Palette

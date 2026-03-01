@@ -89,7 +89,7 @@ label {
   align-items: stretch;
   margin-bottom: 2.4rem;
 }
-.inputText input[type=text] {
+.inputText textarea {
   padding: 16px;
   background: #FFFFFF;
   border: 1px solid #CECCCA;
@@ -98,20 +98,22 @@ label {
   font-weight: 400;
   font-size: 1.8rem;
   line-height: 28px;
+  resize: vertical;
+  min-height: 96px;
   transition: background-color 0.3s ease-in-out;
 }
-.inputText input[type=text]:focus {
+.inputText textarea:focus {
   outline-color: #008CF4;
   outline-style: solid;
   outline-width: 2px;
   border-color: #008CF4;
 }
-.inputText input[type=text]:hover {
+.inputText textarea:hover {
   transition: background-color 0.3s ease-in-out;
   background-color: #E5F4FF;
 }
 @media screen and (max-width: 1366px) {
-  .inputText input[type=text] {
+  .inputText textarea {
     padding: 12px;
     font-size: 1.6rem;
     line-height: 2.4rem;
@@ -325,46 +327,6 @@ button:hover, .button:hover {
 
 .logo {
   margin-bottom: 48px;
-}
-
-.checkboxCombo label[for=feelingsCheckboxes] {
-  font-size: 1.4rem;
-  margin-bottom: 12px;
-  font-weight: 500;
-  line-height: 18px;
-  letter-spacing: 0.02em;
-  display: block;
-  color: #0072C6;
-}
-
-#feelingsCheckboxes {
-  display: flex;
-  flex-flow: row wrap;
-  align-items: flex-start;
-  margin-bottom: 24px;
-}
-#feelingsCheckboxes div {
-  margin-right: 8px;
-  margin-bottom: 8px;
-  padding: 12px;
-  background-color: #E5F4FF;
-  border-radius: 8px;
-}
-#feelingsCheckboxes div:hover {
-  background-color: #B5E0FF;
-}
-#feelingsCheckboxes div input {
-  cursor: pointer;
-}
-#feelingsCheckboxes div label {
-  cursor: pointer;
-  color: #001D33;
-  font-weight: 400;
-}
-@media screen and (max-width: 1366px) {
-  #feelingsCheckboxes div {
-    padding: 8px;
-  }
 }
 
 .rightCol {

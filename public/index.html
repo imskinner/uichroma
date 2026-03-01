@@ -19,20 +19,15 @@
             <section class="logo"><img src="img/logo.svg" alt="UI Chroma" height="28"></section>
             <section class="content">
               <header>
-                <h1>Discover AI-Generated Color Schemes for Your Next Design with UI Chroma</h1>
-                <p> Input keywords, select mood traits, and let our AI create your perfect palette. With seamless exports to Figma, SCSS, and React, implementing your color schemes has never been easier. Try UI Chroma today.</p>
+                <h1>AI-Powered Color Palette Generator</h1>
+                <p>Describe your project, brand, or mood — our AI will craft a complete color system tailored to your vision.</p>
               </header>
               <section>
                 <div class="inputText">
-                  <label for="feelings">Enter keywords for your color palette:</label>
-                  <input type="text" id="feelings" placeholder="e.g. modern, serene, wellness app">
-                  
+                  <label for="prompt">Describe your project or the vibe you're going for:</label>
+                  <textarea id="prompt" rows="3" placeholder="e.g. A fintech app that feels trustworthy and modern, with a bold accent for CTAs..."></textarea>
                 </div>
-                <div class="checkboxCombo">
-                  <label for="feelingsCheckboxes">Select a color mood to enhance your mix:</label>
-                  <div id="feelingsCheckboxes"></div>
-                </div>
-                <button id="generate">Generate Color Palette</button>
+                <button id="generate">Generate Palette</button>
               </section>
             </section>
         </section>
@@ -50,7 +45,7 @@
             </div>
             <div id="palette"></div>
             <div id="response-container">
-              <h3>Enter your keywords to generate a color palette</h3>
+              <h3>Describe your vision to generate a color palette</h3>
             </div>
             
             <div id="permalink-container"></div>

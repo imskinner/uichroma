@@ -128,7 +128,7 @@ label{
     align-items: stretch;
     margin-bottom: 2.4rem;
     
-    input[type=text]{
+    textarea{
         padding: 16px;
         background: $white;
         border: 1px solid $neutral-2;
@@ -137,6 +137,8 @@ label{
         font-weight: $regular;
         font-size: 1.8rem;
         line-height: 28px;
+        resize: vertical;
+        min-height: 96px;
         transition: background-color 0.3s ease-in-out;
 
         &:focus{
@@ -150,7 +152,7 @@ label{
             transition: background-color 0.3s ease-in-out;
             background-color: $primary-0;
         }
-        
+
         @include bp-small-desktop{
             padding: 12px;
             font-size: 1.6rem;
@@ -380,48 +382,6 @@ button, .button{
 //Logo DIV
 .logo{
     margin-bottom: 48px;
-}
-
-.checkboxCombo{
-    label[for=feelingsCheckboxes]{
-        font-size: 1.4rem;
-        margin-bottom: 12px;
-        font-weight: $semibold;
-        line-height: 18px;
-        letter-spacing: 0.02em;
-        display: block;
-        color: $primary-6;
-    } 
-}
-
-#feelingsCheckboxes{
-    display: flex;
-    flex-flow: row wrap;
-    align-items: flex-start;
-    margin-bottom: 24px;
-    
-    div{
-        margin-right: 8px;
-        margin-bottom: 8px;
-        padding: 12px;
-        background-color: $primary-0;
-        border-radius: 8px;
-        &:hover{
-            background-color: $primary-1;
-        }
-        input{
-            cursor: pointer;
-        }
-        label{
-            cursor: pointer;
-            color: $primary-9;
-            font-weight: $regular;
-        }
-        
-        @include bp-small-desktop{
-            padding: 8px;
-        };
-    }
 }
 
 //Right Column: where the palette is rendered
