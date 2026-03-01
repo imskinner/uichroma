@@ -65,9 +65,17 @@
         </section>
         <section class="rightCol">
             <div id="loader" class="loader" style="display: none;"></div>
-            <div id="palette" style="position: relative;"></div>
-            <div id="permalink-container"></div>
-
+            <nav id="view-tabs" class="view-tabs" style="display: none;">
+                <button class="view-tab active" data-view="palette">Palette</button>
+                <button class="view-tab" data-view="shades">Shades</button>
+                <button class="view-tab" data-view="demo">Demo</button>
+            </nav>
+            <div id="view-palette" class="view-panel active">
+                <div id="palette" style="position: relative;"></div>
+                <div id="permalink-container"></div>
+            </div>
+            <div id="view-shades" class="view-panel"></div>
+            <div id="view-demo" class="view-panel"></div>
         </section>
     </div>
     <input type="color" id="color-picker" style="display: none;">

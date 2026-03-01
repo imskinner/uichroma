@@ -374,12 +374,18 @@ button:hover, .button:hover {
   padding: 64px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
   font-weight: 400;
   font-size: 1.4rem;
   line-height: 20px;
   color: #42403D;
+  overflow-y: auto;
+}
+.rightCol .loader {
+  align-self: center;
+  margin-top: auto;
+  margin-bottom: auto;
 }
 .rightCol h3 {
   color: #585451;
@@ -499,4 +505,337 @@ button:hover, .button:hover {
   100% {
     opacity: 100%;
   }
+}
+.view-tabs {
+  display: flex;
+  flex-flow: row nowrap;
+  gap: 4px;
+  background: #EEEDEC;
+  border-radius: 8px;
+  padding: 4px;
+  margin-bottom: 24px;
+  width: 100%;
+  box-sizing: border-box;
+  justify-content: center;
+}
+
+.view-tab {
+  padding: 10px 24px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #6F6B67;
+  font-family: "Inter", sans-serif;
+  font-weight: 500;
+  font-size: 1.4rem;
+  line-height: 2rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+.view-tab:hover {
+  color: #42403D;
+}
+.view-tab.active {
+  background: #FFFFFF;
+  color: #008CF4;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.view-panel {
+  display: none;
+  width: 100%;
+}
+.view-panel.active {
+  display: block;
+}
+
+.shade-card {
+  background: #FFFFFF;
+  border: 1px solid #EEEDEC;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  overflow: hidden;
+  transition: box-shadow 0.2s ease;
+}
+.shade-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.shade-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+}
+.shade-card-header .shade-color-name {
+  font-family: "Epilogue", sans-serif;
+  font-weight: 700;
+  font-size: 1.6rem;
+  color: #1B1A18;
+}
+.shade-card-header .shade-hex-value {
+  font-family: "Inter", sans-serif;
+  font-weight: 400;
+  font-size: 1.2rem;
+  color: #85807A;
+}
+
+.shade-strip {
+  display: flex;
+  flex-flow: row nowrap;
+}
+
+.shade-swatch {
+  flex: 1;
+  height: 56px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.shade-swatch:hover {
+  transform: scaleY(1.12);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 1;
+}
+.shade-swatch .shade-label {
+  font-family: "Inter", sans-serif;
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.4rem;
+  opacity: 0.8;
+}
+.shade-swatch .shade-hex {
+  font-family: "Inter", sans-serif;
+  font-size: 0.9rem;
+  line-height: 1.2rem;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+.shade-swatch:hover .shade-hex {
+  opacity: 0.9;
+}
+
+.demo-section {
+  margin-bottom: 24px;
+}
+
+.demo-section-title {
+  font-family: "Epilogue", sans-serif;
+  font-weight: 700;
+  font-size: 1.4rem;
+  color: #85807A;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 12px;
+}
+
+.demo-navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-radius: 8px;
+  color: #FFFFFF;
+}
+.demo-navbar .demo-nav-brand {
+  font-family: "Epilogue", sans-serif;
+  font-weight: 700;
+  font-size: 1.8rem;
+}
+.demo-navbar .demo-nav-links {
+  display: flex;
+  gap: 20px;
+}
+.demo-navbar .demo-nav-links span {
+  font-size: 1.4rem;
+  opacity: 0.85;
+  cursor: pointer;
+}
+.demo-navbar .demo-nav-links span:hover {
+  opacity: 1;
+}
+
+.demo-hero {
+  padding: 48px 32px;
+  border-radius: 8px;
+  text-align: center;
+  color: #FFFFFF;
+}
+.demo-hero .demo-hero-title {
+  font-family: "Epilogue", sans-serif;
+  font-weight: 700;
+  font-size: 3.2rem;
+  line-height: 4rem;
+  margin-bottom: 12px;
+}
+.demo-hero .demo-hero-sub {
+  font-size: 1.6rem;
+  margin-bottom: 20px;
+  opacity: 0.9;
+}
+
+.demo-btn {
+  display: inline-block;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-family: "Inter", sans-serif;
+  font-weight: 500;
+  font-size: 1.4rem;
+  line-height: 2rem;
+  color: #FFFFFF;
+  cursor: pointer;
+  transition: filter 0.2s ease;
+}
+.demo-btn:hover {
+  filter: brightness(1.1);
+}
+
+.demo-btn-outline {
+  display: inline-block;
+  padding: 12px 24px;
+  border: 2px solid;
+  border-radius: 8px;
+  background: transparent;
+  font-family: "Inter", sans-serif;
+  font-weight: 500;
+  font-size: 1.4rem;
+  line-height: 2rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.demo-btn-sm {
+  display: inline-block;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-family: "Inter", sans-serif;
+  font-weight: 500;
+  font-size: 1.2rem;
+  line-height: 1.6rem;
+  color: #FFFFFF;
+  cursor: pointer;
+}
+
+.demo-button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.demo-alert {
+  padding: 14px 16px;
+  border-radius: 8px;
+  border-left: 4px solid;
+  font-size: 1.4rem;
+  line-height: 2rem;
+  margin-bottom: 10px;
+}
+
+.demo-card {
+  background: #FFFFFF;
+  border-radius: 8px;
+  border-left: 4px solid;
+  padding: 24px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+.demo-card .demo-card-title {
+  font-family: "Epilogue", sans-serif;
+  font-weight: 700;
+  font-size: 1.8rem;
+  margin-bottom: 8px;
+}
+.demo-card .demo-card-text {
+  font-size: 1.4rem;
+  line-height: 2.2rem;
+  color: #6F6B67;
+}
+
+.demo-badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.demo-badge {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 99px;
+  font-family: "Inter", sans-serif;
+  font-weight: 500;
+  font-size: 1.2rem;
+  line-height: 1.6rem;
+}
+
+.demo-form {
+  background: #FFFFFF;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.demo-form-group {
+  margin-bottom: 16px;
+}
+
+.demo-form-label {
+  display: block;
+  font-family: "Inter", sans-serif;
+  font-weight: 500;
+  font-size: 1.3rem;
+  color: #585451;
+  margin-bottom: 6px;
+}
+
+.demo-input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #CECCCA;
+  border-radius: 8px;
+  font-family: "Inter", sans-serif;
+  font-size: 1.4rem;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  outline: none;
+}
+.demo-input:focus {
+  border-color: var(--demo-focus-color, #008CF4);
+  box-shadow: 0 0 0 3px var(--demo-focus-ring, rgba(0, 140, 244, 0.15));
+}
+
+.demo-stat-row {
+  display: flex;
+  gap: 16px;
+}
+@media screen and (max-width: 800px) {
+  .demo-stat-row {
+    flex-direction: column;
+  }
+}
+
+.demo-stat-card {
+  flex: 1;
+  background: #FFFFFF;
+  border-radius: 8px;
+  border-top: 4px solid;
+  padding: 20px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  text-align: center;
+}
+.demo-stat-card .demo-stat-value {
+  font-family: "Epilogue", sans-serif;
+  font-weight: 700;
+  font-size: 2.8rem;
+  line-height: 3.6rem;
+}
+.demo-stat-card .demo-stat-label {
+  font-size: 1.2rem;
+  color: #85807A;
+  margin-top: 4px;
 }

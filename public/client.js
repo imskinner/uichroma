@@ -309,6 +309,181 @@ function generateJSONExport(colors) {
   return JSON.stringify(exportObj, null, 2);
 }
 
+// --- Tab switching ---
+function initViewTabs() {
+  var tabNav = document.getElementById('view-tabs');
+  if (!tabNav) return;
+  tabNav.addEventListener('click', function(e) {
+    var btn = e.target.closest('.view-tab');
+    if (!btn) return;
+    var view = btn.getAttribute('data-view');
+    tabNav.querySelectorAll('.view-tab').forEach(function(t) { t.classList.remove('active'); });
+    btn.classList.add('active');
+    document.querySelectorAll('.view-panel').forEach(function(p) { p.classList.remove('active'); });
+    var target = document.getElementById('view-' + view);
+    if (target) target.classList.add('active');
+  });
+}
+
+// --- Shades View ---
+function renderShadesView(colors) {
+  var container = document.getElementById('view-shades');
+  if (!container) return;
+  container.innerHTML = '';
+  var labels = { primary:'Primary', secondary:'Secondary', accent:'Accent', warning:'Warning', danger:'Danger', success:'Success', info:'Info', neutral:'Neutral' };
+  PALETTE_KEYS.forEach(function(key) {
+    var color = colors[key];
+    if (!color || !color.tones || !color.tones.length) return;
+    var card = document.createElement('div');
+    card.className = 'shade-card';
+    // Header
+    var header = document.createElement('div');
+    header.className = 'shade-card-header';
+    header.innerHTML = '<span class="shade-color-name">' + labels[key] + '</span><span class="shade-hex-value">' + color.hex + '</span>';
+    card.appendChild(header);
+    // Strip
+    var strip = document.createElement('div');
+    strip.className = 'shade-strip';
+    color.tones.forEach(function(tone) {
+      var swatch = document.createElement('div');
+      swatch.className = 'shade-swatch';
+      swatch.style.backgroundColor = tone.hex;
+      var textColor = tone.l < 50 ? '#fff' : '#1B1A18';
+      swatch.style.color = textColor;
+      swatch.innerHTML = '<span class="shade-label">' + tone.l + '</span><span class="shade-hex">' + tone.hex + '</span>';
+      swatch.addEventListener('click', function() {
+        navigator.clipboard.writeText(tone.hex).then(function() {
+          var lbl = swatch.querySelector('.shade-hex');
+          lbl.textContent = 'Copied!';
+          lbl.style.opacity = '1';
+          setTimeout(function() { lbl.textContent = tone.hex; lbl.style.opacity = ''; }, 1500);
+        });
+      });
+      strip.appendChild(swatch);
+    });
+    card.appendChild(strip);
+    container.appendChild(card);
+  });
+}
+
+// --- Demo View ---
+function renderDemoView(colors) {
+  var container = document.getElementById('view-demo');
+  if (!container) return;
+
+  function getTone(key, index) {
+    var c = colors[key];
+    if (c && c.tones && c.tones[index]) return c.tones[index].hex;
+    return c ? c.hex : '#888';
+  }
+  function textOn(hex) {
+    var r = parseInt(hex.substr(1,2),16), g = parseInt(hex.substr(3,2),16), b = parseInt(hex.substr(5,2),16);
+    return (r*0.299 + g*0.587 + b*0.114) > 150 ? '#1B1A18' : '#FFFFFF';
+  }
+
+  var p = colors.primary, s = colors.secondary, a = colors.accent;
+  var w = colors.warning, d = colors.danger, su = colors.success, inf = colors.info, n = colors.neutral;
+
+  var html = '';
+
+  // Navbar
+  html += '<div class="demo-section">';
+  html += '<div class="demo-section-title">Navigation</div>';
+  html += '<div class="demo-navbar" style="background:' + p.hex + ';">';
+  html += '<span class="demo-nav-brand">AppName</span>';
+  html += '<div class="demo-nav-links"><span>Home</span><span>Features</span><span>Pricing</span><span>Contact</span></div>';
+  html += '</div></div>';
+
+  // Hero
+  html += '<div class="demo-section">';
+  html += '<div class="demo-section-title">Hero Section</div>';
+  html += '<div class="demo-hero" style="background: linear-gradient(135deg, ' + p.hex + ', ' + s.hex + ');">';
+  html += '<div class="demo-hero-title">Build something amazing</div>';
+  html += '<div class="demo-hero-sub">A beautiful color palette generated just for you.</div>';
+  html += '<span class="demo-btn" style="background:' + a.hex + ';color:' + textOn(a.hex) + ';">Get Started</span>';
+  html += '</div></div>';
+
+  // Buttons
+  html += '<div class="demo-section">';
+  html += '<div class="demo-section-title">Buttons</div>';
+  html += '<div class="demo-button-row">';
+  var btnColors = [
+    {key:'primary',label:'Primary',c:p}, {key:'secondary',label:'Secondary',c:s},
+    {key:'accent',label:'Accent',c:a}, {key:'danger',label:'Danger',c:d}
+  ];
+  btnColors.forEach(function(b) {
+    html += '<span class="demo-btn" style="background:' + b.c.hex + ';color:' + textOn(b.c.hex) + ';">' + b.label + '</span>';
+  });
+  html += '<span class="demo-btn-outline" style="border-color:' + p.hex + ';color:' + p.hex + ';">Outline</span>';
+  html += '</div></div>';
+
+  // Alerts
+  html += '<div class="demo-section">';
+  html += '<div class="demo-section-title">Alerts</div>';
+  var alertColors = [
+    {key:'success',label:'Success! Operation completed.',c:su},
+    {key:'warning',label:'Warning: Please review your input.',c:w},
+    {key:'danger',label:'Error: Something went wrong.',c:d},
+    {key:'info',label:'Info: New updates are available.',c:inf}
+  ];
+  alertColors.forEach(function(al) {
+    var bg = getTone(al.key, 8);  // light tone
+    var fg = getTone(al.key, 1);  // dark tone
+    html += '<div class="demo-alert" style="background:' + bg + ';color:' + fg + ';border-left-color:' + al.c.hex + ';">' + al.label + '</div>';
+  });
+  html += '</div>';
+
+  // Card
+  html += '<div class="demo-section">';
+  html += '<div class="demo-section-title">Card</div>';
+  html += '<div class="demo-card" style="border-left-color:' + a.hex + ';">';
+  html += '<div class="demo-card-title" style="color:' + p.hex + ';">Feature Highlight</div>';
+  html += '<div class="demo-card-text">This card showcases how your palette colors work together in a typical UI component with accent borders and primary headings.</div>';
+  html += '</div></div>';
+
+  // Badges
+  html += '<div class="demo-section">';
+  html += '<div class="demo-section-title">Badges</div>';
+  html += '<div class="demo-badge-row">';
+  var badgeLabels = { primary:'Primary', secondary:'Secondary', accent:'Accent', warning:'Warning', danger:'Danger', success:'Success', info:'Info', neutral:'Neutral' };
+  PALETTE_KEYS.forEach(function(key) {
+    var c = colors[key];
+    if (!c) return;
+    var bg = getTone(key, 8);
+    var fg = getTone(key, 1);
+    html += '<span class="demo-badge" style="background:' + bg + ';color:' + fg + ';">' + badgeLabels[key] + '</span>';
+  });
+  html += '</div></div>';
+
+  // Form
+  html += '<div class="demo-section">';
+  html += '<div class="demo-section-title">Form</div>';
+  html += '<div class="demo-form" style="--demo-focus-color:' + p.hex + ';--demo-focus-ring:' + getTone('primary', 8) + '40;">';
+  html += '<div class="demo-form-group"><label class="demo-form-label">Email address</label><input class="demo-input" type="text" placeholder="you@example.com"></div>';
+  html += '<div class="demo-form-group"><label class="demo-form-label">Message</label><input class="demo-input" type="text" placeholder="Write something..."></div>';
+  html += '<span class="demo-btn" style="background:' + p.hex + ';color:' + textOn(p.hex) + ';">Submit</span>';
+  html += '</div></div>';
+
+  // Stats
+  html += '<div class="demo-section">';
+  html += '<div class="demo-section-title">Stats</div>';
+  html += '<div class="demo-stat-row">';
+  var stats = [
+    {color:p.hex, value:'12.4k', label:'Users'},
+    {color:s.hex, value:'98.2%', label:'Uptime'},
+    {color:a.hex, value:'$3.2M', label:'Revenue'}
+  ];
+  stats.forEach(function(st) {
+    html += '<div class="demo-stat-card" style="border-top-color:' + st.color + ';">';
+    html += '<div class="demo-stat-value" style="color:' + st.color + ';">' + st.value + '</div>';
+    html += '<div class="demo-stat-label">' + st.label + '</div>';
+    html += '</div>';
+  });
+  html += '</div></div>';
+
+  container.innerHTML = html;
+}
+
 var EXPORT_FORMATS = {
   css:      { generator: generateCSSVariables,  filename: 'palette.css',         mime: 'text/css' },
   scss:     { generator: generateSCSSVariables,  filename: '_palette.scss',       mime: 'text/x-scss' },
@@ -404,6 +579,14 @@ function updateUI(data) {
   } else {
     permalinkContainer.innerHTML = '';
   }
+
+  // Show tabs and render shades/demo views
+  if (currentPaletteColors) {
+    var viewTabs = document.getElementById('view-tabs');
+    if (viewTabs) viewTabs.style.display = 'flex';
+    renderShadesView(currentPaletteColors);
+    renderDemoView(currentPaletteColors);
+  }
 }
 
 if(!(window.location.pathname.split('/')[2])){
@@ -454,6 +637,9 @@ if(!(window.location.pathname.split('/')[2])){
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+  // Init view tabs (palette page)
+  initViewTabs();
+
   //Picker
   const colorBoxes = document.querySelectorAll('.color-box');
   colorBoxes.forEach((colorBox) => {
