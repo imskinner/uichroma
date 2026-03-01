@@ -1,5 +1,15 @@
 {
   "projects": {
     "default": "ui-chroma-app"
-  }
+  },
+  "targets": {
+    "ui-chroma-app": {
+      "hosting": {
+        "ui-chroma-app": [
+          "ui-chroma-app"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }

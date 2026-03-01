@@ -18,7 +18,17 @@
       "Bash(grep:*)",
       "Bash(curl:*)",
       "Bash(cd /c/repos/uichroma && npx sass public/css/style.scss public/css/style.css --no-source-map 2>&1)",
-      "Bash(tail:*)"
+      "Bash(tail:*)",
+      "Bash(cd /c/repos/uichroma && firebase hosting:channel:deploy live --only hosting 2>&1 || firebase deploy --only hosting 2>&1)",
+      "Bash(cd /c/repos/uichroma && firebase hosting:sites:list 2>&1)",
+      "Bash(cd /c/repos/uichroma && firebase hosting:channel:list 2>&1)",
+      "Bash(nslookup www.uichroma.com 2>&1 || dig www.uichroma.com +short 2>&1)",
+      "Bash(cd /c/repos/uichroma && firebase hosting:sites:get ui-chroma-app 2>&1)",
+      "Bash(cd /c/repos/uichroma && npx vercel --prod 2>&1)",
+      "Bash(cd /c/repos/uichroma && npx vercel --prod --yes 2>&1)",
+      "Bash(cd /c/repos/uichroma && npx vercel domains ls 2>&1)",
+      "Bash(cd /c/repos/uichroma && npx vercel domains add uichroma.com 2>&1)",
+      "Bash(cd /c/repos/uichroma && npx vercel link --project ui-chroma --yes 2>&1)"
     ]
   }
 }
