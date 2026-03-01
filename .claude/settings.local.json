@@ -1,7 +1,24 @@
 {
   "permissions": {
     "allow": [
-      "Bash(cd:*)"
+      "Bash(cd:*)",
+      "Bash(cd /c/repos/uichroma && firebase deploy 2>&1)",
+      "Bash(npx firebase-tools:*)",
+      "Bash(cd /c/repos/uichroma/functions && npm install firebase-functions@latest 2>&1)",
+      "Bash(cd /c/repos/uichroma && git add functions/index.js && git commit -m \"$\\(cat <<'EOF'\nfix: switch to firebase-functions v2 API for secret binding\n\nrunWith\\(\\) was removed in firebase-functions v6+. Replace with:\n- onRequest from firebase-functions/v2/https\n- defineSecret from firebase-functions/params\n\nCo-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>\nEOF\n\\)\" && npx firebase-tools deploy --project ui-chroma-app --force 2>&1)",
+      "WebFetch(domain:www.figma.com)",
+      "WebFetch(domain:developers.figma.com)",
+      "WebSearch",
+      "WebFetch(domain:help.figma.com)",
+      "Bash(node:*)",
+      "Bash(cd /c/repos/uichroma && firebase deploy --only functions,hosting 2>&1)",
+      "Bash(head:*)",
+      "Bash(cd /c/repos/uichroma && firebase hosting:sites:list 2>&1 && firebase hosting:channel:list 2>&1)",
+      "Bash(cd /c/repos/uichroma && firebase hosting:sites:get ui-chroma-app 2>&1 || true && curl -s -o /dev/null -w \"%{http_code}\" https://www.uichroma.com/api/getPalette -X POST -H \"Content-Type: application/json\" -d '{\"permalink\":\"test\"}' 2>&1)",
+      "Bash(grep:*)",
+      "Bash(curl:*)",
+      "Bash(cd /c/repos/uichroma && npx sass public/css/style.scss public/css/style.css --no-source-map 2>&1)",
+      "Bash(tail:*)"
     ]
   }
 }
