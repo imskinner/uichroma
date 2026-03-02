@@ -3,11 +3,27 @@
   "buildCommand": "npm run build",
   "builds": [
     {
+      "src": "client/dist/**",
+      "use": "@vercel/static"
+    },
+    {
       "src": "server.js",
       "use": "@vercel/node"
     }
   ],
   "routes": [
+    {
+      "src": "/assets/(.*)",
+      "dest": "client/dist/assets/$1"
+    },
+    {
+      "src": "/img/(.*)",
+      "dest": "client/dist/img/$1"
+    },
+    {
+      "src": "/favicon.ico",
+      "dest": "client/dist/favicon.ico"
+    },
     {
       "src": "/.*",
       "dest": "server.js"
