@@ -6,79 +6,105 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/classic.min.css">
   <link rel="stylesheet" href="../css/style.css">
   <link rel="icon" type="image/png" sizes="32x32" href="../img/favicon.png">
-  <title>Palett.ai - Generate Colors For App User Interfaces - UI Color Generator</title>
+  <title>UI Chroma - Your Color Palette</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js"></script>
-
 </head>
 <body>
-    <div class="wrapper">
-        <section class="leftCol">
-            <section class="logo"><img src="../img/logo.svg" alt="UI Chroma" height="28"></section>
-            <section class="content">
-              <header>
-                <h1 id="palette-title">Your Color Palette</h1>
-              </header>
-              <article id="palette-description">
-                <ul id="descriptions" class="descriptions-list"></ul>
-              </article>
-              <section id="export-section" style="display: none;">
-                <h2>Export Palette</h2>
-                <div class="export-buttons">
-                  <div class="export-option">
-                    <button class="export-btn" data-format="css">CSS Variables</button>
-                    <div class="export-actions">
-                      <button class="export-copy" data-format="css">Copy</button>
-                      <button class="export-download" data-format="css">Download</button>
-                    </div>
-                  </div>
-                  <div class="export-option">
-                    <button class="export-btn" data-format="scss">SCSS Variables</button>
-                    <div class="export-actions">
-                      <button class="export-copy" data-format="scss">Copy</button>
-                      <button class="export-download" data-format="scss">Download</button>
-                    </div>
-                  </div>
-                  <div class="export-option">
-                    <button class="export-btn" data-format="tailwind">Tailwind Config</button>
-                    <div class="export-actions">
-                      <button class="export-copy" data-format="tailwind">Copy</button>
-                      <button class="export-download" data-format="tailwind">Download</button>
-                    </div>
-                  </div>
-                  <div class="export-option">
-                    <button class="export-btn" data-format="json">JSON</button>
-                    <div class="export-actions">
-                      <button class="export-copy" data-format="json">Copy</button>
-                      <button class="export-download" data-format="json">Download</button>
-                    </div>
-                  </div>
-                </div>
-                <pre id="export-preview" style="display: none;"><code id="export-preview-code"></code></pre>
-              </section>
-            <section>
-                <a href="../"><button>Start new palette</button></a>
-              </section>
-            </section>
-        </section>
-        <section class="rightCol">
-            <div id="loader" class="loader" style="display: none;"></div>
-            <nav id="view-tabs" class="view-tabs" style="display: none;">
-                <button class="view-tab active" data-view="palette">Palette</button>
-                <button class="view-tab" data-view="shades">Shades</button>
-                <button class="view-tab" data-view="demo">Demo</button>
-            </nav>
-            <div id="view-palette" class="view-panel active">
-                <div id="palette" style="position: relative;"></div>
-                <div id="permalink-container"></div>
+  <div class="landing landing--results">
+    <!-- Decorative blurred ellipses -->
+    <div class="landing-ellipse le-1"></div>
+    <div class="landing-ellipse le-2"></div>
+    <div class="landing-ellipse le-3"></div>
+
+    <!-- Frosted glass card -->
+    <div class="landing-card results-card">
+      <!-- Top bar: logo + actions -->
+      <div class="landing-topbar">
+        <a href="/"><img src="../img/logo.svg" alt="UI Chroma" height="28"></a>
+        <div class="results-actions">
+          <button id="save-changes-btn" class="save-btn" style="display: none;">Save Changes</button>
+          <a href="/" class="results-new-btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M9.5 2L11.44 7.56L17 9.5L11.44 11.44L9.5 17L7.56 11.44L2 9.5L7.56 7.56L9.5 2Z" fill="currentColor"/>
+            </svg>
+            New Palette
+          </a>
+        </div>
+      </div>
+
+      <!-- Header: prompt title + color descriptions -->
+      <div class="results-header">
+        <h1 id="palette-title">Your Color Palette</h1>
+        <article id="palette-description">
+          <ul id="descriptions" class="descriptions-list"></ul>
+        </article>
+      </div>
+
+      <!-- Scrollable content area -->
+      <div class="results-body">
+        <div id="loader" class="loader" style="display: none;"></div>
+
+        <!-- View tabs -->
+        <nav id="view-tabs" class="view-tabs" style="display: none;">
+          <button class="view-tab active" data-view="palette">Palette</button>
+          <button class="view-tab" data-view="shades">Shades</button>
+          <button class="view-tab" data-view="demo">Demo</button>
+        </nav>
+
+        <!-- Palette view -->
+        <div id="view-palette" class="view-panel active">
+          <div id="palette" style="position: relative;"></div>
+          <div id="permalink-container"></div>
+        </div>
+
+        <!-- Shades view -->
+        <div id="view-shades" class="view-panel"></div>
+
+        <!-- Demo view -->
+        <div id="view-demo" class="view-panel"></div>
+
+        <!-- Export section -->
+        <section id="export-section" style="display: none;">
+          <h2>Export Palette</h2>
+          <div class="export-buttons">
+            <div class="export-option">
+              <button class="export-btn" data-format="css">CSS Variables</button>
+              <div class="export-actions">
+                <button class="export-copy" data-format="css">Copy</button>
+                <button class="export-download" data-format="css">Download</button>
+              </div>
             </div>
-            <div id="view-shades" class="view-panel"></div>
-            <div id="view-demo" class="view-panel"></div>
+            <div class="export-option">
+              <button class="export-btn" data-format="scss">SCSS Variables</button>
+              <div class="export-actions">
+                <button class="export-copy" data-format="scss">Copy</button>
+                <button class="export-download" data-format="scss">Download</button>
+              </div>
+            </div>
+            <div class="export-option">
+              <button class="export-btn" data-format="tailwind">Tailwind Config</button>
+              <div class="export-actions">
+                <button class="export-copy" data-format="tailwind">Copy</button>
+                <button class="export-download" data-format="tailwind">Download</button>
+              </div>
+            </div>
+            <div class="export-option">
+              <button class="export-btn" data-format="json">JSON</button>
+              <div class="export-actions">
+                <button class="export-copy" data-format="json">Copy</button>
+                <button class="export-download" data-format="json">Download</button>
+              </div>
+            </div>
+          </div>
+          <pre id="export-preview" style="display: none;"><code id="export-preview-code"></code></pre>
         </section>
+      </div>
     </div>
-    <input type="color" id="color-picker" style="display: none;">
+  </div>
+  <input type="color" id="color-picker" style="display: none;">
   <script src="../client.js" defer></script>
 </body>
 </html>

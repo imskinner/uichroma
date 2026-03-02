@@ -221,6 +221,28 @@ app.post('/api/getPalette', async (req, res) => {
   }
 });
 
+// Endpoint: update palette colors
+app.post('/api/updatePalette', async (req, res) => {
+  try {
+    const { permalink, colors } = req.body;
+    if (!permalink || !colors) {
+      return res.status(400).json({ error: 'permalink and colors are required' });
+    }
+    const doc = await db.collection('palettes').doc(permalink).get();
+    if (!doc.exists) {
+      return res.status(404).json({ error: 'Palette not found.' });
+    }
+    await db.collection('palettes').doc(permalink).update({
+      colors: colors,
+      updated_at: new Date().toISOString()
+    });
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to update palette.' });
+  }
+});
+
 // Endpoint: get palette data
 app.get('/palette/:permalink/data', async (req,res)=>{
   try{

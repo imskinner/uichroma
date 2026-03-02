@@ -4,53 +4,70 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/classic.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js" defer></script>
   <link rel="icon" type="image/png" sizes="32x32" href="img/favicon.png">
   <title>UI Chroma - AI-Powered Color Palette Generator for Designers and Developers</title>
   <link rel="canonical" href="https://www.uichroma.com/" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="wrapper">
-        <section class="leftCol">
-            <section class="logo"><img src="img/logo.svg" alt="UI Chroma" height="28"></section>
-            <section class="content">
-              <header>
-                <h1>AI-Powered Color Palette Generator</h1>
-                <p>Describe your project, brand, or mood — our AI will craft a complete color system tailored to your vision.</p>
-              </header>
-              <section>
-                <div class="inputText">
-                  <label for="prompt">Describe your project or the vibe you're going for:</label>
-                  <textarea id="prompt" rows="3" placeholder="e.g. A fintech app that feels trustworthy and modern, with a bold accent for CTAs..."></textarea>
-                </div>
-                <button id="generate">Generate Palette</button>
-              </section>
-            </section>
-        </section>
-        <section class="rightCol">
-            <div id="loader" class="loader" style="display: none;"></div>
-            <div id="placeholder-template">
-              <div class="color-box"></div>
-              <div class="color-box"></div>
-              <div class="color-box"></div>
-              <div class="color-box"></div>
-              <div class="color-box"></div>
-              <div class="color-box"></div>
-              <div class="color-box"></div>
-              <div class="color-box"></div>
-            </div>
-            <div id="palette"></div>
-            <div id="response-container">
-              <h3>Describe your vision to generate a color palette</h3>
-            </div>
-            
-            <div id="permalink-container"></div>
-        </section>
+  <div class="landing">
+    <!-- Decorative blurred ellipses -->
+    <div class="landing-ellipse le-1"></div>
+    <div class="landing-ellipse le-2"></div>
+    <div class="landing-ellipse le-3"></div>
+
+    <!-- Frosted glass card -->
+    <div class="landing-card">
+      <!-- Top bar: logo + sign in -->
+      <div class="landing-topbar">
+        <img src="img/logo.svg" alt="UI Chroma" height="28">
+        <button class="landing-signin-btn">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M10 10C12.21 10 14 8.21 14 6C14 3.79 12.21 2 10 2C7.79 2 6 3.79 6 6C6 8.21 7.79 10 10 10ZM10 12C7.33 12 2 13.34 2 16V17C2 17.55 2.45 18 3 18H17C17.55 18 18 17.55 18 17V16C18 13.34 12.67 12 10 12Z" fill="#008CF4"/>
+          </svg>
+          Sign In
+        </button>
+      </div>
+
+      <!-- Centered content -->
+      <div class="landing-center">
+        <h1>Generate Inspiring Colors for Your Next Design</h1>
+        <div class="landing-desc">
+          <p>Describe your project, brand, or mood — our AI will craft a complete color system tailored to your vision.</p>
+          <p>Get a palette with primary, secondary, accent, and semantic colors, all harmonized and ready to use.</p>
+        </div>
+
+        <div class="landing-form">
+          <label for="prompt">Describe your project or the vibe you're going for</label>
+          <div class="landing-input-wrap">
+            <svg class="landing-input-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2C6.49 2 2 6.49 2 12C2 17.51 6.49 22 12 22C17.51 22 22 17.51 22 12C22 6.49 17.51 2 12 2ZM12 20C7.59 20 4 16.41 4 12C4 11.71 4.02 11.42 4.05 11.14C5.94 12.24 7.62 11.59 8.47 10.03C9.08 8.87 8.3 7.31 7.96 6.68C7.62 6.05 6.81 5.06 5.69 4.63C7.28 3.6 9.18 3 11.22 3C11.49 3 11.76 3.02 12.02 3.04C11.44 4.46 11.87 5.85 13.15 6.45C14.85 7.24 15.84 6.24 16.72 5.19C18.34 6.66 19.49 8.69 19.86 10.99C19.03 10.94 18.2 11.15 17.45 11.66C15.75 12.83 15.74 14.69 15.94 16.04C16.1 17.1 16.63 18.29 17.56 19.14C15.98 19.69 14.41 20 12 20Z" fill="#7A7A7A"/>
+            </svg>
+            <textarea id="prompt" rows="2" placeholder="e.g. A fintech app that feels trustworthy and modern, with a bold accent for CTAs..."></textarea>
+          </div>
+          <button id="generate" class="landing-gen-btn">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M9.5 2L11.44 7.56L17 9.5L11.44 11.44L9.5 17L7.56 11.44L2 9.5L7.56 7.56L9.5 2Z" fill="white"/>
+              <path d="M18.5 8L19.64 11.36L23 12.5L19.64 13.64L18.5 17L17.36 13.64L14 12.5L17.36 11.36L18.5 8Z" fill="white"/>
+              <path d="M15 17L15.78 19.22L18 20L15.78 20.78L15 23L14.22 20.78L12 20L14.22 19.22L15 17Z" fill="white"/>
+            </svg>
+            Generate colors
+          </button>
+          <div id="loader" class="loader" style="display: none;"></div>
+        </div>
+      </div>
     </div>
+
+    <!-- Hidden containers required by client.js -->
+    <div style="display:none">
+      <div id="placeholder-template"></div>
+      <div id="palette"></div>
+      <div id="response-container"></div>
+      <div id="permalink-container"></div>
+    </div>
+  </div>
   <script src="client.js"></script>
 </body>
 </html>
