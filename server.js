@@ -275,25 +275,37 @@ function validatePalette(colors) {
     }
   }
 
+  // 4. Steer accent away from the red/danger zone (hue 320-360 or 0-25)
+  if (accent && (accent.h >= 320 || accent.h <= 25)) {
+    // Shift into a safe vibrant zone — pick closest safe boundary
+    if (accent.h >= 320) {
+      accent.h = 280; // purple/magenta
+    } else {
+      accent.h = 35; // warm orange (outside danger, inside safe territory)
+    }
+    accent.hex = hslToHex(accent.h, accent.s, accent.l);
+  }
+
   return colors;
 }
 
-const PALETTE_SYSTEM_PROMPT = `You are an expert AI color system designer. The user will describe a project, brand, mood, or aesthetic. Generate a cohesive 7-color UI palette that captures their vision.
+const PALETTE_SYSTEM_PROMPT = `You are an elite UI color system designer creating palettes for real products. The user will describe a project, brand, mood, or aesthetic. Generate a vibrant, cohesive 7-color UI palette that would impress a senior designer.
 
 COLOR ROLES:
-- Primary: The dominant brand color. Can be any hue/lightness that fits the described mood.
-- Secondary: Complements the primary. Should feel cohesive but distinguishable.
-- Accent: Used for call-to-action buttons and interactive highlights. MUST have good contrast on white backgrounds (lightness 25–55, saturation >= 50).
-- Warning: Should feel cautionary. Must be in the yellow-orange family (hue 30–55).
-- Danger: Should feel urgent/negative. Must be in the red family (hue 340–360 or 0–15).
-- Success: Should feel positive/confirmatory. Must be in the green family (hue 100–160).
-- Info: Should feel neutral/informational. Must be in the blue family (hue 190–240).
+- Primary: The dominant brand color. Sets the emotional tone of the entire palette. Choose a bold, distinctive hue — avoid defaulting to generic corporate blue unless the prompt specifically calls for it.
+- Secondary: Complements and contrasts with primary. Must be a clearly different hue (at least 40° hue separation) so the two read as a deliberate pair, not a tint variation.
+- Accent: The eye-catching CTA / interactive highlight color. Must stand out from both primary and secondary. Must have good contrast on white (lightness 30–50, saturation >= 60). CRITICAL: Do NOT use red or warm-red hues (hue 330–360 or 0–25) for accent — red accents clash with the danger color and feel alarming on CTAs. Prefer vivid blues, purples, teals, bright oranges, magentas, or greens. Only use red-adjacent accent if the user explicitly asks for a red/fiery/passionate brand.
+- Warning: Cautionary. Yellow-orange family (hue 30–55).
+- Danger: Urgent/negative. Red family (hue 340–360 or 0–15).
+- Success: Positive/confirmatory. Green family (hue 100–160).
+- Info: Neutral/informational. Blue family (hue 190–240).
 
-GUIDELINES:
-- Interpret the user's prompt holistically — if they say "dark luxury brand", primary could be near-black or deep purple. If they say "playful kids app", use bright saturated colors.
-- Primary and secondary have NO fixed lightness or saturation rules — choose what best matches the prompt.
-- The overall palette should feel intentional and cohesive, like a professional designer chose it.
-- Each color's description should explain how it serves the user's stated vision.
+QUALITY GUIDELINES:
+- Be creative and specific to the prompt. A "zen meditation app" palette should feel completely different from a "gaming esports brand". Don't fall back on the same safe blue/teal/purple every time.
+- Primary, secondary, and accent must each occupy distinctly different hue regions. The three together should form a curated color story, not a monochromatic scale.
+- Favor higher saturation for primary and accent (S >= 50) unless the prompt calls for muted/pastel aesthetics. Vivid palettes feel more professional and intentional.
+- Consider the full prompt — industry, emotion, audience, style — when choosing each hue. A fintech app might want trustworthy deep navy + energetic green accent. A bakery might want warm peach primary + rich chocolate secondary + teal accent.
+- Each description should explain the specific design reasoning, not generic filler.
 
 For each color provide a hex code, HSL values (h 0-360, s 0-100, l 0-100), and a brief description explaining the design choice.`;
 
@@ -344,7 +356,7 @@ async function generateColorPalette(feelings) {
         ],
         functions: paletteFunction,
         function_call: { name: "generate_palette" },
-        temperature: 0.5
+        temperature: 0.75
       })
     });
     // Handle HTTP errors
