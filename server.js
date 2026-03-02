@@ -129,7 +129,28 @@ app.post('/generatePalette', async (req, res) => {
     } else {
       throw new Error('Invalid colors format received from palette generation');
     }
-    
+
+    // Score palette and optionally critique
+    const firstScore = scorePalette(paletteData);
+    console.log(`Palette score: ${firstScore.score}/100, issues: ${firstScore.issues.length}`);
+    if (firstScore.issues.length > 0) {
+      console.log('Issues:', firstScore.issues.join('; '));
+    }
+    if (firstScore.issues.length >= 2) {
+      console.log('Triggering critique call...');
+      const critiqued = await critiquePalette(feelings, paletteData, firstScore.issues, process.env.API_KEY);
+      if (critiqued) {
+        const secondScore = scorePalette(critiqued);
+        console.log(`Critique score: ${secondScore.score}/100, issues: ${secondScore.issues.length}`);
+        if (secondScore.score > firstScore.score) {
+          console.log('Critique improved palette, using critiqued version');
+          paletteData = critiqued;
+        } else {
+          console.log('Critique did not improve palette, keeping original');
+        }
+      }
+    }
+
     // Generate neutral based on primary
     const primaryHSL = hexToHSL(paletteData.primary.hex);
     const neutralHex = hslToHex(primaryHSL.h, 10, 10);
@@ -237,6 +258,12 @@ function nudgeHue(hue, range) {
   return distToMin <= distToMax ? range.min : range.max;
 }
 
+// Shortest angular distance on the 360° hue wheel
+function hueDist(h1, h2) {
+  const d = Math.abs(h1 - h2) % 360;
+  return d > 180 ? 360 - d : d;
+}
+
 // Validate and auto-correct palette colors
 function validatePalette(colors) {
   // 1. Ensure each color has HSL from its hex
@@ -287,6 +314,114 @@ function validatePalette(colors) {
   }
 
   return colors;
+}
+
+// Score a palette and return { score, issues[] }
+function scorePalette(colors) {
+  let score = 100;
+  const issues = [];
+  const p = colors.primary, s = colors.secondary, a = colors.accent;
+
+  if (hueDist(p.h, s.h) < 35) {
+    score -= 20;
+    issues.push('Primary↔Secondary hue too close (' + hueDist(p.h, s.h) + '°, need 35°+)');
+  }
+  if (hueDist(p.h, a.h) < 35) {
+    score -= 20;
+    issues.push('Primary↔Accent hue too close (' + hueDist(p.h, a.h) + '°, need 35°+)');
+  }
+  if (hueDist(s.h, a.h) < 30) {
+    score -= 15;
+    issues.push('Secondary↔Accent hue too close (' + hueDist(s.h, a.h) + '°, need 30°+)');
+  }
+  if (p.s < 40) {
+    score -= 15;
+    issues.push('Primary saturation too low (' + p.s + ', need 40+)');
+  }
+  if (a.s < 50) {
+    score -= 15;
+    issues.push('Accent saturation too low (' + a.s + ', need 50+)');
+  }
+  if (a.l < 30 || a.l > 50) {
+    score -= 10;
+    issues.push('Accent lightness outside CTA range (' + a.l + ', need 30-50)');
+  }
+  if (hueDist(a.h, 0) < 30) {
+    score -= 15;
+    issues.push('Accent hue too close to red zone (hue ' + a.h + ')');
+  }
+  const lSpread = Math.max(p.l, s.l, a.l) - Math.min(p.l, s.l, a.l);
+  if (lSpread < 10) {
+    score -= 10;
+    issues.push('Primary/Secondary/Accent lightness too uniform (spread ' + lSpread + ')');
+  }
+
+  return { score, issues };
+}
+
+const CRITIQUE_SYSTEM_PROMPT = `You are a color palette critic. You receive a 7-color UI palette and a list of specific issues. Fix ONLY the identified issues while preserving colors that already work well. Return the corrected palette using the same function schema.`;
+
+async function critiquePalette(feelings, colors, issues, apiKey) {
+  const colorSchema = {
+    type: "object",
+    properties: {
+      hex:         { type: "string", description: "Hex color code e.g. #3A86FF" },
+      h:           { type: "number", description: "Hue 0-360" },
+      s:           { type: "number", description: "Saturation 0-100" },
+      l:           { type: "number", description: "Lightness 0-100" },
+      description: { type: "string", description: "Brief design rationale" }
+    },
+    required: ["hex", "h", "s", "l", "description"]
+  };
+  const paletteFunction = [{
+    name: "generate_palette",
+    description: "Generate a 7-color UI palette with hex, HSL values, and descriptions",
+    parameters: {
+      type: "object",
+      properties: {
+        primary: colorSchema, secondary: colorSchema, accent: colorSchema,
+        warning: colorSchema, danger: colorSchema, success: colorSchema, info: colorSchema
+      },
+      required: ["primary","secondary","accent","warning","danger","success","info"]
+    }
+  }];
+
+  const compactPalette = {};
+  for (const key of ['primary','secondary','accent','warning','danger','success','info']) {
+    const c = colors[key];
+    compactPalette[key] = { hex: c.hex, h: c.h, s: c.s, l: c.l };
+  }
+
+  const issueList = issues.map((msg, i) => (i + 1) + '. ' + msg).join('\n');
+  const userMsg = `Original prompt: "${feelings}"\n\nCurrent palette:\n${JSON.stringify(compactPalette, null, 2)}\n\nIssues to fix:\n${issueList}`;
+
+  try {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+      body: JSON.stringify({
+        model: "gpt-4o",
+        messages: [
+          { role: "system", content: CRITIQUE_SYSTEM_PROMPT },
+          { role: "user", content: userMsg }
+        ],
+        functions: paletteFunction,
+        function_call: { name: "generate_palette" },
+        temperature: 0.6
+      })
+    });
+    if (!response.ok) return null;
+    const data = await response.json();
+    const choiceMsg = data.choices && data.choices[0] && data.choices[0].message;
+    if (choiceMsg && choiceMsg.function_call) {
+      const args = JSON.parse(choiceMsg.function_call.arguments);
+      return validatePalette(args);
+    }
+    return null;
+  } catch (err) {
+    console.error('Critique call failed:', err.message);
+    return null;
+  }
 }
 
 const PALETTE_SYSTEM_PROMPT = `You are an elite UI color system designer creating palettes for real products. The user will describe a project, brand, mood, or aesthetic. Generate a vibrant, cohesive 7-color UI palette that would impress a senior designer.
