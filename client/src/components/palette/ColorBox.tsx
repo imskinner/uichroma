@@ -29,7 +29,7 @@ export function ColorBox({ colorKey, color, onColorChange }: ColorBoxProps) {
         style={{ backgroundColor: color.hex }}
       >
         <span
-          className="px-1.5 py-0.5 bg-white/80 border border-white/70 rounded text-xs font-medium cursor-pointer w-fit"
+          className="px-1.5 py-0.5 bg-white/80 dark:bg-black/40 border border-white/70 dark:border-white/20 rounded text-xs font-medium cursor-pointer w-fit"
           style={{ color: '#1B1A18' }}
           onClick={handleCopyHex}
         >

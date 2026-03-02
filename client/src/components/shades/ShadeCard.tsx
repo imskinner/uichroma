@@ -9,10 +9,10 @@ interface ShadeCardProps {
 
 export function ShadeCard({ colorKey, color }: ShadeCardProps) {
   return (
-    <div className="bg-white border border-[#EEEDEC] rounded-lg mb-4 overflow-hidden transition-shadow hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)]">
+    <div className="bg-white dark:bg-[#1e1e22] border border-[#EEEDEC] dark:border-[#333] rounded-lg mb-4 overflow-hidden transition-shadow hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)]">
       <div className="flex justify-between items-center px-4 py-3">
-        <span className="font-heading font-bold text-base text-[#1B1A18]">{PALETTE_LABELS[colorKey]}</span>
-        <span className="text-xs text-[#85807A]">{color.hex}</span>
+        <span className="font-heading font-bold text-base text-[#1B1A18] dark:text-[#e5e5e5]">{PALETTE_LABELS[colorKey]}</span>
+        <span className="text-xs text-[#85807A] dark:text-[#9ca3af]">{color.hex}</span>
       </div>
       <div className="flex">
         {color.tones.map(tone => (

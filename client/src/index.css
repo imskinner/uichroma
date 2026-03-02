@@ -136,6 +136,9 @@
   position: relative;
   overflow: hidden;
 }
+.dark .landing-bg {
+  background: radial-gradient(ellipse at 50% 40%, #1a1a2e, #0d0d15);
+}
 
 .landing-ellipse {
   position: absolute;
@@ -143,6 +146,9 @@
   pointer-events: none;
   filter: blur(80px);
   opacity: 0.6;
+}
+.dark .landing-ellipse {
+  opacity: 0.3;
 }
 .le-1 {
   width: 500px;

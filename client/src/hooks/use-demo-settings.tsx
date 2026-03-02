@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, type ReactNode } from 'react';
+import { useDarkMode } from '@/hooks/use-dark-mode.tsx';
 
 interface DemoSettings {
   headingFont: string;
@@ -21,7 +22,7 @@ const DemoSettingsContext = createContext<DemoSettings>({
 export function DemoSettingsProvider({ children }: { children: ReactNode }) {
   const [headingFont, setHeadingFont] = useState('Inter');
   const [bodyFont, setBodyFont] = useState('Inter');
-  const [isDark, setIsDark] = useState(false);
+  const { isDark, setIsDark } = useDarkMode();
 
   return (
     <DemoSettingsContext.Provider

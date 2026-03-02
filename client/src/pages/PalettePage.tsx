@@ -1,6 +1,6 @@
 import { useEffect, useCallback, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Sparkles, Shuffle } from 'lucide-react';
+import { Sparkles, Shuffle, Moon, Sun } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs.tsx';
 import { BackgroundEllipses } from '@/components/layout/BackgroundEllipses.tsx';
 import { GlassCard } from '@/components/layout/GlassCard.tsx';
@@ -11,6 +11,7 @@ import { ShadesView } from '@/components/shades/ShadesView.tsx';
 import { DemoView } from '@/components/demo/DemoView.tsx';
 import { ExportSection } from '@/components/export/ExportSection.tsx';
 import { usePalette } from '@/hooks/use-palette.ts';
+import { useDarkMode } from '@/hooks/use-dark-mode.tsx';
 import { getPaletteData, updatePalette, generateVariation } from '@/lib/api.ts';
 import { normalizePaletteColors } from '@/lib/palette-utils.ts';
 import type { PaletteKey } from '@/lib/palette-utils.ts';
@@ -19,6 +20,7 @@ export function PalettePage() {
   const { permalink } = useParams<{ permalink: string }>();
   const navigate = useNavigate();
   const { colors, keywords, isDirty, dispatch } = usePalette();
+  const { isDark, toggleDark } = useDarkMode();
   const [variationLoading, setVariationLoading] = useState(false);
 
   useEffect(() => {
@@ -73,18 +75,30 @@ export function PalettePage() {
       <button
         onClick={handleVariation}
         disabled={variationLoading || !colors}
-        className="inline-flex items-center gap-2 px-4 py-2.5 border-2 border-[#8b5cf6] rounded-lg bg-transparent text-[#8b5cf6] font-medium text-sm cursor-pointer hover:bg-[#f3f0ff] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        className="inline-flex items-center gap-2 px-4 py-2.5 border-2 border-[#8b5cf6] rounded-lg bg-transparent text-[#8b5cf6] font-medium text-sm cursor-pointer hover:bg-[#f3f0ff] transition-colors disabled:opacity-50 disabled:cursor-not-allowed dark:hover:bg-[#8b5cf620]"
       >
         <Shuffle size={18} className={variationLoading ? 'animate-spin' : ''} />
         {variationLoading ? 'Generating...' : 'Make Variation'}
       </button>
       <Link
         to="/"
-        className="inline-flex items-center gap-2 px-4 py-2.5 border-2 border-[#008CF4] rounded-lg bg-transparent text-[#008CF4] font-medium text-sm no-underline hover:bg-[#E5F4FF] transition-colors"
+        className="inline-flex items-center gap-2 px-4 py-2.5 border-2 border-[#008CF4] rounded-lg bg-transparent text-[#008CF4] font-medium text-sm no-underline hover:bg-[#E5F4FF] transition-colors dark:hover:bg-[#008CF420]"
       >
         <Sparkles size={18} />
         New Palette
       </Link>
+      <button
+        onClick={toggleDark}
+        className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-lg font-medium text-sm cursor-pointer border transition-colors"
+        style={{
+          background: isDark ? '#1a1a1a' : '#fff',
+          color: isDark ? '#e5e5e5' : '#374151',
+          borderColor: isDark ? '#444' : '#d1d5db',
+        }}
+      >
+        {isDark ? <Sun size={16} /> : <Moon size={16} />}
+        {isDark ? 'Light' : 'Dark'}
+      </button>
     </>
   );
 
@@ -110,7 +124,10 @@ export function PalettePage() {
 
         {/* Header */}
         <div className="px-15 pt-10 max-md:px-6 max-md:pt-6">
-          <h1 className="font-heading font-bold text-5xl leading-[56px] text-[#1B1A18] mb-2 max-md:text-[32px] max-md:leading-10">
+          <h1
+            className="font-heading font-bold text-5xl leading-[56px] mb-2 max-md:text-[32px] max-md:leading-10"
+            style={{ color: isDark ? '#e5e5e5' : '#1B1A18' }}
+          >
             {keywords ? `\u201C${keywords}\u201D` : 'Your Color Palette'}
           </h1>
           <ul className="list-none p-0 m-0 flex flex-wrap gap-3 mb-0">
@@ -118,7 +135,7 @@ export function PalettePage() {
               const c = colors[key];
               if (!c?.description) return null;
               return (
-                <li key={key} className="text-base leading-6 text-[#1B1A18]">
+                <li key={key} className="text-base leading-6" style={{ color: isDark ? '#d1d5db' : '#1B1A18' }}>
                   <strong>{key.charAt(0).toUpperCase() + key.slice(1)}:</strong> {c.description}
                 </li>
               );

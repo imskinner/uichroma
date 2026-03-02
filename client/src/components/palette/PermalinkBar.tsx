@@ -21,7 +21,7 @@ export function PermalinkBar({ permalink }: PermalinkBarProps) {
       <a
         href={url}
         onClick={handleCopy}
-        className="block px-5 py-3 bg-[#EEEDEC] text-[#585451] text-sm rounded-lg no-underline hover:bg-[#CECCCA] transition-colors"
+        className="block px-5 py-3 bg-[#EEEDEC] dark:bg-[#2a2a2e] text-[#585451] dark:text-[#9ca3af] text-sm rounded-lg no-underline hover:bg-[#CECCCA] dark:hover:bg-[#333] transition-colors"
       >
         {copied ? 'Link copied to clipboard' : url}
       </a>

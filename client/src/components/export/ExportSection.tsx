@@ -32,7 +32,7 @@ export function ExportSection({ colors }: ExportSectionProps) {
 
   return (
     <section className="mt-8">
-      <h2 className="font-heading font-bold text-2xl mb-4 text-[#1B1A18]">Export Palette</h2>
+      <h2 className="font-heading font-bold text-2xl mb-4 text-[#1B1A18] dark:text-[#e5e5e5]">Export Palette</h2>
       <Tabs defaultValue="css">
         <TabsList>
           {FORMAT_KEYS.map(key => (
