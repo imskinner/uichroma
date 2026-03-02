@@ -1,6 +1,6 @@
-import { useEffect, useCallback } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { Sparkles } from 'lucide-react';
+import { useEffect, useCallback, useState } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { Sparkles, Shuffle } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs.tsx';
 import { BackgroundEllipses } from '@/components/layout/BackgroundEllipses.tsx';
 import { GlassCard } from '@/components/layout/GlassCard.tsx';
@@ -11,13 +11,15 @@ import { ShadesView } from '@/components/shades/ShadesView.tsx';
 import { DemoView } from '@/components/demo/DemoView.tsx';
 import { ExportSection } from '@/components/export/ExportSection.tsx';
 import { usePalette } from '@/hooks/use-palette.ts';
-import { getPaletteData, updatePalette } from '@/lib/api.ts';
+import { getPaletteData, updatePalette, generateVariation } from '@/lib/api.ts';
 import { normalizePaletteColors } from '@/lib/palette-utils.ts';
 import type { PaletteKey } from '@/lib/palette-utils.ts';
 
 export function PalettePage() {
   const { permalink } = useParams<{ permalink: string }>();
+  const navigate = useNavigate();
   const { colors, keywords, isDirty, dispatch } = usePalette();
+  const [variationLoading, setVariationLoading] = useState(false);
 
   useEffect(() => {
     if (!permalink) return;
@@ -44,6 +46,20 @@ export function PalettePage() {
     }
   }, [permalink, colors, dispatch]);
 
+  const handleVariation = useCallback(async () => {
+    if (!colors) return;
+    setVariationLoading(true);
+    try {
+      const result = await generateVariation(keywords || '', colors);
+      navigate(`/palette/${result.permalink}`);
+    } catch (err) {
+      console.error('Variation error:', err);
+      alert('Failed to generate variation.');
+    } finally {
+      setVariationLoading(false);
+    }
+  }, [colors, keywords, navigate]);
+
   const actions = (
     <>
       {isDirty && (
@@ -54,6 +70,14 @@ export function PalettePage() {
           Save Changes
         </button>
       )}
+      <button
+        onClick={handleVariation}
+        disabled={variationLoading || !colors}
+        className="inline-flex items-center gap-2 px-4 py-2.5 border-2 border-[#8b5cf6] rounded-lg bg-transparent text-[#8b5cf6] font-medium text-sm cursor-pointer hover:bg-[#f3f0ff] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        <Shuffle size={18} className={variationLoading ? 'animate-spin' : ''} />
+        {variationLoading ? 'Generating...' : 'Make Variation'}
+      </button>
       <Link
         to="/"
         className="inline-flex items-center gap-2 px-4 py-2.5 border-2 border-[#008CF4] rounded-lg bg-transparent text-[#008CF4] font-medium text-sm no-underline hover:bg-[#E5F4FF] transition-colors"

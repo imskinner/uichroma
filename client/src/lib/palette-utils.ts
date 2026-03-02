@@ -33,6 +33,12 @@ export interface PaletteData {
   permalink?: string;
 }
 
+export function getTone(colors: PaletteColors, key: PaletteKey, index: number): string {
+  const c = colors[key];
+  if (c && c.tones && c.tones[index]) return c.tones[index].hex;
+  return c ? c.hex : '#888';
+}
+
 export function normalizePaletteColors(colors: Record<string, { hex: string; description?: string }>): PaletteColors {
   const normalized = {} as Record<string, PaletteColor>;
   const primaryHSL = hexToHSL(colors.primary.hex);

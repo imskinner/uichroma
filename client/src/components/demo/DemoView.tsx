@@ -1,5 +1,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs.tsx';
 import type { PaletteColors } from '@/lib/palette-utils.ts';
+import { DemoSettingsProvider, useDemoSettings } from '@/hooks/use-demo-settings.tsx';
+import { DemoToolbar } from './DemoToolbar.tsx';
 import { DemoComponents } from './DemoComponents.tsx';
 import { DemoLanding } from './DemoLanding.tsx';
 import { DemoDashboard } from './DemoDashboard.tsx';
@@ -10,21 +12,58 @@ interface DemoViewProps {
   colors: PaletteColors;
 }
 
+function DemoContent({ colors }: DemoViewProps) {
+  const { isDark } = useDemoSettings();
+
+  const wrapperStyle = isDark
+    ? { background: '#1a1a1a', color: '#e5e5e5' }
+    : {};
+
+  return (
+    <>
+      <DemoToolbar />
+      <Tabs defaultValue="components">
+        <TabsList>
+          <TabsTrigger value="components">Components</TabsTrigger>
+          <TabsTrigger value="landing">Landing Page</TabsTrigger>
+          <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+          <TabsTrigger value="mobile">Mobile App</TabsTrigger>
+          <TabsTrigger value="blog">Blog</TabsTrigger>
+        </TabsList>
+        <TabsContent value="components">
+          <div className="rounded-lg overflow-hidden" style={{ ...wrapperStyle, padding: isDark ? 16 : 0 }}>
+            <DemoComponents colors={colors} />
+          </div>
+        </TabsContent>
+        <TabsContent value="landing">
+          <div className="rounded-lg overflow-hidden" style={{ ...wrapperStyle, padding: isDark ? 16 : 0 }}>
+            <DemoLanding colors={colors} />
+          </div>
+        </TabsContent>
+        <TabsContent value="dashboard">
+          <div className="rounded-lg overflow-hidden" style={{ ...wrapperStyle, padding: isDark ? 16 : 0 }}>
+            <DemoDashboard colors={colors} />
+          </div>
+        </TabsContent>
+        <TabsContent value="mobile">
+          <div className="rounded-lg overflow-hidden" style={wrapperStyle}>
+            <DemoMobile colors={colors} />
+          </div>
+        </TabsContent>
+        <TabsContent value="blog">
+          <div className="rounded-lg overflow-hidden" style={{ ...wrapperStyle, padding: isDark ? 16 : 0 }}>
+            <DemoBlog colors={colors} />
+          </div>
+        </TabsContent>
+      </Tabs>
+    </>
+  );
+}
+
 export function DemoView({ colors }: DemoViewProps) {
   return (
-    <Tabs defaultValue="components">
-      <TabsList>
-        <TabsTrigger value="components">Components</TabsTrigger>
-        <TabsTrigger value="landing">Landing Page</TabsTrigger>
-        <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-        <TabsTrigger value="mobile">Mobile App</TabsTrigger>
-        <TabsTrigger value="blog">Blog</TabsTrigger>
-      </TabsList>
-      <TabsContent value="components"><DemoComponents colors={colors} /></TabsContent>
-      <TabsContent value="landing"><DemoLanding colors={colors} /></TabsContent>
-      <TabsContent value="dashboard"><DemoDashboard colors={colors} /></TabsContent>
-      <TabsContent value="mobile"><DemoMobile colors={colors} /></TabsContent>
-      <TabsContent value="blog"><DemoBlog colors={colors} /></TabsContent>
-    </Tabs>
+    <DemoSettingsProvider>
+      <DemoContent colors={colors} />
+    </DemoSettingsProvider>
   );
 }
