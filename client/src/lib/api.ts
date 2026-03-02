@@ -27,13 +27,8 @@ export async function getPaletteData(permalink: string): Promise<{
 
 export async function generateVariation(
   originalPrompt: string,
-  currentColors: PaletteColors,
 ): Promise<{ permalink: string; colors: PaletteColors }> {
-  const colorSummary = Object.entries(currentColors)
-    .map(([key, c]) => `${key}: ${c.hex}`)
-    .join(', ');
-  const prompt = `Create a variation of this palette: ${colorSummary}. Original theme: "${originalPrompt}". Keep the same mood but shift hues slightly for a fresh take.`;
-  return generatePalette(prompt);
+  return generatePalette(originalPrompt);
 }
 
 export async function updatePalette(permalink: string, colors: PaletteColors): Promise<void> {

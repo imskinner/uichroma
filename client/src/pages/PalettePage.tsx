@@ -50,7 +50,7 @@ export function PalettePage() {
     if (!colors) return;
     setVariationLoading(true);
     try {
-      const result = await generateVariation(keywords || '', colors);
+      const result = await generateVariation(keywords || '');
       navigate(`/palette/${result.permalink}`);
     } catch (err) {
       console.error('Variation error:', err);
