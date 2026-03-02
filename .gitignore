@@ -17,6 +17,7 @@ ui-debug.log
 # Build files
 build/
 dist/
+client/dist/
 
 # IDE files
 .idea/

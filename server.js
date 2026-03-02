@@ -17,14 +17,8 @@ admin.initializeApp({
 const db = admin.firestore();
 
 app.use(cors());
-app.use(express.static(path.join(__dirname, 'public')));
-app.use('/css', express.static(path.join(__dirname, 'public', 'css')));
-app.use('/img', express.static(path.join(__dirname, 'public', 'img')));
+app.use(express.static(path.join(__dirname, 'client', 'dist')));
 app.use(bodyParser.json());
-
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
 
 // Get a palette from Firestore
 async function getPaletteFromDatabase(permalink) {
@@ -168,6 +162,27 @@ app.post('/generatePalette', async (req, res) => {
   }
 });
 
+// Endpoint: update palette colors
+app.post('/api/updatePalette', async (req, res) => {
+  try {
+    const { permalink, colors } = req.body;
+    if (!permalink || !colors) {
+      return res.status(400).json({ error: 'permalink and colors are required' });
+    }
+    const querySnapshot = await db.collection('palettes')
+      .where('permalink', '==', permalink).get();
+    if (querySnapshot.empty) {
+      return res.status(404).json({ error: 'Palette not found.' });
+    }
+    const docRef = querySnapshot.docs[0].ref;
+    await docRef.update({ colors: colors, updated_at: new Date().toISOString() });
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error in /api/updatePalette:', error);
+    res.status(500).json({ error: 'Failed to update palette.' });
+  }
+});
+
 //Endpoint to fetch a palette data
 app.get('/palette/:permalink/data', async (req, res) => {
   try {
@@ -187,9 +202,9 @@ app.get('/palette/:permalink/data', async (req, res) => {
   }
 });
 
-//Render the palette.html as the template for an existing palette
-app.get('/palette/:permalink', async (req, res) => {
-  res.sendFile(path.join(__dirname,'public', 'palette.html'));
+// SPA catch-all: serve index.html for client-side routes
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'client', 'dist', 'index.html'));
 });
 
 // Semantic hue ranges for validation

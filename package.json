@@ -5,8 +5,10 @@
     "main": "server.js",
     "scripts": {
         "start": "node server.js",
-        "sass": "sass --watch src/scss:public/css --no-source-map --style=expanded",
-        "dev": "concurrently -k \"npm run sass\" \"nodemon server.js\"",
+        "dev:server": "nodemon server.js",
+        "dev:client": "npm --prefix client run dev",
+        "dev": "concurrently -k \"npm run dev:server\" \"npm run dev:client\"",
+        "build": "npm --prefix client run build",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "dependencies": {
@@ -14,14 +16,12 @@
         "cors": "^2.8.5",
         "dotenv": "^16.3.1",
         "express": "^4.18.2",
-        "firebase": "^10.7.0",
         "firebase-admin": "^13.7.0",
         "node-fetch": "^2.7.0"
     },
     "devDependencies": {
         "concurrently": "^8.0.1",
-        "nodemon": "^3.0.1",
-        "sass": "^1.70.0"
+        "nodemon": "^3.0.1"
     },
     "engines": {
         "node": "22.x"
