@@ -5,6 +5,7 @@
     "main": "server.js",
     "scripts": {
         "build:core": "npm --prefix packages/core run build",
+        "build:mcp": "npm --prefix packages/core run build && npm --prefix apps/mcp run build",
         "start": "node server.js",
         "prestart": "npm run build:core",
         "dev:server": "nodemon server.js",

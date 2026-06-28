@@ -129,18 +129,25 @@ Surfaced as a new **AI Constraint Pack** section (`ConstraintPackSection.tsx`) b
 tabs on the palette page, each flavor with copy + download + a placement hint. The brand title
 defaults to a title-cased form of the vibe when no explicit name is given.
 
-### 1.4 — MCP server (`apps/mcp`)
-A minimal MCP server exposing:
-- `generate_theme(vibe: string)` → runs the existing pipeline, returns the Theme + DTCG tokens
-- `get_theme(slugOrId: string)` → fetches a saved theme
-- `list_my_themes()` (Phase 3, auth-gated) → the user's saved brands
-- a `theme://<id>` MCP **resource** returning the DTCG tokens + `AGENTS.md`
+### 1.4 — MCP server (`apps/mcp`) (DONE 2026-06-28)
+Built `apps/mcp` — an ESM stdio MCP server (`@modelcontextprotocol/sdk` 1.29), a thin transport
+over `@uichroma/core`:
+- ✅ `generate_theme(vibe)` → `runPalettePipeline` in-process, returns the `AGENTS.md` pack + DTCG tokens
+- ✅ `get_theme(permalink)` → fetches a saved theme from the read API (`UICHROMA_API_BASE`), same output
+- ✅ `theme://{permalink}` **resource** → DTCG tokens (JSON) + `AGENTS.md` (markdown)
+- ⬜ `list_my_themes()` — deferred to Phase 3 (needs auth)
 
-Reuse `packages/core` for generation — the MCP server is a thin transport over the same engine.
-Publish install instructions for Claude Code / Cursor / Windsurf. Distribute via the MCP server
-registries (this is the marketing channel).
+Generation runs in-process (OpenAI key via `OPENAI_API_KEY`); reads proxy the existing
+`/palette/:permalink/data` endpoint, so the MCP server stays stateless (no Firestore coupling).
+Install docs for Claude Code / Cursor / Windsurf are in `apps/mcp/README.md`. Verified end-to-end
+via a stdio JSON-RPC handshake (initialize + tools/list + resources/templates/list).
+**Still to do:** publish to npm (so install is `npx @uichroma/mcp`) and list on the MCP registries.
 
-**Phase 1 deliverables:** DTCG export, constraint-pack generator, working MCP server, install docs.
+This required making the core **ESM build Node-correct** (the build now rewrites the `dist/esm`
+relative specifiers to include `.js`, which the bundler tolerated but Node's ESM loader rejects).
+
+**Phase 1 deliverables:** DTCG export ✅, constraint-pack generator ✅, working MCP server ✅,
+install docs ✅. _(Remaining: npm publish + registry listing for distribution.)_
 
 ---
 
@@ -263,7 +270,7 @@ team_members (team_id uuid, user_id uuid, role text, primary key (team_id,user_i
 | 3 | 0.2 shared core extraction | ✅ done | Unblocks everything |
 | 4 | 0.3 Vercel+Supabase migration | 3–5 d | Removes dual-deploy + enables auth |
 | 5 | 1.2 DTCG export + 1.3 AGENTS.md | ✅ done | First "vibe-coding" value, low ML |
-| 6 | 1.4 MCP server | 2–4 d | Distribution unlock |
+| 6 | 1.4 MCP server | ✅ done | Distribution unlock (pending npm publish) |
 | 7 | 2.1–2.3 full tokens + dark + WCAG | 1–2 wk | The actual de-generic-ifier |
 | 8 | 3.1–3.3 auth + teams + billing | 2–3 wk | Value capture |
 

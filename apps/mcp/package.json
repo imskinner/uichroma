@@ -1,0 +1,29 @@
+{
+  "name": "@uichroma/mcp",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "MCP server for UI Chroma — generate and fetch AI-ready brand themes (DTCG tokens + AGENTS.md constraint pack) over the Model Context Protocol.",
+  "bin": {
+    "uichroma-mcp": "dist/index.js"
+  },
+  "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "prepare": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "@uichroma/core": "file:../../packages/core",
+    "uichroma": "file:../..",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "~5.9.3"
+  }
+}
