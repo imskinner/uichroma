@@ -52,6 +52,15 @@ is retired in the migration).
 
 ### 0.3 — Stack migration (recommended: Vercel + Supabase)
 
+**STATUS (2026-06-28): code scaffolded; provisioning + cutover pending.** Chosen approach: keep the
+Express app as one Vercel function and swap only its data layer (lower-churn path below), not the
+per-route serverless split. Done: npm-workspaces monorepo (fixes the Vercel build), `db/index.js`
+Supabase data layer, `server.js` ported off Firestore (now exports the app + listens only when run
+directly), `api/index.js` Vercel entry, `supabase/schema.sql`, `scripts/migrate-firestore-to-supabase.js`
+(`npm run migrate`), modernized `vercel.json`, `.env.example`. **Pending (needs the user):** create the
+Supabase project, set the 3 keys, run the schema, run the migration, verify, deploy — see
+[`MIGRATION-SUPABASE.md`](./MIGRATION-SUPABASE.md). Firebase/`functions/` kept until parity.
+
 **Target architecture:**
 ```
 uichroma/ (monorepo)
@@ -268,7 +277,7 @@ team_members (team_id uuid, user_id uuid, role text, primary key (team_id,user_i
 | 1 | 0.1 secret removal + key rotation | 0.5 d | Active liability |
 | 2 | 3.4 rate limiting | 0.5–1 d | Cost liability before any traffic |
 | 3 | 0.2 shared core extraction | ✅ done | Unblocks everything |
-| 4 | 0.3 Vercel+Supabase migration | 3–5 d | Removes dual-deploy + enables auth |
+| 4 | 0.3 Vercel+Supabase migration | 🟡 code done, provisioning pending | Removes dual-deploy + enables auth |
 | 5 | 1.2 DTCG export + 1.3 AGENTS.md | ✅ done | First "vibe-coding" value, low ML |
 | 6 | 1.4 MCP server | ✅ done | Distribution unlock (pending npm publish) |
 | 7 | 2.1–2.3 full tokens + dark + WCAG | 1–2 wk | The actual de-generic-ifier |

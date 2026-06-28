@@ -1,32 +1,12 @@
 {
-  "version": 2,
+  "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "npm run build",
-  "builds": [
-    {
-      "src": "client/dist/**",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "server.js",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/assets/(.*)",
-      "dest": "client/dist/assets/$1"
-    },
-    {
-      "src": "/img/(.*)",
-      "dest": "client/dist/img/$1"
-    },
-    {
-      "src": "/favicon.ico",
-      "dest": "client/dist/favicon.ico"
-    },
-    {
-      "src": "/.*",
-      "dest": "server.js"
-    }
+  "outputDirectory": "client/dist",
+  "rewrites": [
+    { "source": "/generatePalette", "destination": "/api" },
+    { "source": "/api/getPalette", "destination": "/api" },
+    { "source": "/api/updatePalette", "destination": "/api" },
+    { "source": "/palette/:permalink/data", "destination": "/api" },
+    { "source": "/((?!api/|assets/|img/|favicon.ico).*)", "destination": "/index.html" }
   ]
 }
