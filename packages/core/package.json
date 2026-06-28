@@ -17,6 +17,11 @@
       "types": "./dist/cjs/color.d.ts",
       "import": "./dist/esm/color.js",
       "require": "./dist/cjs/color.js"
+    },
+    "./tokens": {
+      "types": "./dist/cjs/tokens.d.ts",
+      "import": "./dist/esm/tokens.js",
+      "require": "./dist/cjs/tokens.js"
     }
   },
   "files": [

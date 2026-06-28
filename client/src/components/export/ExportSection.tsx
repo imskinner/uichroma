@@ -8,7 +8,7 @@ interface ExportSectionProps {
   colors: PaletteColors;
 }
 
-const FORMAT_KEYS = ['css', 'scss', 'tailwind', 'json'] as const;
+const FORMAT_KEYS = ['css', 'scss', 'tailwind', 'json', 'dtcg'] as const;
 
 export function ExportSection({ colors }: ExportSectionProps) {
   const [copiedFormat, setCopiedFormat] = useState<string | null>(null);

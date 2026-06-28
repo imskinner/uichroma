@@ -43,8 +43,9 @@ engine deleted from both); the web app's `client/src/lib/color-utils.ts` is a th
 the browser-safe `@uichroma/core/color` subpath, so no other client file changed. The root
 `predev`/`prestart`/`build` scripts build core first.
 
-**Still pending here (deferred to §1.1–1.2):** canonical `Theme`/`Token` types beyond the 8
-colors, and the DTCG + CSS/SCSS/Tailwind serializers (still in `client/src/lib/export-utils.ts`).
+**Still pending here (deferred to §1.1):** canonical `Theme`/`Token` types beyond the 8 colors.
+The DTCG serializer now lives in core (§1.2, done); the CSS/SCSS/Tailwind serializers still live
+in `client/src/lib/export-utils.ts` and can follow when there's a non-web consumer for them.
 **Deploy caveat:** the Firebase function consumes core via a `file:../packages/core` dep that
 points outside `functions/`; `firebase deploy` may need a pack/bundle step (moot once `functions/`
 is retired in the migration).
@@ -107,11 +108,14 @@ type Theme = {
 };
 ```
 
-### 1.2 — DTCG / Style Dictionary export
-Add a serializer in `packages/core` that emits **W3C DTCG** token JSON (`$type`, `$value`) — the
-portability standard Figma, Tokens Studio, Style Dictionary, and MUI consume. Add it as a 5th
-export tab in `client/src/components/export/ExportSection.tsx`. This is ~80% reuse of the existing
-`export-utils.ts` ramp logic.
+### 1.2 — DTCG / Style Dictionary export (DONE 2026-06-28)
+Added `toDTCG` / `toDTCGObject` to `packages/core` (`src/tokens.ts`), exposed via a browser-safe
+`@uichroma/core/tokens` subpath so the web app gets it without bundling the generation engine. It
+emits **W3C DTCG** token JSON (`$type`, `$value`): each of the 8 roles becomes a group with a
+`DEFAULT` token, an optional `$description`, and the 10-step tonal scale. Pre-computed `tones` are
+passed through when present (so the DTCG scale keys match the CSS/SCSS/Tailwind ramps) and derived
+via `generateTonesForColor` otherwise. Surfaced as the 5th **DTCG Tokens** tab in
+`client/src/components/export/ExportSection.tsx` (downloads `tokens.dtcg.json`).
 
 ### 1.3 — `AGENTS.md` / skill constraint-pack generator
 Generate a markdown file the codegen agent ingests: the token table, the semantic roles, and
