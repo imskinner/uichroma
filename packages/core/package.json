@@ -22,6 +22,11 @@
       "types": "./dist/cjs/tokens.d.ts",
       "import": "./dist/esm/tokens.js",
       "require": "./dist/cjs/tokens.js"
+    },
+    "./constraints": {
+      "types": "./dist/cjs/constraints.d.ts",
+      "import": "./dist/esm/constraints.js",
+      "require": "./dist/cjs/constraints.js"
     }
   },
   "files": [

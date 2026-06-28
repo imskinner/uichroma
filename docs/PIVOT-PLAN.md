@@ -117,14 +117,17 @@ passed through when present (so the DTCG scale keys match the CSS/SCSS/Tailwind 
 via `generateTonesForColor` otherwise. Surfaced as the 5th **DTCG Tokens** tab in
 `client/src/components/export/ExportSection.tsx` (downloads `tokens.dtcg.json`).
 
-### 1.3 — `AGENTS.md` / skill constraint-pack generator
-Generate a markdown file the codegen agent ingests: the token table, the semantic roles, and
-hard rules ("use these tokens; never hardcode hex; primary = X; CTAs use accent; danger is
-reserved for errors"). Offer three flavors:
+### 1.3 — `AGENTS.md` / skill constraint-pack generator (DONE 2026-06-28)
+Added `packages/core/src/constraints.ts` (browser-safe `@uichroma/core/constraints` subpath):
+`generateAgentsMd`, `generateClaudeSkill`, `generateCursorRules` — three flavors over one shared
+body (token table + the 8 semantic role usages + 6 hard rules + the model's per-role "brand
+intent" + a permalink provenance line):
 - `AGENTS.md` (generic, read by most agents)
-- a Claude Code **skill** (`.claude/skills/<brand>-theme/SKILL.md` + the DTCG json)
-- a Cursor `.cursor/rules` file
-Expose as a download + copy button next to the export tabs.
+- a Claude Code **skill** with `name`/`description` frontmatter (pairs with the DTCG json)
+- a Cursor `.mdc` rule with `description`/`globs`/`alwaysApply` frontmatter
+Surfaced as a new **AI Constraint Pack** section (`ConstraintPackSection.tsx`) below the export
+tabs on the palette page, each flavor with copy + download + a placement hint. The brand title
+defaults to a title-cased form of the vibe when no explicit name is given.
 
 ### 1.4 — MCP server (`apps/mcp`)
 A minimal MCP server exposing:
@@ -259,7 +262,7 @@ team_members (team_id uuid, user_id uuid, role text, primary key (team_id,user_i
 | 2 | 3.4 rate limiting | 0.5–1 d | Cost liability before any traffic |
 | 3 | 0.2 shared core extraction | ✅ done | Unblocks everything |
 | 4 | 0.3 Vercel+Supabase migration | 3–5 d | Removes dual-deploy + enables auth |
-| 5 | 1.2 DTCG export + 1.3 AGENTS.md | 2–3 d | First "vibe-coding" value, low ML |
+| 5 | 1.2 DTCG export + 1.3 AGENTS.md | ✅ done | First "vibe-coding" value, low ML |
 | 6 | 1.4 MCP server | 2–4 d | Distribution unlock |
 | 7 | 2.1–2.3 full tokens + dark + WCAG | 1–2 wk | The actual de-generic-ifier |
 | 8 | 3.1–3.3 auth + teams + billing | 2–3 wk | Value capture |

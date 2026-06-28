@@ -6,6 +6,7 @@ export * from "./color"; // hexToHSL, hslToHex, generateTonesForColor, textOn, H
 export * from "./hue"; // SEMANTIC_HUE_RANGES, hueInRange, nudgeHue, hueDist, HueRange
 export * from "./validate"; // validatePalette, scorePalette, deriveNeutral, PaletteScore
 export * from "./tokens"; // toDTCG, toDTCGObject, TOKEN_ROLES, DTCG types
+export * from "./constraints"; // generateAgentsMd, generateClaudeSkill, generateCursorRules
 export * from "./generate"; // prompts, generateColorPalette, critiquePalette, runPalettePipeline
 
 // Types not already re-exported via ./color.

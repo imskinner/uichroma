@@ -10,6 +10,7 @@ import { PermalinkBar } from '@/components/palette/PermalinkBar.tsx';
 import { ShadesView } from '@/components/shades/ShadesView.tsx';
 import { DemoView } from '@/components/demo/DemoView.tsx';
 import { ExportSection } from '@/components/export/ExportSection.tsx';
+import { ConstraintPackSection } from '@/components/export/ConstraintPackSection.tsx';
 import { usePalette } from '@/hooks/use-palette.ts';
 import { useDarkMode } from '@/hooks/use-dark-mode.tsx';
 import { getPaletteData, updatePalette, generateVariation } from '@/lib/api.ts';
@@ -167,6 +168,7 @@ export function PalettePage() {
           </Tabs>
 
           <ExportSection colors={colors} />
+          <ConstraintPackSection colors={colors} vibe={keywords} permalink={permalink} />
         </div>
       </GlassCard>
     </div>
