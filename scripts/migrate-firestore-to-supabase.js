@@ -21,6 +21,16 @@ function initFirebase() {
   admin.initializeApp({ credential: admin.credential.applicationDefault() });
 }
 
+// Firestore stored timestamps two ways over the app's life: an ISO string (Express path) or a
+// Firestore Timestamp object {_seconds,_nanoseconds} (older Cloud Function path). Normalize both.
+function toIso(v) {
+  if (!v) return null;
+  if (typeof v === 'string') return v;
+  if (typeof v.toDate === 'function') return v.toDate().toISOString();
+  if (typeof v._seconds === 'number') return new Date(v._seconds * 1000).toISOString();
+  return null;
+}
+
 async function main() {
   initFirebase();
   const firestore = admin.firestore();
@@ -29,34 +39,49 @@ async function main() {
   const snap = await firestore.collection('palettes').get();
   console.log(`Found ${snap.size} palettes in Firestore.`);
 
-  let upserted = 0;
+  const byPermalink = new Map(); // de-dup: last write wins
   let skipped = 0;
-  let failed = 0;
-
   for (const doc of snap.docs) {
     const d = doc.data();
-    if (!d.permalink || !d.colors) {
-      console.warn(`  - skipping doc ${doc.id} (missing permalink or colors)`);
+    // The Express path stores a `permalink` field; the old Cloud Function used the permalink as
+    // the document id. Fall back to the id so neither source is lost.
+    const permalink = d.permalink || doc.id;
+    if (!permalink || !d.colors) {
       skipped++;
       continue;
     }
     const row = {
-      permalink: d.permalink,
+      permalink,
       keywords: d.keywords ?? null,
       colors: d.colors,
       ai_response: d.ai_response ?? null,
-      created_at: d.created_at ?? new Date().toISOString(),
     };
-    const { error } = await supabase.from(TABLE).upsert(row, { onConflict: 'permalink' });
-    if (error) {
-      console.error(`  ✗ ${d.permalink}: ${error.message}`);
-      failed++;
-    } else {
-      upserted++;
-    }
+    // created_at is NOT NULL; always provide a value (PostgREST inserts explicit NULL for keys
+    // omitted from a batch when other rows include them, which would bypass the column default).
+    row.created_at = toIso(d.created_at) || new Date().toISOString();
+    const updated = toIso(d.updated_at);
+    if (updated) row.updated_at = updated;
+    byPermalink.set(permalink, row);
   }
 
-  console.log(`Done. upserted=${upserted} skipped=${skipped} failed=${failed}`);
+  const rows = [...byPermalink.values()];
+  console.log(`Prepared ${rows.length} unique rows (${skipped} skipped).`);
+
+  let upserted = 0;
+  let failed = 0;
+  const CHUNK = 100;
+  for (let i = 0; i < rows.length; i += CHUNK) {
+    const chunk = rows.slice(i, i + CHUNK);
+    const { error } = await supabase.from(TABLE).upsert(chunk, { onConflict: 'permalink' });
+    if (error) {
+      console.error(`  ✗ chunk ${i}–${i + chunk.length}: ${error.message}`);
+      failed += chunk.length;
+    } else {
+      upserted += chunk.length;
+      process.stdout.write(`  ✓ ${upserted}/${rows.length}\r`);
+    }
+  }
+  console.log(`\nDone. upserted=${upserted} failed=${failed} skipped=${skipped}`);
   process.exit(failed ? 1 : 0);
 }
 
