@@ -3,8 +3,9 @@
 // higher). This whole pipeline is reused by the Express API, the Cloud Function, and the
 // (Phase 1) MCP server — it is the product, so it lives here once.
 
-import { validatePalette, scorePalette } from "./validate";
+import { validatePalette } from "./validate";
 import { deriveNeutral } from "./validate";
+import { scoreTheme } from "./theme";
 import type { Palette } from "./types";
 
 const OPENAI_CHAT_URL = "https://api.openai.com/v1/chat/completions";
@@ -194,7 +195,7 @@ export async function runPalettePipeline(
   );
   let colors = generated;
 
-  const firstScore = scorePalette(colors);
+  const firstScore = scoreTheme(colors);
   console.log(
     `Palette score: ${firstScore.score}/100, issues: ${firstScore.issues.length}`,
   );
@@ -211,7 +212,7 @@ export async function runPalettePipeline(
       apiKey,
     );
     if (critiqued) {
-      const secondScore = scorePalette(critiqued);
+      const secondScore = scoreTheme(critiqued);
       console.log(
         `Critique score: ${secondScore.score}/100, issues: ${secondScore.issues.length}`,
       );

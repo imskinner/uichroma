@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs.tsx';
 import { Button } from '@/components/ui/button.tsx';
 import { generateAgentsMd, generateClaudeSkill, generateCursorRules } from '@uichroma/core/constraints';
+import { buildTheme } from '@uichroma/core/theme';
 import { downloadFile } from '@/lib/export-utils.ts';
 import type { PaletteColors } from '@/lib/palette-utils.ts';
 
@@ -20,7 +21,14 @@ interface PackFormat {
 }
 
 function buildInput(colors: PaletteColors, vibe?: string, permalink?: string) {
-  return { colors, vibe: vibe || undefined, permalink: permalink || undefined };
+  const theme = buildTheme(colors);
+  return {
+    colors,
+    vibe: vibe || undefined,
+    permalink: permalink || undefined,
+    modes: theme.modes,
+    wcag: theme.wcag,
+  };
 }
 
 const PACKS: Record<string, PackFormat> = {

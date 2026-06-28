@@ -18,6 +18,11 @@
       "import": "./dist/esm/color.js",
       "require": "./dist/cjs/color.js"
     },
+    "./theme": {
+      "types": "./dist/cjs/theme.d.ts",
+      "import": "./dist/esm/theme.js",
+      "require": "./dist/cjs/theme.js"
+    },
     "./tokens": {
       "types": "./dist/cjs/tokens.d.ts",
       "import": "./dist/esm/tokens.js",

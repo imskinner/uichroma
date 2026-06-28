@@ -8,6 +8,7 @@ import { TopBar } from '@/components/layout/TopBar.tsx';
 import { ColorGrid } from '@/components/palette/ColorGrid.tsx';
 import { PermalinkBar } from '@/components/palette/PermalinkBar.tsx';
 import { ShadesView } from '@/components/shades/ShadesView.tsx';
+import { AccessibilityPanel } from '@/components/accessibility/AccessibilityPanel.tsx';
 import { DemoView } from '@/components/demo/DemoView.tsx';
 import { ExportSection } from '@/components/export/ExportSection.tsx';
 import { ConstraintPackSection } from '@/components/export/ConstraintPackSection.tsx';
@@ -150,6 +151,7 @@ export function PalettePage() {
             <TabsList className="mb-6">
               <TabsTrigger value="palette">Palette</TabsTrigger>
               <TabsTrigger value="shades">Shades</TabsTrigger>
+              <TabsTrigger value="accessibility">Accessibility</TabsTrigger>
               <TabsTrigger value="demo">Demo</TabsTrigger>
             </TabsList>
 
@@ -160,6 +162,10 @@ export function PalettePage() {
 
             <TabsContent value="shades">
               <ShadesView colors={colors} />
+            </TabsContent>
+
+            <TabsContent value="accessibility">
+              <AccessibilityPanel colors={colors} />
             </TabsContent>
 
             <TabsContent value="demo">

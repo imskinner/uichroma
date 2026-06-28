@@ -5,6 +5,7 @@
 
 import { generateTonesForColor } from "./color";
 import type { ColorRole } from "./types";
+import type { TokenSet } from "./theme";
 
 /** Order roles are emitted in: the 7 generated roles plus the derived neutral. */
 export const TOKEN_ROLES: (ColorRole | "neutral")[] = [
@@ -48,10 +49,27 @@ export type DtcgColorGroup = { $description?: string } & Record<
 
 export interface DtcgDocument {
   color: Record<string, DtcgColorGroup>;
+  /** Light-mode chrome tokens (background/surface/text/border…), present when modes are passed. */
+  light?: Record<string, DtcgToken>;
+  /** Dark-mode chrome tokens, present when modes are passed. */
+  dark?: Record<string, DtcgToken>;
+}
+
+export interface DtcgOptions {
+  /** Derived light/dark chrome token sets (from `buildTheme`); emitted as `light`/`dark` groups. */
+  modes?: { light: TokenSet; dark: TokenSet };
+}
+
+function modeGroup(set: TokenSet): Record<string, DtcgToken> {
+  const group: Record<string, DtcgToken> = {};
+  for (const [name, value] of Object.entries(set)) {
+    group[name] = { $type: "color", $value: value };
+  }
+  return group;
 }
 
 /** Build the DTCG document object: each role as a group with a DEFAULT token + tonal scale. */
-export function toDTCGObject(colors: TokenColorsInput): DtcgDocument {
+export function toDTCGObject(colors: TokenColorsInput, opts?: DtcgOptions): DtcgDocument {
   const color: Record<string, DtcgColorGroup> = {};
   for (const role of TOKEN_ROLES) {
     const c = colors[role];
@@ -68,10 +86,16 @@ export function toDTCGObject(colors: TokenColorsInput): DtcgDocument {
 
     color[role] = group;
   }
-  return { color };
+
+  const doc: DtcgDocument = { color };
+  if (opts?.modes) {
+    doc.light = modeGroup(opts.modes.light);
+    doc.dark = modeGroup(opts.modes.dark);
+  }
+  return doc;
 }
 
 /** Serialize a palette to W3C DTCG token JSON (2-space indented). */
-export function toDTCG(colors: TokenColorsInput): string {
-  return JSON.stringify(toDTCGObject(colors), null, 2);
+export function toDTCG(colors: TokenColorsInput, opts?: DtcgOptions): string {
+  return JSON.stringify(toDTCGObject(colors, opts), null, 2);
 }

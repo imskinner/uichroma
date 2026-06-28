@@ -5,6 +5,7 @@
 
 import { TOKEN_ROLES, type TokenColorsInput } from "./tokens";
 import type { ColorRole } from "./types";
+import type { TokenSet, WcagReport } from "./theme";
 
 type Role = ColorRole | "neutral";
 
@@ -17,6 +18,10 @@ export interface ConstraintPackInput {
   name?: string;
   /** Permalink/slug of the saved palette, used for a provenance backlink. */
   permalink?: string;
+  /** Derived light/dark chrome token sets (from `buildTheme`), documented for the agent. */
+  modes?: { light: TokenSet; dark: TokenSet };
+  /** WCAG contrast report (from `buildTheme`); failing pairs become accessibility guidance. */
+  wcag?: WcagReport;
 }
 
 /** Semantic usage guidance per role — the rules the agent must follow, independent of vibe. */
@@ -66,7 +71,7 @@ function titleCase(role: string): string {
 
 /** The shared markdown body: token table, hard rules, and per-role brand intent. */
 function buildBody(input: ConstraintPackInput): string {
-  const { colors, vibe, permalink } = input;
+  const { colors, vibe, permalink, modes, wcag } = input;
   const roles = presentRoles(colors);
 
   const lines: string[] = [];
@@ -99,11 +104,50 @@ function buildBody(input: ConstraintPackInput): string {
   );
   lines.push("");
 
+  // Light + dark chrome tokens
+  if (modes) {
+    lines.push("## Light & dark modes");
+    lines.push("");
+    lines.push(
+      "This theme ships both modes. Use these chrome tokens for surfaces and text (the role colors above are mode-agnostic):",
+    );
+    lines.push("");
+    lines.push("| Token | Light | Dark |");
+    lines.push("| --- | --- | --- |");
+    for (const key of Object.keys(modes.light) as (keyof TokenSet)[]) {
+      lines.push(`| \`${key}\` | \`${modes.light[key]}\` | \`${modes.dark[key]}\` |`);
+    }
+    lines.push("");
+  }
+
   // Hard rules
   lines.push("## Rules");
   lines.push("");
   HARD_RULES.forEach((rule, i) => lines.push(`${i + 1}. ${rule}`));
   lines.push("");
+
+  // Accessibility (WCAG)
+  if (wcag) {
+    const failing = [
+      ...wcag.light.map((p) => ({ mode: "light", ...p })),
+      ...wcag.dark.map((p) => ({ mode: "dark", ...p })),
+    ].filter((p) => !p.AA);
+    lines.push("## Accessibility (WCAG)");
+    lines.push("");
+    lines.push(
+      `${wcag.summary.passAA}/${wcag.summary.total} foreground/background pairs pass AA (≥4.5:1) across both modes.`,
+    );
+    if (failing.length) {
+      lines.push("");
+      lines.push(
+        "Avoid these low-contrast combinations — use a darker/lighter tone, or put text on `neutral`:",
+      );
+      for (const p of failing) {
+        lines.push(`- ${p.mode}: ${p.name} — ${p.ratio}:1 (${p.fg} on ${p.bg})`);
+      }
+    }
+    lines.push("");
+  }
 
   // Brand intent (the model's rationale, if present)
   const withDesc = roles.filter((r) => colors[r]!.description);
