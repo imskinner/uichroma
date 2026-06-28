@@ -28,16 +28,26 @@ Do this before feature work. It removes liabilities and makes Phases 1–3 cheap
 - Added `.env.example` documenting all env vars. `functions/index.js` already used
   `admin.initializeApp()` (ambient creds) and needed no change.
 
-### 0.2 — Extract a shared core package
-Create `packages/core/` (or `client/src/lib/palette-core.ts` re-exported to the server) as the
-single home for:
-- `hexToHSL`, `hslToHex`, `generateTonesForColor`, `textOn`, `hueDist`, `nudgeHue`, `hueInRange`
-- `SEMANTIC_HUE_RANGES`, `validatePalette`, `scorePalette`
-- canonical `Theme` / `Color` / `Token` types (see §1.1)
-- DTCG + CSS/SCSS/Tailwind serializers (move from `client/src/lib/export-utils.ts`)
+### 0.2 — Extract a shared core package (DONE 2026-06-28)
+Created `packages/core/` — framework-free TypeScript, **dual CJS+ESM build** (`tsc` →
+`dist/cjs` for Node `require`, `dist/esm` for the bundler's `import`), now the single home for:
+- ✅ `hexToHSL`, `hslToHex`, `generateTonesForColor`, `textOn`, `hueDist`, `nudgeHue`, `hueInRange`
+- ✅ `SEMANTIC_HUE_RANGES`, `validatePalette`, `scorePalette`, `deriveNeutral`
+- ✅ the generation engine: `PALETTE_SYSTEM_PROMPT`, `CRITIQUE_SYSTEM_PROMPT`,
+  `generateColorPalette`, `critiquePalette`, and `runPalettePipeline` (generate → score →
+  critique-if-needed → derive neutral) — the reusable asset for the API **and** the MCP server.
+- ✅ canonical `HSL` / `Tone` / `Color` / `Palette` types.
 
-Make it framework-free TypeScript so the web app, the API, and the MCP server all import it.
-Delete the duplicated copies in `server.js` and `functions/index.js`.
+`server.js` and `functions/index.js` now `require('@uichroma/core')` (the whole duplicated
+engine deleted from both); the web app's `client/src/lib/color-utils.ts` is a thin re-export of
+the browser-safe `@uichroma/core/color` subpath, so no other client file changed. The root
+`predev`/`prestart`/`build` scripts build core first.
+
+**Still pending here (deferred to §1.1–1.2):** canonical `Theme`/`Token` types beyond the 8
+colors, and the DTCG + CSS/SCSS/Tailwind serializers (still in `client/src/lib/export-utils.ts`).
+**Deploy caveat:** the Firebase function consumes core via a `file:../packages/core` dep that
+points outside `functions/`; `firebase deploy` may need a pack/bundle step (moot once `functions/`
+is retired in the migration).
 
 ### 0.3 — Stack migration (recommended: Vercel + Supabase)
 
@@ -243,7 +253,7 @@ team_members (team_id uuid, user_id uuid, role text, primary key (team_id,user_i
 |-------|------|--------|---------|
 | 1 | 0.1 secret removal + key rotation | 0.5 d | Active liability |
 | 2 | 3.4 rate limiting | 0.5–1 d | Cost liability before any traffic |
-| 3 | 0.2 shared core extraction | 1–2 d | Unblocks everything |
+| 3 | 0.2 shared core extraction | ✅ done | Unblocks everything |
 | 4 | 0.3 Vercel+Supabase migration | 3–5 d | Removes dual-deploy + enables auth |
 | 5 | 1.2 DTCG export + 1.3 AGENTS.md | 2–3 d | First "vibe-coding" value, low ML |
 | 6 | 1.4 MCP server | 2–4 d | Distribution unlock |

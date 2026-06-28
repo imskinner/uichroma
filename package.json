@@ -4,11 +4,14 @@
     "description": "UI Chroma - Color Palette Generator",
     "main": "server.js",
     "scripts": {
+        "build:core": "npm --prefix packages/core run build",
         "start": "node server.js",
+        "prestart": "npm run build:core",
         "dev:server": "nodemon server.js",
         "dev:client": "npm --prefix client run dev",
         "dev": "concurrently -k \"npm run dev:server\" \"npm run dev:client\"",
-        "build": "npm --prefix client run build",
+        "predev": "npm run build:core",
+        "build": "npm run build:core && npm --prefix client run build",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "dependencies": {
