@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { AuthButton } from '@/components/auth/AuthButton.tsx';
 
 interface TopBarProps {
   actions?: ReactNode;
@@ -10,7 +11,10 @@ export function TopBar({ actions }: TopBarProps) {
       <a href="/">
         <img src="/img/logo.svg" alt="UI Chroma" className="h-7 dark:invert" />
       </a>
-      {actions && <div className="flex items-center gap-3">{actions}</div>}
+      <div className="flex items-center gap-3">
+        {actions}
+        <AuthButton />
+      </div>
     </div>
   );
 }

@@ -33,15 +33,56 @@ async function getThemeByPermalink(permalink) {
   return data; // null when not found
 }
 
-/** Insert a freshly generated theme. Returns the new row id. */
-async function insertTheme({ permalink, keywords, colors, aiResponse, style }) {
+/** Insert a freshly generated theme. Returns the new row id. `userId` attributes ownership. */
+async function insertTheme({ permalink, keywords, colors, aiResponse, style, userId }) {
   const { data, error } = await getSupabase()
     .from(TABLE)
-    .insert({ permalink, keywords, colors, ai_response: aiResponse, style: style ?? null })
+    .insert({
+      permalink,
+      keywords,
+      colors,
+      ai_response: aiResponse,
+      style: style ?? null,
+      user_id: userId ?? null,
+    })
     .select('id')
     .single();
   if (error) throw error;
   return data.id;
+}
+
+/** Verify a Supabase access token and return the user id, or null if invalid/absent. */
+async function getUserId(accessToken) {
+  if (!accessToken) return null;
+  try {
+    const { data, error } = await getSupabase().auth.getUser(accessToken);
+    if (error || !data?.user) return null;
+    return data.user.id;
+  } catch {
+    return null;
+  }
+}
+
+/** The owner (user_id) of a theme: a uuid, null (unowned), or undefined (not found). */
+async function getThemeOwner(permalink) {
+  const { data, error } = await getSupabase()
+    .from(TABLE)
+    .select('user_id')
+    .eq('permalink', permalink)
+    .maybeSingle();
+  if (error) throw error;
+  return data ? data.user_id : undefined;
+}
+
+/** List a user's saved themes, newest first. */
+async function getThemesByUser(userId) {
+  const { data, error } = await getSupabase()
+    .from(TABLE)
+    .select('permalink, keywords, colors, created_at')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return data || [];
 }
 
 /** Update a theme's colors by permalink. Returns the updated row id, or null if not found. */
@@ -62,4 +103,7 @@ module.exports = {
   getThemeByPermalink,
   insertTheme,
   updateThemeColors,
+  getUserId,
+  getThemeOwner,
+  getThemesByUser,
 };

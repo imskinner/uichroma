@@ -5,18 +5,20 @@ import { BackgroundEllipses } from '@/components/layout/BackgroundEllipses.tsx';
 import { GlassCard } from '@/components/layout/GlassCard.tsx';
 import { TopBar } from '@/components/layout/TopBar.tsx';
 import { generatePalette } from '@/lib/api.ts';
+import { useAuth } from '@/hooks/use-auth.tsx';
 
 export function HomePage() {
   const [prompt, setPrompt] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { session } = useAuth();
 
   const handleGenerate = async () => {
     const text = prompt.trim();
     if (!text) return;
     setLoading(true);
     try {
-      const data = await generatePalette(text);
+      const data = await generatePalette(text, session?.access_token);
       if (!data.permalink) {
         alert('Failed to generate palette. Please try again.');
         return;

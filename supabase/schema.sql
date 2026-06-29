@@ -34,3 +34,16 @@ drop policy if exists "public themes are readable" on themes;
 create policy "public themes are readable"
   on themes for select
   using (is_public = true);
+
+-- Owners can read their own themes (incl. private ones) and update them. Writes currently go
+-- through the Express API with the service-role key (which bypasses RLS); these policies are
+-- defense-in-depth + enable future direct-from-client access.
+drop policy if exists "owners read their themes" on themes;
+create policy "owners read their themes"
+  on themes for select
+  using (auth.uid() = user_id);
+
+drop policy if exists "owners update their themes" on themes;
+create policy "owners update their themes"
+  on themes for update
+  using (auth.uid() = user_id);

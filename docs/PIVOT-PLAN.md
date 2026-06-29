@@ -211,11 +211,19 @@ sub-views at once — so sharp↔pill corners visibly change per theme (circles/
 
 ## Phase 3 — Productize & defend
 
-### 3.1 — Auth + saved themes (Supabase Auth)
-- GitHub + email auth. `themes.user_id` FK; RLS so users only mutate their own.
-- "My Themes" page; saving creates a durable, named, slugged theme.
-- Replace MD5 permalinks with **human-readable slugs** (`/t/vibrant-ocean-teal`) + keep old
-  MD5 links via a redirect/lookup column for backwards compatibility.
+### 3.1 — Auth + saved themes (Supabase Auth) (CORE DONE 2026-06-28)
+- ✅ **Email/password auth** (works out of the box) + a **GitHub button** (inert until the GitHub
+  provider is enabled in Supabase). Client: `lib/supabase.ts` (anon client, degrades gracefully if
+  env absent), `use-auth.tsx` context, `AuthModal`/`AuthButton` in the TopBar.
+- ✅ **Ownership:** `/generatePalette` stamps `themes.user_id` when the caller is signed in (JWT in
+  the `Authorization` header, verified server-side via `getUserId`); `/api/updatePalette` is
+  owner-only once a theme is claimed (legacy/anon themes stay editable); new `GET /api/myThemes`.
+- ✅ **My Themes** page (`/my-themes`) lists the user's saved themes. RLS policies added
+  (public-read + owners read/update own). Verified end-to-end (admin-created user → JWT →
+  myThemes → 403/200 ownership).
+- ✅ Env: `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` (public) wired local + Vercel.
+- **Pending:** you enable the GitHub OAuth provider in Supabase to light up the GitHub button.
+- **Deferred:** human-readable slugs (`/t/vibrant-ocean-teal`) — MD5 permalinks still in use.
 
 ### 3.2 — Team brand library
 - `teams`, `team_members`, `themes.team_id`. Shared brand the whole team (and their agents via

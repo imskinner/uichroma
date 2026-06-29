@@ -1,10 +1,17 @@
 import type { PaletteColors } from './palette-utils.ts';
 import type { Style } from '@uichroma/core/theme';
 
-export async function generatePalette(prompt: string): Promise<{ permalink: string; colors: PaletteColors; style?: Style }> {
+function authHeaders(token?: string | null): Record<string, string> {
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+export async function generatePalette(
+  prompt: string,
+  token?: string | null,
+): Promise<{ permalink: string; colors: PaletteColors; style?: Style }> {
   const response = await fetch('/generatePalette', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...authHeaders(token) },
     body: JSON.stringify({ feelings: prompt }),
   });
   if (!response.ok) {
@@ -29,18 +36,39 @@ export async function getPaletteData(permalink: string): Promise<{
 
 export async function generateVariation(
   originalPrompt: string,
-): Promise<{ permalink: string; colors: PaletteColors }> {
-  return generatePalette(originalPrompt);
+  token?: string | null,
+): Promise<{ permalink: string; colors: PaletteColors; style?: Style }> {
+  return generatePalette(originalPrompt, token);
 }
 
-export async function updatePalette(permalink: string, colors: PaletteColors): Promise<void> {
+export async function updatePalette(
+  permalink: string,
+  colors: PaletteColors,
+  token?: string | null,
+): Promise<void> {
   const response = await fetch('/api/updatePalette', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...authHeaders(token) },
     body: JSON.stringify({ permalink, colors }),
   });
   if (!response.ok) {
-    const err = await response.json();
+    const err = await response.json().catch(() => ({}));
     throw new Error(err.error || 'Failed to save');
   }
+}
+
+export interface MyThemeRow {
+  permalink: string;
+  keywords?: string;
+  colors: Record<string, { hex: string }>;
+  created_at?: string;
+}
+
+export async function getMyThemes(token: string): Promise<MyThemeRow[]> {
+  const response = await fetch('/api/myThemes', { headers: authHeaders(token) });
+  if (!response.ok) {
+    throw new Error(`Failed to load your themes: ${response.status}`);
+  }
+  const data = await response.json();
+  return data.themes || [];
 }

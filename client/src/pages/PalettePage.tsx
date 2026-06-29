@@ -15,6 +15,7 @@ import { ExportSection } from '@/components/export/ExportSection.tsx';
 import { ConstraintPackSection } from '@/components/export/ConstraintPackSection.tsx';
 import { usePalette } from '@/hooks/use-palette.ts';
 import { useDarkMode } from '@/hooks/use-dark-mode.tsx';
+import { useAuth } from '@/hooks/use-auth.tsx';
 import { getPaletteData, updatePalette, generateVariation } from '@/lib/api.ts';
 import { normalizePaletteColors } from '@/lib/palette-utils.ts';
 import type { PaletteKey } from '@/lib/palette-utils.ts';
@@ -24,6 +25,7 @@ export function PalettePage() {
   const navigate = useNavigate();
   const { colors, keywords, style, isDirty, dispatch } = usePalette();
   const { isDark, toggleDark } = useDarkMode();
+  const { session } = useAuth();
   const [variationLoading, setVariationLoading] = useState(false);
 
   useEffect(() => {
@@ -43,19 +45,19 @@ export function PalettePage() {
   const handleSave = useCallback(async () => {
     if (!permalink || !colors) return;
     try {
-      await updatePalette(permalink, colors);
+      await updatePalette(permalink, colors, session?.access_token);
       dispatch({ type: 'MARK_SAVED' });
     } catch (err) {
       console.error('Save error:', err);
-      alert('Failed to save changes.');
+      alert(err instanceof Error ? err.message : 'Failed to save changes.');
     }
-  }, [permalink, colors, dispatch]);
+  }, [permalink, colors, dispatch, session]);
 
   const handleVariation = useCallback(async () => {
     if (!colors) return;
     setVariationLoading(true);
     try {
-      const result = await generateVariation(keywords || '');
+      const result = await generateVariation(keywords || '', session?.access_token);
       navigate(`/palette/${result.permalink}`);
     } catch (err) {
       console.error('Variation error:', err);
@@ -63,7 +65,7 @@ export function PalettePage() {
     } finally {
       setVariationLoading(false);
     }
-  }, [colors, keywords, navigate]);
+  }, [colors, keywords, navigate, session]);
 
   const actions = (
     <>

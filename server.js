@@ -12,9 +12,18 @@ const {
   getThemeByPermalink,
   insertTheme,
   updateThemeColors,
+  getUserId,
+  getThemeOwner,
+  getThemesByUser,
 } = require('./db');
 
 const app = express();
+
+// Extract the Supabase access token from the Authorization header, if present.
+function bearerToken(req) {
+  const h = req.headers['authorization'] || '';
+  return h.startsWith('Bearer ') ? h.slice(7) : null;
+}
 
 app.use(cors());
 app.use(express.static(path.join(__dirname, 'client', 'dist')));
@@ -91,6 +100,9 @@ app.post('/generatePalette', rateLimit, async (req, res) => {
     const timestamp = Date.now().toString();
     const permalink = md5.update(timestamp).digest('hex');
 
+    // If the caller is signed in, attribute the theme to them (otherwise anonymous).
+    const userId = await getUserId(bearerToken(req));
+
     // Persist to Supabase
     const id = await insertTheme({
       permalink,
@@ -98,6 +110,7 @@ app.post('/generatePalette', rateLimit, async (req, res) => {
       colors: paletteData,
       aiResponse,
       style,
+      userId,
     });
 
     res.json({
@@ -116,12 +129,23 @@ app.post('/generatePalette', rateLimit, async (req, res) => {
   }
 });
 
-// Endpoint: update palette colors
+// Endpoint: update palette colors (owner-only once a theme is claimed by a user)
 app.post('/api/updatePalette', async (req, res) => {
   try {
     const { permalink, colors } = req.body;
     if (!permalink || !colors) {
       return res.status(400).json({ error: 'permalink and colors are required' });
+    }
+    const owner = await getThemeOwner(permalink);
+    if (owner === undefined) {
+      return res.status(404).json({ error: 'Palette not found.' });
+    }
+    // Owned themes may only be edited by their owner; unowned (legacy/anon) themes stay editable.
+    if (owner) {
+      const userId = await getUserId(bearerToken(req));
+      if (owner !== userId) {
+        return res.status(403).json({ error: 'You do not have permission to edit this theme.' });
+      }
     }
     const updated = await updateThemeColors(permalink, colors);
     if (!updated) {
@@ -131,6 +155,21 @@ app.post('/api/updatePalette', async (req, res) => {
   } catch (error) {
     console.error('Error in /api/updatePalette:', error);
     res.status(500).json({ error: 'Failed to update palette.' });
+  }
+});
+
+// Endpoint: the signed-in user's saved themes
+app.get('/api/myThemes', async (req, res) => {
+  try {
+    const userId = await getUserId(bearerToken(req));
+    if (!userId) {
+      return res.status(401).json({ error: 'Not authenticated.' });
+    }
+    const themes = await getThemesByUser(userId);
+    res.json({ themes });
+  } catch (error) {
+    console.error('Error in /api/myThemes:', error);
+    res.status(500).json({ error: 'Failed to load your themes.' });
   }
 });
 
