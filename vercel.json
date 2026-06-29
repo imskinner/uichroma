@@ -4,9 +4,8 @@
   "outputDirectory": "client/dist",
   "rewrites": [
     { "source": "/generatePalette", "destination": "/api" },
-    { "source": "/api/getPalette", "destination": "/api" },
-    { "source": "/api/updatePalette", "destination": "/api" },
     { "source": "/palette/:permalink/data", "destination": "/api" },
+    { "source": "/api/(.*)", "destination": "/api" },
     { "source": "/((?!api/|assets/|img/|favicon.ico).*)", "destination": "/index.html" }
   ]
 }
