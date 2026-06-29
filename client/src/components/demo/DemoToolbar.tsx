@@ -5,6 +5,15 @@ import { GOOGLE_FONTS, loadGoogleFont } from '@/lib/google-fonts.ts';
 export function DemoToolbar() {
   const { headingFont, bodyFont, isDark, setHeadingFont, setBodyFont } = useDemoSettings();
 
+  // Include the brand's generated fonts even if they aren't in the curated list, so the
+  // current selection renders correctly in the dropdowns.
+  const withCurrent = (current: string) =>
+    GOOGLE_FONTS.includes(current as (typeof GOOGLE_FONTS)[number])
+      ? GOOGLE_FONTS
+      : [current, ...GOOGLE_FONTS];
+  const headingOptions = withCurrent(headingFont);
+  const bodyOptions = withCurrent(bodyFont);
+
   const handleHeadingChange = (family: string) => {
     loadGoogleFont(family);
     setHeadingFont(family);
@@ -35,7 +44,7 @@ export function DemoToolbar() {
           className="text-sm border rounded-lg px-2 py-1.5 outline-none cursor-pointer"
           style={{ fontFamily: headingFont, ...selectStyle }}
         >
-          {GOOGLE_FONTS.map(f => (
+          {headingOptions.map(f => (
             <option key={f} value={f}>{f}</option>
           ))}
         </select>
@@ -50,7 +59,7 @@ export function DemoToolbar() {
           className="text-sm border rounded-lg px-2 py-1.5 outline-none cursor-pointer"
           style={{ fontFamily: bodyFont, ...selectStyle }}
         >
-          {GOOGLE_FONTS.map(f => (
+          {bodyOptions.map(f => (
             <option key={f} value={f}>{f}</option>
           ))}
         </select>

@@ -175,7 +175,7 @@ export function PalettePage() {
             </TabsContent>
 
             <TabsContent value="demo">
-              <DemoView colors={colors} />
+              <DemoView colors={colors} style={style} />
             </TabsContent>
           </Tabs>
 

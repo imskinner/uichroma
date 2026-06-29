@@ -1,4 +1,5 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs.tsx';
+import { buildTheme, type Style } from '@uichroma/core/theme';
 import type { PaletteColors } from '@/lib/palette-utils.ts';
 import { DemoSettingsProvider, useDemoSettings } from '@/hooks/use-demo-settings.tsx';
 import { DemoToolbar } from './DemoToolbar.tsx';
@@ -10,13 +11,14 @@ import { DemoBlog } from './DemoBlog.tsx';
 
 interface DemoViewProps {
   colors: PaletteColors;
+  style?: Style | null;
 }
 
-function DemoContent({ colors }: DemoViewProps) {
-  const { isDark } = useDemoSettings();
+function DemoContent({ colors }: { colors: PaletteColors }) {
+  const { isDark, chrome } = useDemoSettings();
 
   const wrapperStyle = isDark
-    ? { background: '#1a1a1a', color: '#e5e5e5' }
+    ? { background: chrome.background, color: chrome.text }
     : {};
 
   return (
@@ -60,9 +62,10 @@ function DemoContent({ colors }: DemoViewProps) {
   );
 }
 
-export function DemoView({ colors }: DemoViewProps) {
+export function DemoView({ colors, style }: DemoViewProps) {
+  const theme = buildTheme(colors, style ?? undefined);
   return (
-    <DemoSettingsProvider>
+    <DemoSettingsProvider theme={theme}>
       <DemoContent colors={colors} />
     </DemoSettingsProvider>
   );

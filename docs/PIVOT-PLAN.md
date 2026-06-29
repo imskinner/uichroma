@@ -196,10 +196,15 @@ sharp corners.
 - ✅ `scoreTheme` folds primary/accent CTA-contrast failures into the **critique loop**, so
   generation self-corrects legibility, not just hue separation.
 
-### 2.4 — Demo views as live theme proof
-The 5 existing demo sub-views become the "does my brand actually look good?" surface. Wire them
-to the full token set (radii, spacing, type) so they visibly change per theme — a strong
-shareable artifact and a conversion driver.
+### 2.4 — Demo views as live theme proof (CORE DONE 2026-06-28)
+The Demo now reflects the generated theme: `DemoView` builds the theme and feeds it to
+`DemoSettingsProvider`, which **defaults the demo typography to the brand's generated fonts**
+(loaded from Google Fonts, user-overridable) — so all 5 sub-views render in the brand's actual
+type — and the dark-mode frame uses the **generated dark chrome** (brand-hue-tinted) instead of a
+hardcoded grey. The toolbar surfaces the brand fonts as the selected options.
+**Remaining polish:** re-tokenize per-element radii/spacing inside the 5 sub-views (sharp↔pill
+corners, density-driven spacing) so roundness/spacing also visibly change per theme — the chrome
++ radii are already exposed via `useDemoSettings()` for this.
 
 ---
 
