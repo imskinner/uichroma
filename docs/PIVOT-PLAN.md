@@ -169,10 +169,13 @@ install docs ✅. _(Remaining: npm publish + registry listing for distribution.)
 Color alone doesn't de-generic-ify a UI (Inter + default spacing/radii do half the damage).
 Expand the artifact and the generation.
 
-### 2.1 — Light + dark generated together
-Generate both modes in one pass (codegen tools need both; we only do light today). Derive dark
-from the same hue/saturation story with adjusted lightness + surface tokens; validate contrast
-per mode.
+### 2.1 — Light + dark generated together (DONE 2026-06-28, Phase 2A)
+Done deterministically (no extra model call): `packages/core/theme.ts` `deriveModes(colors)` builds
+light + dark chrome token sets (`background`/`surface`/`surfaceMuted`/`text`/`textMuted`/`border`)
+from the neutral hue. `buildTheme(colors)` assembles the canonical `Theme` (colors + modes + wcag);
+DTCG emits `light`/`dark` groups and the AGENTS.md packs document both modes. Works on all 757
+existing palettes. _(Pending in 2C: wire the Demo sub-views to the generated dark tokens instead of
+their ad-hoc neutral-derived dark mode.)_
 
 ### 2.2 — Non-color tokens
 Extend the generation (new function-calling schema fields + scoring) to produce:
@@ -181,12 +184,13 @@ Extend the generation (new function-calling schema fields + scoring) to produce:
 Keep the same scored/critiqued approach — add lightweight heuristics (e.g., radius consistency,
 type-scale ratio sanity) to `scorePalette` → rename to `scoreTheme`.
 
-### 2.3 — WCAG as a first-class constraint
-We already compute luminance (`textOn`). Promote it:
-- Compute AA/AAA pass/fail for every foreground/background token pair, per mode.
-- Surface badges in the UI (Shades + Demo tabs).
-- **Feed failures back into the critique loop** as issues, so generation self-corrects contrast,
-  not just hue separation.
+### 2.3 — WCAG as a first-class constraint (DONE 2026-06-28, Phase 2A)
+- ✅ Proper `contrastRatio` (relative luminance) + `computeWcag` give AA/AAA/AA-large for every
+  fg/bg pair, per mode (`theme.ts`).
+- ✅ Surfaced in a new **Accessibility** tab (`AccessibilityPanel`) with per-pair ratios + badges;
+  also written into the AGENTS.md "Accessibility (WCAG)" section.
+- ✅ `scoreTheme` folds primary/accent CTA-contrast failures into the **critique loop**, so
+  generation self-corrects legibility, not just hue separation.
 
 ### 2.4 — Demo views as live theme proof
 The 5 existing demo sub-views become the "does my brand actually look good?" surface. Wire them
@@ -284,7 +288,7 @@ team_members (team_id uuid, user_id uuid, role text, primary key (team_id,user_i
 | 4 | 0.3 Vercel+Supabase migration | ✅ done (live) | Removes dual-deploy + enables auth |
 | 5 | 1.2 DTCG export + 1.3 AGENTS.md | ✅ done | First "vibe-coding" value, low ML |
 | 6 | 1.4 MCP server | ✅ done | Distribution unlock (pending npm publish) |
-| 7 | 2.1–2.3 full tokens + dark + WCAG | 1–2 wk | The actual de-generic-ifier |
+| 7 | 2.1–2.3 full tokens + dark + WCAG | 🟡 2.1+2.3 done (2A); 2.2 next | The actual de-generic-ifier |
 | 8 | 3.1–3.3 auth + teams + billing | 2–3 wk | Value capture |
 
 > If bandwidth is tight, the **minimum viable pivot** is steps 1–3 + 5–6: secure it, share the
