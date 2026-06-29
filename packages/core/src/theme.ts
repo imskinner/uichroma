@@ -35,10 +35,149 @@ export interface WcagReport {
   summary: { total: number; passAA: number; passAAA: number };
 }
 
+// --- Non-color style (Phase 2B) ---
+
+/** Compact style choices the model produces alongside the palette (one call, no extra cost). */
+export interface Style {
+  headingFont: string;
+  bodyFont: string;
+  monoFont: string;
+  typeScaleRatio: number; // modular scale ratio, ~1.1–1.6
+  radius: "sharp" | "rounded" | "soft" | "pill";
+  density: "compact" | "normal" | "spacious";
+  elevation: "flat" | "subtle" | "elevated";
+}
+
+/** Sensible defaults for legacy palettes (generated before 2B) or missing fields. */
+export const DEFAULT_STYLE: Style = {
+  headingFont: "Inter",
+  bodyFont: "Inter",
+  monoFont: "JetBrains Mono",
+  typeScaleRatio: 1.25,
+  radius: "rounded",
+  density: "normal",
+  elevation: "subtle",
+};
+
+export interface TypeStep {
+  name: string;
+  px: number;
+}
+
+/** The full token scales derived deterministically from a `Style`. */
+export interface StyleTokens {
+  fonts: { heading: string; body: string; mono: string };
+  typeScale: TypeStep[];
+  spacing: number[];
+  radii: { sm: number; md: number; lg: number; xl: number; full: number };
+  shadows: { sm: string; md: string; lg: string; xl: string };
+}
+
 export interface Theme {
   colors: Palette;
   modes: { light: TokenSet; dark: TokenSet };
   wcag: WcagReport;
+  style: Style;
+  tokens: StyleTokens;
+}
+
+const TYPE_STEPS: { name: string; exp: number }[] = [
+  { name: "xs", exp: -2 },
+  { name: "sm", exp: -1 },
+  { name: "base", exp: 0 },
+  { name: "lg", exp: 1 },
+  { name: "xl", exp: 2 },
+  { name: "2xl", exp: 3 },
+  { name: "3xl", exp: 4 },
+  { name: "4xl", exp: 5 },
+  { name: "5xl", exp: 6 },
+];
+
+const SPACING_SCALES: Record<Style["density"], number[]> = {
+  compact: [2, 4, 8, 12, 16, 20, 24, 32, 40, 48],
+  normal: [4, 8, 12, 16, 24, 32, 48, 64, 80, 96],
+  spacious: [4, 8, 16, 24, 32, 48, 64, 96, 128, 160],
+};
+
+const RADII_SETS: Record<Style["radius"], StyleTokens["radii"]> = {
+  sharp: { sm: 2, md: 3, lg: 4, xl: 6, full: 9999 },
+  rounded: { sm: 4, md: 8, lg: 12, xl: 16, full: 9999 },
+  soft: { sm: 8, md: 12, lg: 18, xl: 24, full: 9999 },
+  pill: { sm: 12, md: 9999, lg: 9999, xl: 9999, full: 9999 },
+};
+
+function shadowColor(hue: number, alpha: number): string {
+  const [r, g, b] = hexToRgb(hslToHex(hue, 24, 10));
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+function deriveShadows(elevation: Style["elevation"], hue: number): StyleTokens["shadows"] {
+  const sc = (a: number) => shadowColor(hue, a);
+  if (elevation === "flat") {
+    return {
+      sm: `0 1px 1px ${sc(0.03)}`,
+      md: `0 1px 3px ${sc(0.05)}`,
+      lg: `0 2px 6px ${sc(0.06)}`,
+      xl: `0 4px 10px ${sc(0.08)}`,
+    };
+  }
+  if (elevation === "elevated") {
+    return {
+      sm: `0 1px 3px ${sc(0.1)}`,
+      md: `0 4px 10px ${sc(0.12)}`,
+      lg: `0 10px 24px ${sc(0.16)}`,
+      xl: `0 20px 44px ${sc(0.22)}`,
+    };
+  }
+  // subtle (default)
+  return {
+    sm: `0 1px 2px ${sc(0.06)}`,
+    md: `0 2px 6px ${sc(0.08)}`,
+    lg: `0 6px 16px ${sc(0.1)}`,
+    xl: `0 12px 28px ${sc(0.14)}`,
+  };
+}
+
+/** Normalize a (possibly model-supplied, possibly partial) style to a valid Style. */
+export function normalizeStyle(style?: Partial<Style> | null): Style {
+  if (!style) return { ...DEFAULT_STYLE };
+  const radius = (["sharp", "rounded", "soft", "pill"] as const).includes(style.radius as never)
+    ? (style.radius as Style["radius"])
+    : DEFAULT_STYLE.radius;
+  const density = (["compact", "normal", "spacious"] as const).includes(style.density as never)
+    ? (style.density as Style["density"])
+    : DEFAULT_STYLE.density;
+  const elevation = (["flat", "subtle", "elevated"] as const).includes(style.elevation as never)
+    ? (style.elevation as Style["elevation"])
+    : DEFAULT_STYLE.elevation;
+  let ratio = Number(style.typeScaleRatio);
+  if (!Number.isFinite(ratio)) ratio = DEFAULT_STYLE.typeScaleRatio;
+  ratio = Math.min(1.6, Math.max(1.1, ratio));
+  return {
+    headingFont: (style.headingFont || DEFAULT_STYLE.headingFont).trim(),
+    bodyFont: (style.bodyFont || DEFAULT_STYLE.bodyFont).trim(),
+    monoFont: (style.monoFont || DEFAULT_STYLE.monoFont).trim(),
+    typeScaleRatio: Math.round(ratio * 1000) / 1000,
+    radius,
+    density,
+    elevation,
+  };
+}
+
+/** Derive the full non-color token scales from a Style (shadows tinted with the palette hue). */
+export function deriveStyleTokens(style: Style, hue = 220): StyleTokens {
+  const base = 16;
+  const typeScale = TYPE_STEPS.map((s) => ({
+    name: s.name,
+    px: Math.max(11, Math.round(base * Math.pow(style.typeScaleRatio, s.exp))),
+  }));
+  return {
+    fonts: { heading: style.headingFont, body: style.bodyFont, mono: style.monoFont },
+    typeScale,
+    spacing: SPACING_SCALES[style.density],
+    radii: RADII_SETS[style.radius],
+    shadows: deriveShadows(style.elevation, hue),
+  };
 }
 
 const ROLES = [
@@ -162,10 +301,17 @@ export function computeWcag(
   };
 }
 
-/** Build the full Theme (colors + derived light/dark modes + WCAG) from a palette. */
-export function buildTheme(colors: Palette): Theme {
+/** Build the full Theme (colors + light/dark modes + WCAG + style tokens) from a palette. */
+export function buildTheme(colors: Palette, style?: Partial<Style> | null): Theme {
   const modes = deriveModes(colors);
-  return { colors, modes, wcag: computeWcag(colors, modes) };
+  const normalized = normalizeStyle(style);
+  return {
+    colors,
+    modes,
+    wcag: computeWcag(colors, modes),
+    style: normalized,
+    tokens: deriveStyleTokens(normalized, chromeHue(colors)),
+  };
 }
 
 /**

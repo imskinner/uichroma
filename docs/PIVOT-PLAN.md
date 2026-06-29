@@ -177,12 +177,16 @@ DTCG emits `light`/`dark` groups and the AGENTS.md packs document both modes. Wo
 existing palettes. _(Pending in 2C: wire the Demo sub-views to the generated dark tokens instead of
 their ad-hoc neutral-derived dark mode.)_
 
-### 2.2 — Non-color tokens
-Extend the generation (new function-calling schema fields + scoring) to produce:
-- **Type scale** (e.g., modular scale ratio + font-family suggestions that aren't Inter-by-default)
-- **Spacing** scale, **border radii** set, **shadow/elevation** ramp
-Keep the same scored/critiqued approach — add lightweight heuristics (e.g., radius consistency,
-type-scale ratio sanity) to `scorePalette` → rename to `scoreTheme`.
+### 2.2 — Non-color tokens (DONE 2026-06-28, Phase 2B)
+The model returns a compact `style` object in the **same** call as the palette (no extra cost):
+`headingFont`/`bodyFont`/`monoFont` (real Google Fonts, steered away from Inter-by-default),
+`typeScaleRatio`, `radius`, `density`, `elevation`. `theme.ts` `deriveStyleTokens(style)` derives the
+full scales (type scale, spacing, radii, neutral-tinted shadow ramp); `normalizeStyle` clamps junk.
+Persisted in a new nullable Supabase `style jsonb` column (legacy 757 rows → `DEFAULT_STYLE`). DTCG
+emits `font`/`fontSize`/`spacing`/`radius`/`shadow` groups; AGENTS.md gains a "Typography & tokens"
+section; a new **Tokens** tab renders the scales (loads the chosen Google Fonts so the type scale
+shows in them). Verified: "bold editorial fashion magazine" → Playfair Display + Lora, ratio 1.5,
+sharp corners.
 
 ### 2.3 — WCAG as a first-class constraint (DONE 2026-06-28, Phase 2A)
 - ✅ Proper `contrastRatio` (relative luminance) + `computeWcag` give AA/AAA/AA-large for every
@@ -288,7 +292,7 @@ team_members (team_id uuid, user_id uuid, role text, primary key (team_id,user_i
 | 4 | 0.3 Vercel+Supabase migration | ✅ done (live) | Removes dual-deploy + enables auth |
 | 5 | 1.2 DTCG export + 1.3 AGENTS.md | ✅ done | First "vibe-coding" value, low ML |
 | 6 | 1.4 MCP server | ✅ done | Distribution unlock (pending npm publish) |
-| 7 | 2.1–2.3 full tokens + dark + WCAG | 🟡 2.1+2.3 done (2A); 2.2 next | The actual de-generic-ifier |
+| 7 | 2.1–2.3 full tokens + dark + WCAG | ✅ done (2A modes+WCAG, 2B non-color tokens); 2.4 demo wiring left | The actual de-generic-ifier |
 | 8 | 3.1–3.3 auth + teams + billing | 2–3 wk | Value capture |
 
 > If bandwidth is tight, the **minimum viable pivot** is steps 1–3 + 5–6: secure it, share the

@@ -1,6 +1,6 @@
 import { PALETTE_KEYS, type PaletteColors } from './palette-utils.ts';
 import { toDTCG } from '@uichroma/core/tokens';
-import { buildTheme } from '@uichroma/core/theme';
+import { buildTheme, type Style } from '@uichroma/core/theme';
 
 export function generateCSSVariables(colors: PaletteColors): string {
   const lines = [':root {'];
@@ -68,9 +68,9 @@ export function generateTailwindConfig(colors: PaletteColors): string {
  * emit identical tokens. The client's `tones` are passed through, so the DTCG scale keys
  * match the CSS/SCSS/Tailwind ramps above.
  */
-export function generateDTCGExport(colors: PaletteColors): string {
-  const theme = buildTheme(colors);
-  return toDTCG(colors, { modes: theme.modes });
+export function generateDTCGExport(colors: PaletteColors, style?: Style | null): string {
+  const theme = buildTheme(colors, style ?? undefined);
+  return toDTCG(colors, { modes: theme.modes, tokens: theme.tokens });
 }
 
 export function generateJSONExport(colors: PaletteColors): string {
@@ -90,7 +90,7 @@ export function generateJSONExport(colors: PaletteColors): string {
 }
 
 export interface ExportFormat {
-  generator: (colors: PaletteColors) => string;
+  generator: (colors: PaletteColors, style?: Style | null) => string;
   filename: string;
   mime: string;
   label: string;

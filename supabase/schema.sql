@@ -18,6 +18,7 @@ create table if not exists themes (
   keywords      text,                            -- the prompt the theme was generated from
   colors        jsonb not null,                  -- the 8-role palette object
   ai_response   text,                            -- raw model JSON
+  style         jsonb,                           -- non-color style (fonts, type scale, radius, density, elevation); nullable for legacy
   is_public     boolean not null default true,
   created_at    timestamptz not null default now(),
   updated_at    timestamptz

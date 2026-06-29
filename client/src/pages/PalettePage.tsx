@@ -9,6 +9,7 @@ import { ColorGrid } from '@/components/palette/ColorGrid.tsx';
 import { PermalinkBar } from '@/components/palette/PermalinkBar.tsx';
 import { ShadesView } from '@/components/shades/ShadesView.tsx';
 import { AccessibilityPanel } from '@/components/accessibility/AccessibilityPanel.tsx';
+import { TokensPanel } from '@/components/tokens/TokensPanel.tsx';
 import { DemoView } from '@/components/demo/DemoView.tsx';
 import { ExportSection } from '@/components/export/ExportSection.tsx';
 import { ConstraintPackSection } from '@/components/export/ConstraintPackSection.tsx';
@@ -21,7 +22,7 @@ import type { PaletteKey } from '@/lib/palette-utils.ts';
 export function PalettePage() {
   const { permalink } = useParams<{ permalink: string }>();
   const navigate = useNavigate();
-  const { colors, keywords, isDirty, dispatch } = usePalette();
+  const { colors, keywords, style, isDirty, dispatch } = usePalette();
   const { isDark, toggleDark } = useDarkMode();
   const [variationLoading, setVariationLoading] = useState(false);
 
@@ -30,7 +31,7 @@ export function PalettePage() {
     getPaletteData(permalink)
       .then(data => {
         const normalized = normalizePaletteColors(data.colors);
-        dispatch({ type: 'SET_PALETTE', colors: normalized, permalink, keywords: data.keywords });
+        dispatch({ type: 'SET_PALETTE', colors: normalized, permalink, keywords: data.keywords, style: data.style });
       })
       .catch(err => console.error('Failed to load palette:', err));
   }, [permalink, dispatch]);
@@ -152,6 +153,7 @@ export function PalettePage() {
               <TabsTrigger value="palette">Palette</TabsTrigger>
               <TabsTrigger value="shades">Shades</TabsTrigger>
               <TabsTrigger value="accessibility">Accessibility</TabsTrigger>
+              <TabsTrigger value="tokens">Tokens</TabsTrigger>
               <TabsTrigger value="demo">Demo</TabsTrigger>
             </TabsList>
 
@@ -168,13 +170,17 @@ export function PalettePage() {
               <AccessibilityPanel colors={colors} />
             </TabsContent>
 
+            <TabsContent value="tokens">
+              <TokensPanel colors={colors} style={style} />
+            </TabsContent>
+
             <TabsContent value="demo">
               <DemoView colors={colors} />
             </TabsContent>
           </Tabs>
 
-          <ExportSection colors={colors} />
-          <ConstraintPackSection colors={colors} vibe={keywords} permalink={permalink} />
+          <ExportSection colors={colors} style={style} />
+          <ConstraintPackSection colors={colors} vibe={keywords} permalink={permalink} style={style} />
         </div>
       </GlassCard>
     </div>

@@ -59,7 +59,7 @@ if (rateSweep.unref) rateSweep.unref();
 async function getPaletteFromDatabase(permalink) {
   try {
     const row = await getThemeByPermalink(permalink);
-    return row ? { colors: row.colors, aiResponse: row.ai_response } : null;
+    return row ? { colors: row.colors, aiResponse: row.ai_response, style: row.style } : null;
   } catch (error) {
     console.error(`Error: ${error.message}`);
     return null;
@@ -83,8 +83,8 @@ app.post('/generatePalette', rateLimit, async (req, res) => {
   try {
     const feelings = req.body.feelings;
 
-    // Generate → score → critique (if needed) → derive neutral. All in packages/core.
-    const { colors: paletteData, aiResponse } = await runPalettePipeline(feelings, process.env.API_KEY);
+    // Generate → score → critique (if needed) → derive neutral + non-color style. All in packages/core.
+    const { colors: paletteData, style, aiResponse } = await runPalettePipeline(feelings, process.env.API_KEY);
 
     // Generate MD5 hash for permalink
     const md5 = crypto.createHash('md5');
@@ -97,11 +97,13 @@ app.post('/generatePalette', rateLimit, async (req, res) => {
       keywords: feelings,
       colors: paletteData,
       aiResponse,
+      style,
     });
 
     res.json({
       permalink,
       colors: paletteData,
+      style,
       aiResponse,
       id,
     });
@@ -137,7 +139,7 @@ app.get('/palette/:permalink/data', async (req, res) => {
   try {
     const row = await getThemeByPermalink(req.params.permalink);
     if (row) {
-      res.json({ colors: row.colors, aiResponse: row.ai_response, keywords: row.keywords });
+      res.json({ colors: row.colors, aiResponse: row.ai_response, keywords: row.keywords, style: row.style });
     } else {
       res.status(404).json({ error: 'Palette not found.' });
     }

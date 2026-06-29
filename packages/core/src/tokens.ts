@@ -5,7 +5,7 @@
 
 import { generateTonesForColor } from "./color";
 import type { ColorRole } from "./types";
-import type { TokenSet } from "./theme";
+import type { TokenSet, StyleTokens } from "./theme";
 
 /** Order roles are emitted in: the 7 generated roles plus the derived neutral. */
 export const TOKEN_ROLES: (ColorRole | "neutral")[] = [
@@ -47,17 +47,31 @@ export type DtcgColorGroup = { $description?: string } & Record<
   DtcgToken | string | undefined
 >;
 
+/** A DTCG token of any type (fontFamily / dimension / shadow / …) with a string value. */
+export interface DtcgTypedToken {
+  $type: string;
+  $value: string;
+}
+
 export interface DtcgDocument {
   color: Record<string, DtcgColorGroup>;
   /** Light-mode chrome tokens (background/surface/text/border…), present when modes are passed. */
   light?: Record<string, DtcgToken>;
   /** Dark-mode chrome tokens, present when modes are passed. */
   dark?: Record<string, DtcgToken>;
+  /** Non-color tokens, present when `tokens` is passed. */
+  font?: Record<string, DtcgTypedToken>;
+  fontSize?: Record<string, DtcgTypedToken>;
+  spacing?: Record<string, DtcgTypedToken>;
+  radius?: Record<string, DtcgTypedToken>;
+  shadow?: Record<string, DtcgTypedToken>;
 }
 
 export interface DtcgOptions {
   /** Derived light/dark chrome token sets (from `buildTheme`); emitted as `light`/`dark` groups. */
   modes?: { light: TokenSet; dark: TokenSet };
+  /** Derived non-color token scales (from `buildTheme`); emitted as font/fontSize/spacing/radius/shadow. */
+  tokens?: StyleTokens;
 }
 
 function modeGroup(set: TokenSet): Record<string, DtcgToken> {
@@ -66,6 +80,35 @@ function modeGroup(set: TokenSet): Record<string, DtcgToken> {
     group[name] = { $type: "color", $value: value };
   }
   return group;
+}
+
+function px(n: number): string {
+  return `${n}px`;
+}
+
+function styleGroups(t: StyleTokens): {
+  font: Record<string, DtcgTypedToken>;
+  fontSize: Record<string, DtcgTypedToken>;
+  spacing: Record<string, DtcgTypedToken>;
+  radius: Record<string, DtcgTypedToken>;
+  shadow: Record<string, DtcgTypedToken>;
+} {
+  const font: Record<string, DtcgTypedToken> = {
+    heading: { $type: "fontFamily", $value: t.fonts.heading },
+    body: { $type: "fontFamily", $value: t.fonts.body },
+    mono: { $type: "fontFamily", $value: t.fonts.mono },
+  };
+  const fontSize: Record<string, DtcgTypedToken> = {};
+  for (const step of t.typeScale) fontSize[step.name] = { $type: "dimension", $value: px(step.px) };
+  const spacing: Record<string, DtcgTypedToken> = {};
+  t.spacing.forEach((v, i) => {
+    spacing[String(i + 1)] = { $type: "dimension", $value: px(v) };
+  });
+  const radius: Record<string, DtcgTypedToken> = {};
+  for (const [k, v] of Object.entries(t.radii)) radius[k] = { $type: "dimension", $value: px(v) };
+  const shadow: Record<string, DtcgTypedToken> = {};
+  for (const [k, v] of Object.entries(t.shadows)) shadow[k] = { $type: "shadow", $value: v };
+  return { font, fontSize, spacing, radius, shadow };
 }
 
 /** Build the DTCG document object: each role as a group with a DEFAULT token + tonal scale. */
@@ -91,6 +134,14 @@ export function toDTCGObject(colors: TokenColorsInput, opts?: DtcgOptions): Dtcg
   if (opts?.modes) {
     doc.light = modeGroup(opts.modes.light);
     doc.dark = modeGroup(opts.modes.dark);
+  }
+  if (opts?.tokens) {
+    const g = styleGroups(opts.tokens);
+    doc.font = g.font;
+    doc.fontSize = g.fontSize;
+    doc.spacing = g.spacing;
+    doc.radius = g.radius;
+    doc.shadow = g.shadow;
   }
   return doc;
 }

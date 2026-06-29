@@ -1,6 +1,7 @@
 import type { PaletteColors } from './palette-utils.ts';
+import type { Style } from '@uichroma/core/theme';
 
-export async function generatePalette(prompt: string): Promise<{ permalink: string; colors: PaletteColors }> {
+export async function generatePalette(prompt: string): Promise<{ permalink: string; colors: PaletteColors; style?: Style }> {
   const response = await fetch('/generatePalette', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -17,6 +18,7 @@ export async function getPaletteData(permalink: string): Promise<{
   colors: Record<string, { hex: string; description?: string }>;
   aiResponse?: string;
   keywords?: string;
+  style?: Style | null;
 }> {
   const response = await fetch(`/palette/${permalink}/data`);
   if (!response.ok) {

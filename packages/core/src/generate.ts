@@ -5,7 +5,7 @@
 
 import { validatePalette } from "./validate";
 import { deriveNeutral } from "./validate";
-import { scoreTheme } from "./theme";
+import { scoreTheme, normalizeStyle, type Style } from "./theme";
 import type { Palette } from "./types";
 
 const OPENAI_CHAT_URL = "https://api.openai.com/v1/chat/completions";
@@ -22,31 +22,98 @@ const colorSchema = {
   required: ["hex", "h", "s", "l", "description"],
 } as const;
 
-const paletteFunction = [
+const colorProps = {
+  primary: colorSchema,
+  secondary: colorSchema,
+  accent: colorSchema,
+  warning: colorSchema,
+  danger: colorSchema,
+  success: colorSchema,
+  info: colorSchema,
+} as const;
+
+const REQUIRED_COLORS = [
+  "primary",
+  "secondary",
+  "accent",
+  "warning",
+  "danger",
+  "success",
+  "info",
+];
+
+const styleSchema = {
+  type: "object",
+  description: "Non-color brand style that fits the same vibe as the palette.",
+  properties: {
+    headingFont: {
+      type: "string",
+      description:
+        "A Google Fonts family for headings that fits the brand — avoid defaulting to Inter unless it genuinely fits. e.g. Sora, Space Grotesk, Outfit, Fraunces, Playfair Display, Bricolage Grotesque.",
+    },
+    bodyFont: {
+      type: "string",
+      description: "A highly readable Google Fonts family for body text (may differ from heading).",
+    },
+    monoFont: {
+      type: "string",
+      description: "A monospace Google Fonts family for code, e.g. JetBrains Mono, IBM Plex Mono.",
+    },
+    typeScaleRatio: {
+      type: "number",
+      description:
+        "Modular type-scale ratio 1.1–1.6 (smaller = denser/utility UI, larger = expressive/landing).",
+    },
+    radius: {
+      type: "string",
+      enum: ["sharp", "rounded", "soft", "pill"],
+      description: "Corner roundness fitting the brand.",
+    },
+    density: {
+      type: "string",
+      enum: ["compact", "normal", "spacious"],
+      description: "Spacing density.",
+    },
+    elevation: {
+      type: "string",
+      enum: ["flat", "subtle", "elevated"],
+      description: "Shadow/elevation depth.",
+    },
+  },
+  required: [
+    "headingFont",
+    "bodyFont",
+    "monoFont",
+    "typeScaleRatio",
+    "radius",
+    "density",
+    "elevation",
+  ],
+} as const;
+
+/** Generation: palette + non-color style in one call. */
+const generateFunction = [
   {
-    name: "generate_palette",
+    name: "generate_theme",
     description:
-      "Generate a 7-color UI palette with hex, HSL values, and descriptions",
+      "Generate a 7-color UI palette plus the brand's non-color style (fonts, type scale, roundness, density, elevation).",
     parameters: {
       type: "object",
-      properties: {
-        primary: colorSchema,
-        secondary: colorSchema,
-        accent: colorSchema,
-        warning: colorSchema,
-        danger: colorSchema,
-        success: colorSchema,
-        info: colorSchema,
-      },
-      required: [
-        "primary",
-        "secondary",
-        "accent",
-        "warning",
-        "danger",
-        "success",
-        "info",
-      ],
+      properties: { ...colorProps, style: styleSchema },
+      required: [...REQUIRED_COLORS, "style"],
+    },
+  },
+];
+
+/** Critique: repair colors only (style is preserved from the original generation). */
+const critiqueFunction = [
+  {
+    name: "generate_palette",
+    description: "Generate a 7-color UI palette with hex, HSL values, and descriptions",
+    parameters: {
+      type: "object",
+      properties: { ...colorProps },
+      required: [...REQUIRED_COLORS],
     },
   },
 ];
@@ -69,17 +136,23 @@ QUALITY GUIDELINES:
 - Consider the full prompt — industry, emotion, audience, style — when choosing each hue. A fintech app might want trustworthy deep navy + energetic green accent. A bakery might want warm peach primary + rich chocolate secondary + teal accent.
 - Each description should explain the specific design reasoning, not generic filler.
 
-For each color provide a hex code, HSL values (h 0-360, s 0-100, l 0-100), and a brief description explaining the design choice.`;
+STYLE (non-color — pick values that reinforce the same brand personality):
+- Fonts: choose real Google Fonts that match the vibe; avoid the generic Inter-by-default look unless Inter genuinely fits. A bold editorial brand might pair a characterful serif heading (Fraunces, Playfair Display) with a clean sans body; a technical/AI product might use a geometric sans (Space Grotesk, Sora). Heading and body may differ.
+- typeScaleRatio: smaller (≈1.125–1.2) for dense/utility apps, larger (≈1.333–1.5) for expressive/marketing brands.
+- radius / density / elevation: e.g. sharp + compact + flat for a serious fintech; soft + spacious + elevated for a friendly consumer app.
+
+For each color provide a hex code, HSL values (h 0-360, s 0-100, l 0-100), and a brief description. Also provide the non-color \`style\` object.`;
 
 export const CRITIQUE_SYSTEM_PROMPT = `You are a color palette critic. You receive a 7-color UI palette and a list of specific issues. Fix ONLY the identified issues while preserving colors that already work well. Return the corrected palette using the same function schema.`;
 
-/** Result of a single generation: the validated palette plus the raw model JSON. */
+/** Result of a single generation: the validated palette, the non-color style, and raw JSON. */
 export interface GenerationResult {
   colors: Palette;
+  style: Style;
   aiResponse: string;
 }
 
-/** Call GPT-4o once and return a validated (auto-corrected) 7-role palette. */
+/** Call GPT-4o once and return a validated palette + normalized non-color style. */
 export async function generateColorPalette(
   feelings: string,
   apiKey: string,
@@ -98,8 +171,8 @@ export async function generateColorPalette(
         { role: "system", content: PALETTE_SYSTEM_PROMPT },
         { role: "user", content: feelings },
       ],
-      functions: paletteFunction,
-      function_call: { name: "generate_palette" },
+      functions: generateFunction,
+      function_call: { name: "generate_theme" },
       temperature: 0.75,
     }),
   });
@@ -113,9 +186,10 @@ export async function generateColorPalette(
   const data: any = await response.json();
   const choiceMsg = data.choices?.[0]?.message;
   if (choiceMsg?.function_call) {
-    const args = JSON.parse(choiceMsg.function_call.arguments) as Palette;
-    const validated = validatePalette(args);
-    return { colors: validated, aiResponse: JSON.stringify(validated) };
+    const { style: rawStyle, ...colorArgs } = JSON.parse(choiceMsg.function_call.arguments);
+    const validated = validatePalette(colorArgs as Palette);
+    const style = normalizeStyle(rawStyle);
+    return { colors: validated, style, aiResponse: JSON.stringify(validated) };
   }
   throw new Error("OpenAI did not return a function call");
 }
@@ -161,7 +235,7 @@ export async function critiquePalette(
           { role: "system", content: CRITIQUE_SYSTEM_PROMPT },
           { role: "user", content: userMsg },
         ],
-        functions: paletteFunction,
+        functions: critiqueFunction,
         function_call: { name: "generate_palette" },
         temperature: 0.6,
       }),
@@ -189,7 +263,7 @@ export async function runPalettePipeline(
   feelings: string,
   apiKey: string,
 ): Promise<GenerationResult> {
-  const { colors: generated, aiResponse } = await generateColorPalette(
+  const { colors: generated, style, aiResponse } = await generateColorPalette(
     feelings,
     apiKey,
   );
@@ -226,5 +300,5 @@ export async function runPalettePipeline(
   }
 
   colors = deriveNeutral(colors);
-  return { colors, aiResponse };
+  return { colors, style, aiResponse };
 }

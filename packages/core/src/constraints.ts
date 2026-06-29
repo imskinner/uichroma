@@ -5,7 +5,7 @@
 
 import { TOKEN_ROLES, type TokenColorsInput } from "./tokens";
 import type { ColorRole } from "./types";
-import type { TokenSet, WcagReport } from "./theme";
+import type { TokenSet, WcagReport, StyleTokens } from "./theme";
 
 type Role = ColorRole | "neutral";
 
@@ -22,6 +22,8 @@ export interface ConstraintPackInput {
   modes?: { light: TokenSet; dark: TokenSet };
   /** WCAG contrast report (from `buildTheme`); failing pairs become accessibility guidance. */
   wcag?: WcagReport;
+  /** Derived non-color token scales (from `buildTheme`): fonts, type scale, spacing, radii, shadows. */
+  tokens?: StyleTokens;
 }
 
 /** Semantic usage guidance per role — the rules the agent must follow, independent of vibe. */
@@ -71,7 +73,7 @@ function titleCase(role: string): string {
 
 /** The shared markdown body: token table, hard rules, and per-role brand intent. */
 function buildBody(input: ConstraintPackInput): string {
-  const { colors, vibe, permalink, modes, wcag } = input;
+  const { colors, vibe, permalink, modes, wcag, tokens } = input;
   const roles = presentRoles(colors);
 
   const lines: string[] = [];
@@ -117,6 +119,32 @@ function buildBody(input: ConstraintPackInput): string {
     for (const key of Object.keys(modes.light) as (keyof TokenSet)[]) {
       lines.push(`| \`${key}\` | \`${modes.light[key]}\` | \`${modes.dark[key]}\` |`);
     }
+    lines.push("");
+  }
+
+  // Typography & non-color tokens
+  if (tokens) {
+    lines.push("## Typography & tokens");
+    lines.push("");
+    lines.push(
+      `- **Fonts:** headings \`${tokens.fonts.heading}\`, body \`${tokens.fonts.body}\`, mono \`${tokens.fonts.mono}\` (load from Google Fonts).`,
+    );
+    lines.push(
+      `- **Type scale:** ${tokens.typeScale.map((s) => `${s.name} ${s.px}px`).join(" · ")}.`,
+    );
+    lines.push(`- **Spacing (px):** ${tokens.spacing.join(", ")}.`);
+    lines.push(
+      `- **Radii (px):** ${Object.entries(tokens.radii)
+        .map(([k, v]) => `${k} ${v >= 9999 ? "full" : v}`)
+        .join(", ")}.`,
+    );
+    lines.push(
+      `- **Shadows:** ${Object.keys(tokens.shadows).join(" / ")} elevation ramp (see the DTCG \`shadow\` tokens).`,
+    );
+    lines.push("");
+    lines.push(
+      "Use these tokens for font sizes, spacing, corner radius, and shadows — don't invent arbitrary values.",
+    );
     lines.push("");
   }
 

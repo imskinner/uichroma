@@ -3,32 +3,34 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs.t
 import { Button } from '@/components/ui/button.tsx';
 import { EXPORT_FORMATS, downloadFile } from '@/lib/export-utils.ts';
 import type { PaletteColors } from '@/lib/palette-utils.ts';
+import type { Style } from '@uichroma/core/theme';
 
 interface ExportSectionProps {
   colors: PaletteColors;
+  style?: Style | null;
 }
 
 const FORMAT_KEYS = ['css', 'scss', 'tailwind', 'json', 'dtcg'] as const;
 
-export function ExportSection({ colors }: ExportSectionProps) {
+export function ExportSection({ colors, style }: ExportSectionProps) {
   const [copiedFormat, setCopiedFormat] = useState<string | null>(null);
 
   const handleCopy = useCallback((format: string) => {
     const fmt = EXPORT_FORMATS[format];
     if (!fmt) return;
-    const text = fmt.generator(colors);
+    const text = fmt.generator(colors, style);
     navigator.clipboard.writeText(text).then(() => {
       setCopiedFormat(format);
       setTimeout(() => setCopiedFormat(null), 2000);
     });
-  }, [colors]);
+  }, [colors, style]);
 
   const handleDownload = useCallback((format: string) => {
     const fmt = EXPORT_FORMATS[format];
     if (!fmt) return;
-    const text = fmt.generator(colors);
+    const text = fmt.generator(colors, style);
     downloadFile(text, fmt.filename, fmt.mime);
-  }, [colors]);
+  }, [colors, style]);
 
   return (
     <section className="mt-8">
@@ -41,7 +43,7 @@ export function ExportSection({ colors }: ExportSectionProps) {
         </TabsList>
         {FORMAT_KEYS.map(key => {
           const fmt = EXPORT_FORMATS[key];
-          const text = fmt.generator(colors);
+          const text = fmt.generator(colors, style);
           return (
             <TabsContent key={key} value={key}>
               <div className="flex gap-2 mb-3">

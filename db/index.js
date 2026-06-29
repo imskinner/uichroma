@@ -22,11 +22,11 @@ function getSupabase() {
   return client;
 }
 
-/** Fetch a theme by its permalink. Returns { colors, ai_response, keywords } or null. */
+/** Fetch a theme by its permalink. Returns { colors, ai_response, keywords, style } or null. */
 async function getThemeByPermalink(permalink) {
   const { data, error } = await getSupabase()
     .from(TABLE)
-    .select('colors, ai_response, keywords')
+    .select('colors, ai_response, keywords, style')
     .eq('permalink', permalink)
     .maybeSingle();
   if (error) throw error;
@@ -34,10 +34,10 @@ async function getThemeByPermalink(permalink) {
 }
 
 /** Insert a freshly generated theme. Returns the new row id. */
-async function insertTheme({ permalink, keywords, colors, aiResponse }) {
+async function insertTheme({ permalink, keywords, colors, aiResponse, style }) {
   const { data, error } = await getSupabase()
     .from(TABLE)
-    .insert({ permalink, keywords, colors, ai_response: aiResponse })
+    .insert({ permalink, keywords, colors, ai_response: aiResponse, style: style ?? null })
     .select('id')
     .single();
   if (error) throw error;

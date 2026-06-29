@@ -1,16 +1,18 @@
 import { createContext, useContext, useReducer, useCallback, useEffect, type Dispatch } from 'react';
 import type { PaletteColors, PaletteKey } from '@/lib/palette-utils.ts';
 import { hexToHSL, hslToHex, generateTonesForColor } from '@/lib/color-utils.ts';
+import type { Style } from '@uichroma/core/theme';
 
 interface PaletteState {
   colors: PaletteColors | null;
   permalink: string | null;
   keywords: string | null;
+  style: Style | null;
   isDirty: boolean;
 }
 
 type PaletteAction =
-  | { type: 'SET_PALETTE'; colors: PaletteColors; permalink: string; keywords?: string }
+  | { type: 'SET_PALETTE'; colors: PaletteColors; permalink: string; keywords?: string; style?: Style | null }
   | { type: 'UPDATE_COLOR'; key: PaletteKey; hex: string }
   | { type: 'MARK_SAVED' };
 
@@ -21,6 +23,7 @@ function paletteReducer(state: PaletteState, action: PaletteAction): PaletteStat
         colors: action.colors,
         permalink: action.permalink,
         keywords: action.keywords ?? null,
+        style: action.style ?? null,
         isDirty: false,
       };
     case 'UPDATE_COLOR': {
@@ -66,6 +69,7 @@ const initialState: PaletteState = {
   colors: null,
   permalink: null,
   keywords: null,
+  style: null,
   isDirty: false,
 };
 

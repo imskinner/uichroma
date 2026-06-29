@@ -17,9 +17,11 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { z } from "zod";
 import {
   runPalettePipeline,
+  buildTheme,
   toDTCG,
   generateAgentsMd,
   type Palette,
+  type Style,
 } from "@uichroma/core";
 
 const OPENAI_KEY =
@@ -32,6 +34,7 @@ const API_BASE = (process.env.UICHROMA_API_BASE || "http://localhost:3000").repl
 interface FetchedTheme {
   colors: Palette;
   keywords?: string;
+  style?: Style | null;
 }
 
 /** Fetch a saved palette from the UI Chroma read API. Returns null if missing/unreachable. */
@@ -43,15 +46,23 @@ async function fetchTheme(permalink: string): Promise<FetchedTheme | null> {
     return null;
   }
   if (!res.ok) return null;
-  const data = (await res.json()) as { colors?: Palette; keywords?: string };
+  const data = (await res.json()) as { colors?: Palette; keywords?: string; style?: Style | null };
   if (!data?.colors) return null;
-  return { colors: data.colors, keywords: data.keywords };
+  return { colors: data.colors, keywords: data.keywords, style: data.style };
 }
 
 /** Render a theme as the two text blocks a coding agent wants: the rules, then the tokens. */
-function themeContent(colors: Palette, vibe?: string, permalink?: string) {
-  const agents = generateAgentsMd({ colors, vibe, permalink });
-  const dtcg = toDTCG(colors);
+function themeContent(colors: Palette, style?: Style | null, vibe?: string, permalink?: string) {
+  const theme = buildTheme(colors, style ?? undefined);
+  const agents = generateAgentsMd({
+    colors,
+    vibe,
+    permalink,
+    modes: theme.modes,
+    wcag: theme.wcag,
+    tokens: theme.tokens,
+  });
+  const dtcg = toDTCG(colors, { modes: theme.modes, tokens: theme.tokens });
   return [
     { type: "text" as const, text: agents },
     {
@@ -91,8 +102,8 @@ server.registerTool(
       };
     }
     try {
-      const { colors } = await runPalettePipeline(vibe, OPENAI_KEY);
-      return { content: themeContent(colors, vibe) };
+      const { colors, style } = await runPalettePipeline(vibe, OPENAI_KEY);
+      return { content: themeContent(colors, style, vibe) };
     } catch (err) {
       return {
         isError: true,
@@ -128,7 +139,7 @@ server.registerTool(
         ],
       };
     }
-    return { content: themeContent(theme.colors, theme.keywords, permalink) };
+    return { content: themeContent(theme.colors, theme.style, theme.keywords, permalink) };
   },
 );
 
@@ -151,13 +162,25 @@ server.registerResource(
         ],
       };
     }
+    const built = buildTheme(theme.colors, theme.style ?? undefined);
     return {
       contents: [
-        { uri: uri.href, mimeType: "application/json", text: toDTCG(theme.colors) },
+        {
+          uri: uri.href,
+          mimeType: "application/json",
+          text: toDTCG(theme.colors, { modes: built.modes, tokens: built.tokens }),
+        },
         {
           uri: `${uri.href}#agents`,
           mimeType: "text/markdown",
-          text: generateAgentsMd({ colors: theme.colors, vibe: theme.keywords, permalink }),
+          text: generateAgentsMd({
+            colors: theme.colors,
+            vibe: theme.keywords,
+            permalink,
+            modes: built.modes,
+            wcag: built.wcag,
+            tokens: built.tokens,
+          }),
         },
       ],
     };
