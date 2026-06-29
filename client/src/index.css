@@ -194,6 +194,15 @@
   75%      { transform: translate(-60px, 20px) scale(1.01); }
 }
 
+/* Demo (Phase 2.4): remap roundness utilities to the generated theme's radii.
+   The vars are set on .demo-themed from the theme's radii tokens; rounded-full and small
+   detail radii are intentionally left untouched so circles/avatars stay round. */
+.demo-themed .rounded { border-radius: var(--demo-r-sm, 0.25rem); }
+.demo-themed .rounded-md { border-radius: var(--demo-r-sm, 0.375rem); }
+.demo-themed .rounded-lg { border-radius: var(--demo-r-md, 0.5rem); }
+.demo-themed .rounded-xl { border-radius: var(--demo-r-lg, 0.75rem); }
+.demo-themed .rounded-2xl { border-radius: var(--demo-r-xl, 1rem); }
+
 /* Loader spinner */
 @keyframes spin {
   0% { transform: rotate(0deg); }

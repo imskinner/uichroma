@@ -1,3 +1,4 @@
+import { type CSSProperties } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs.tsx';
 import { buildTheme, type Style } from '@uichroma/core/theme';
 import type { PaletteColors } from '@/lib/palette-utils.ts';
@@ -15,14 +16,22 @@ interface DemoViewProps {
 }
 
 function DemoContent({ colors }: { colors: PaletteColors }) {
-  const { isDark, chrome } = useDemoSettings();
+  const { isDark, chrome, radii } = useDemoSettings();
 
   const wrapperStyle = isDark
     ? { background: chrome.background, color: chrome.text }
     : {};
 
+  // Remap the demo's roundness utilities (.rounded-*) to the generated radii via these vars.
+  const rootStyle = {
+    '--demo-r-sm': `${radii.sm}px`,
+    '--demo-r-md': `${radii.md}px`,
+    '--demo-r-lg': `${radii.lg}px`,
+    '--demo-r-xl': `${radii.xl}px`,
+  } as CSSProperties;
+
   return (
-    <>
+    <div className="demo-themed" style={rootStyle}>
       <DemoToolbar />
       <Tabs defaultValue="components">
         <TabsList>
@@ -58,7 +67,7 @@ function DemoContent({ colors }: { colors: PaletteColors }) {
           </div>
         </TabsContent>
       </Tabs>
-    </>
+    </div>
   );
 }
 

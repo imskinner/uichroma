@@ -202,9 +202,10 @@ The Demo now reflects the generated theme: `DemoView` builds the theme and feeds
 (loaded from Google Fonts, user-overridable) — so all 5 sub-views render in the brand's actual
 type — and the dark-mode frame uses the **generated dark chrome** (brand-hue-tinted) instead of a
 hardcoded grey. The toolbar surfaces the brand fonts as the selected options.
-**Remaining polish:** re-tokenize per-element radii/spacing inside the 5 sub-views (sharp↔pill
-corners, density-driven spacing) so roundness/spacing also visibly change per theme — the chrome
-+ radii are already exposed via `useDemoSettings()` for this.
+**Radii done (2026-06-28):** a scoped, unlayered CSS rule (`.demo-themed .rounded-*` → theme radii
+CSS vars set in `DemoView`) remaps the demo's roundness to the generated `radii` across all 5
+sub-views at once — so sharp↔pill corners visibly change per theme (circles/avatars left round).
+**Remaining:** density-driven spacing (lower value, far higher churn — deferred).
 
 ---
 
