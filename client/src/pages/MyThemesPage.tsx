@@ -55,7 +55,7 @@ export function MyThemesPage() {
               {themes.map((t) => (
                 <Link
                   key={t.permalink}
-                  to={`/palette/${t.permalink}`}
+                  to={`/palette/${t.slug || t.permalink}`}
                   className="rounded-xl border border-[#e5e7eb] dark:border-[#333] overflow-hidden hover:-translate-y-1 transition-transform bg-white dark:bg-[#1a1a1a]"
                 >
                   <div className="flex h-16">

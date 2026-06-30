@@ -23,7 +23,7 @@ export function HomePage() {
         alert('Failed to generate palette. Please try again.');
         return;
       }
-      navigate(`/palette/${data.permalink}`);
+      navigate(`/palette/${data.slug || data.permalink}`);
     } catch (err) {
       console.error(err);
       alert('Error generating palette. Please try again.');

@@ -32,11 +32,16 @@ export function PalettePage() {
     if (!permalink) return;
     getPaletteData(permalink)
       .then(data => {
+        // Canonicalize legacy MD5 links to the human-readable slug URL.
+        if (data.slug && data.slug !== permalink) {
+          navigate(`/palette/${data.slug}`, { replace: true });
+          return;
+        }
         const normalized = normalizePaletteColors(data.colors);
         dispatch({ type: 'SET_PALETTE', colors: normalized, permalink, keywords: data.keywords, style: data.style });
       })
       .catch(err => console.error('Failed to load palette:', err));
-  }, [permalink, dispatch]);
+  }, [permalink, dispatch, navigate]);
 
   const handleColorChange = useCallback((key: PaletteKey, hex: string) => {
     dispatch({ type: 'UPDATE_COLOR', key, hex });
@@ -58,7 +63,7 @@ export function PalettePage() {
     setVariationLoading(true);
     try {
       const result = await generateVariation(keywords || '', session?.access_token);
-      navigate(`/palette/${result.permalink}`);
+      navigate(`/palette/${result.slug || result.permalink}`);
     } catch (err) {
       console.error('Variation error:', err);
       alert('Failed to generate variation.');

@@ -25,6 +25,20 @@ function bearerToken(req) {
   return h.startsWith('Bearer ') ? h.slice(7) : null;
 }
 
+// Build a human-readable, URL-safe slug from the prompt (uniqueness comes from the suffix).
+function slugify(text) {
+  return (
+    String(text || '')
+      .toLowerCase()
+      .normalize('NFKD')
+      .replace(/[̀-ͯ]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 40)
+      .replace(/-+$/g, '') || 'theme'
+  );
+}
+
 app.use(cors());
 app.use(express.static(path.join(__dirname, 'client', 'dist')));
 app.use(bodyParser.json());
@@ -95,10 +109,11 @@ app.post('/generatePalette', rateLimit, async (req, res) => {
     // Generate → score → critique (if needed) → derive neutral + non-color style. All in packages/core.
     const { colors: paletteData, style, aiResponse } = await runPalettePipeline(feelings, process.env.API_KEY);
 
-    // Generate MD5 hash for permalink
+    // Generate MD5 hash for permalink + a human-readable slug (suffix keeps it unique).
     const md5 = crypto.createHash('md5');
     const timestamp = Date.now().toString();
     const permalink = md5.update(timestamp).digest('hex');
+    const slug = `${slugify(feelings)}-${permalink.slice(0, 10)}`;
 
     // If the caller is signed in, attribute the theme to them (otherwise anonymous).
     const userId = await getUserId(bearerToken(req));
@@ -106,6 +121,7 @@ app.post('/generatePalette', rateLimit, async (req, res) => {
     // Persist to Supabase
     const id = await insertTheme({
       permalink,
+      slug,
       keywords: feelings,
       colors: paletteData,
       aiResponse,
@@ -115,6 +131,7 @@ app.post('/generatePalette', rateLimit, async (req, res) => {
 
     res.json({
       permalink,
+      slug,
       colors: paletteData,
       style,
       aiResponse,
@@ -178,7 +195,14 @@ app.get('/palette/:permalink/data', async (req, res) => {
   try {
     const row = await getThemeByPermalink(req.params.permalink);
     if (row) {
-      res.json({ colors: row.colors, aiResponse: row.ai_response, keywords: row.keywords, style: row.style });
+      res.json({
+        permalink: row.permalink,
+        slug: row.slug,
+        colors: row.colors,
+        aiResponse: row.ai_response,
+        keywords: row.keywords,
+        style: row.style,
+      });
     } else {
       res.status(404).json({ error: 'Palette not found.' });
     }

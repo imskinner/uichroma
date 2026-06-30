@@ -8,7 +8,7 @@ function authHeaders(token?: string | null): Record<string, string> {
 export async function generatePalette(
   prompt: string,
   token?: string | null,
-): Promise<{ permalink: string; colors: PaletteColors; style?: Style }> {
+): Promise<{ permalink: string; slug?: string; colors: PaletteColors; style?: Style }> {
   const response = await fetch('/generatePalette', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...authHeaders(token) },
@@ -22,6 +22,8 @@ export async function generatePalette(
 }
 
 export async function getPaletteData(permalink: string): Promise<{
+  permalink?: string;
+  slug?: string | null;
   colors: Record<string, { hex: string; description?: string }>;
   aiResponse?: string;
   keywords?: string;
@@ -37,7 +39,7 @@ export async function getPaletteData(permalink: string): Promise<{
 export async function generateVariation(
   originalPrompt: string,
   token?: string | null,
-): Promise<{ permalink: string; colors: PaletteColors; style?: Style }> {
+): Promise<{ permalink: string; slug?: string; colors: PaletteColors; style?: Style }> {
   return generatePalette(originalPrompt, token);
 }
 
@@ -59,6 +61,7 @@ export async function updatePalette(
 
 export interface MyThemeRow {
   permalink: string;
+  slug?: string | null;
   keywords?: string;
   colors: Record<string, { hex: string }>;
   created_at?: string;

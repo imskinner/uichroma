@@ -8,6 +8,13 @@ const TABLE = 'themes';
 
 let client = null;
 
+// A theme is addressable by its legacy MD5 `permalink` or its human-readable `slug`.
+// Sanitize the identifier (slugs/permalinks are [a-z0-9-] only) before building the OR filter.
+function identClause(ident) {
+  const safe = String(ident).replace(/[^a-zA-Z0-9-]/g, '');
+  return `permalink.eq.${safe},slug.eq.${safe}`;
+}
+
 /** Lazily create the service-role Supabase client so importing this module never throws. */
 function getSupabase() {
   if (client) return client;
@@ -22,23 +29,24 @@ function getSupabase() {
   return client;
 }
 
-/** Fetch a theme by its permalink. Returns { colors, ai_response, keywords, style } or null. */
-async function getThemeByPermalink(permalink) {
+/** Fetch a theme by permalink OR slug. Returns { permalink, slug, colors, ai_response, keywords, style } or null. */
+async function getThemeByPermalink(ident) {
   const { data, error } = await getSupabase()
     .from(TABLE)
-    .select('colors, ai_response, keywords, style')
-    .eq('permalink', permalink)
+    .select('permalink, slug, colors, ai_response, keywords, style')
+    .or(identClause(ident))
     .maybeSingle();
   if (error) throw error;
   return data; // null when not found
 }
 
 /** Insert a freshly generated theme. Returns the new row id. `userId` attributes ownership. */
-async function insertTheme({ permalink, keywords, colors, aiResponse, style, userId }) {
+async function insertTheme({ permalink, slug, keywords, colors, aiResponse, style, userId }) {
   const { data, error } = await getSupabase()
     .from(TABLE)
     .insert({
       permalink,
+      slug: slug ?? null,
       keywords,
       colors,
       ai_response: aiResponse,
@@ -63,12 +71,12 @@ async function getUserId(accessToken) {
   }
 }
 
-/** The owner (user_id) of a theme: a uuid, null (unowned), or undefined (not found). */
-async function getThemeOwner(permalink) {
+/** The owner (user_id) of a theme (by permalink or slug): a uuid, null (unowned), or undefined (not found). */
+async function getThemeOwner(ident) {
   const { data, error } = await getSupabase()
     .from(TABLE)
     .select('user_id')
-    .eq('permalink', permalink)
+    .or(identClause(ident))
     .maybeSingle();
   if (error) throw error;
   return data ? data.user_id : undefined;
@@ -78,19 +86,19 @@ async function getThemeOwner(permalink) {
 async function getThemesByUser(userId) {
   const { data, error } = await getSupabase()
     .from(TABLE)
-    .select('permalink, keywords, colors, created_at')
+    .select('permalink, slug, keywords, colors, created_at')
     .eq('user_id', userId)
     .order('created_at', { ascending: false });
   if (error) throw error;
   return data || [];
 }
 
-/** Update a theme's colors by permalink. Returns the updated row id, or null if not found. */
-async function updateThemeColors(permalink, colors) {
+/** Update a theme's colors by permalink or slug. Returns the updated row id, or null if not found. */
+async function updateThemeColors(ident, colors) {
   const { data, error } = await getSupabase()
     .from(TABLE)
     .update({ colors, updated_at: new Date().toISOString() })
-    .eq('permalink', permalink)
+    .or(identClause(ident))
     .select('id')
     .maybeSingle();
   if (error) throw error;

@@ -223,7 +223,11 @@ sub-views at once — so sharp↔pill corners visibly change per theme (circles/
   myThemes → 403/200 ownership).
 - ✅ Env: `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` (public) wired local + Vercel.
 - **Pending:** you enable the GitHub OAuth provider in Supabase to light up the GitHub button.
-- **Deferred:** human-readable slugs (`/t/vibrant-ocean-teal`) — MD5 permalinks still in use.
+- ✅ **Human-readable slugs (DONE 2026-06-29):** generation derives `slug = <kebab vibe>-<10 hex>`
+  (stored in `themes.slug`); every lookup (read/owner/update) resolves by **permalink OR slug**
+  (`db/index.js` `identClause` + `.or(...)`). New themes route as `/palette/<slug>`; the palette
+  page canonicalizes legacy MD5 URLs to the slug (`navigate(..., {replace:true})`). Old MD5 links
+  + the Figma plugin keep working (legacy rows have `slug=null`).
 
 ### 3.2 — Team brand library
 - `teams`, `team_members`, `themes.team_id`. Shared brand the whole team (and their agents via
