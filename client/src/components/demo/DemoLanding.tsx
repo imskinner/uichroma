@@ -1,9 +1,9 @@
 import { textOn } from '@/lib/color-utils.ts';
-import { getTone, type PaletteColors } from '@/lib/palette-utils.ts';
+import type { PaletteColors } from '@/lib/palette-utils.ts';
 import { useDemoSettings } from '@/hooks/use-demo-settings.tsx';
 import {
   Zap, Palette, Shield, ArrowRight, Play, Star, Check, Twitter, Github, Linkedin,
-  Menu, ChevronRight, Hexagon, Mail,
+  ChevronRight, Sparkles, TrendingUp, BarChart3, Search, Bell, Settings, LayoutGrid,
 } from 'lucide-react';
 
 interface DemoLandingProps {
@@ -11,314 +11,245 @@ interface DemoLandingProps {
 }
 
 export function DemoLanding({ colors }: DemoLandingProps) {
-  const { headingFont, bodyFont, isDark } = useDemoSettings();
-  const p = colors.primary;
-  const s = colors.secondary;
-  const a = colors.accent;
-
-  const bg = isDark ? getTone(colors, 'neutral', 1) : '#fff';
-  const textMuted = isDark ? getTone(colors, 'neutral', 6) : '#6b7280';
-  const cardBg = isDark ? getTone(colors, 'neutral', 2) : '#fff';
-  const headingColor = isDark ? '#e5e5e5' : '#1a1a1a';
+  const { headingFont, bodyFont, chrome, radii } = useDemoSettings();
+  const p = colors.primary.hex;
+  const s = colors.secondary.hex;
+  const a = colors.accent.hex;
+  const H = { fontFamily: `'${headingFont}', sans-serif` };
+  const B = { fontFamily: `'${bodyFont}', sans-serif` };
+  const rx = (n: number) => `${n}px`;
+  const card = { background: chrome.surface, border: `1px solid ${chrome.border}` };
+  const shadow = '0 1px 2px rgba(0,0,0,0.04), 0 12px 32px -12px rgba(0,0,0,0.16)';
 
   const features = [
-    { Icon: Zap, title: 'Lightning Fast', desc: 'Optimized performance that keeps users engaged and coming back.', color: p.hex },
-    { Icon: Palette, title: 'Beautiful Design', desc: 'Pixel-perfect interfaces crafted with attention to every detail.', color: s.hex },
-    { Icon: Shield, title: 'Secure & Reliable', desc: 'Enterprise-grade security to protect your data around the clock.', color: a.hex },
+    { Icon: Zap, title: 'Lightning fast', desc: 'Sub-100ms interactions that keep people in flow.', color: p },
+    { Icon: Palette, title: 'Considered design', desc: 'Every surface tuned — nothing off-the-shelf.', color: s },
+    { Icon: Shield, title: 'Secure by default', desc: 'Encryption, SSO and audit logs from day one.', color: a },
   ];
-
-  const pricingTiers = [
-    { name: 'Starter', price: '$0', period: '/month', desc: 'Perfect for side projects', features: ['Up to 3 projects', '1 team member', 'Basic analytics', 'Community support'], color: s.hex, popular: false },
-    { name: 'Pro', price: '$29', period: '/month', desc: 'For growing businesses', features: ['Unlimited projects', '10 team members', 'Advanced analytics', 'Priority support', 'Custom domain'], color: p.hex, popular: true },
-    { name: 'Enterprise', price: '$99', period: '/month', desc: 'For large organizations', features: ['Everything in Pro', 'Unlimited members', 'SSO & SAML', 'Dedicated support', '99.99% SLA'], color: a.hex, popular: false },
+  const tiers = [
+    { name: 'Starter', price: '$0', period: '/mo', desc: 'For side projects', feats: ['3 projects', '1 seat', 'Community support'], color: s, popular: false },
+    { name: 'Pro', price: '$29', period: '/mo', desc: 'For growing teams', feats: ['Unlimited projects', '10 seats', 'Advanced analytics', 'Priority support'], color: p, popular: true },
+    { name: 'Scale', price: '$99', period: '/mo', desc: 'For organizations', feats: ['Everything in Pro', 'SSO & SAML', 'Dedicated support', '99.99% SLA'], color: a, popular: false },
   ];
 
   return (
-    <div className="flex flex-col" style={{ background: bg }}>
+    <div style={{ background: chrome.background, color: chrome.text, ...B }}>
       {/* Navbar */}
-      <div
-        className="flex items-center justify-between px-6 py-3"
-        style={{ background: p.hex, color: textOn(p.hex) }}
+      <header
+        className="flex items-center justify-between px-8 py-4 sticky top-0 z-20 backdrop-blur"
+        style={{ background: `${chrome.surface}cc`, borderBottom: `1px solid ${chrome.border}` }}
       >
+        <div className="flex items-center gap-2.5">
+          <span className="w-8 h-8 flex items-center justify-center" style={{ background: p, color: textOn(p), borderRadius: rx(radii.md) }}>
+            <Sparkles size={17} />
+          </span>
+          <span className="font-bold text-[17px]" style={H}>Northwind</span>
+        </div>
+        <nav className="flex items-center gap-7 text-sm max-md:hidden" style={{ color: chrome.textMuted }}>
+          <span>Product</span><span>Customers</span><span>Pricing</span><span>Docs</span>
+        </nav>
         <div className="flex items-center gap-2">
-          <Hexagon size={22} />
-          <span className="font-bold text-lg" style={{ fontFamily: headingFont }}>BrandName</span>
+          <span className="text-sm font-medium px-3 py-2 max-md:hidden" style={{ color: chrome.text }}>Sign in</span>
+          <span className="inline-flex items-center gap-1.5 text-sm font-semibold px-4 py-2" style={{ background: p, color: textOn(p), borderRadius: rx(radii.md) }}>
+            Get started <ArrowRight size={15} />
+          </span>
         </div>
-        <div className="flex items-center gap-5">
-          <div className="flex gap-5 text-sm opacity-90" style={{ fontFamily: bodyFont }}>
-            <span className="cursor-pointer hover:opacity-100 transition-opacity">Home</span>
-            <span className="cursor-pointer hover:opacity-100 transition-opacity">About</span>
-            <span className="cursor-pointer hover:opacity-100 transition-opacity">Services</span>
-            <span className="cursor-pointer hover:opacity-100 transition-opacity">Contact</span>
-          </div>
-          <Menu size={20} className="cursor-pointer opacity-80 hover:opacity-100 transition-opacity" />
-        </div>
-      </div>
+      </header>
 
-      {/* Hero */}
-      <div
-        className="px-8 py-28 text-center text-white relative overflow-hidden"
-        style={{ background: `linear-gradient(135deg, ${p.hex}, ${s.hex})` }}
-      >
-        <div
-          className="absolute inset-0 opacity-10"
-          style={{ background: 'radial-gradient(circle at 70% 30%, white 0%, transparent 50%)' }}
-        />
-        {/* Decorative shapes */}
-        <div className="absolute top-10 left-12 w-20 h-20 rounded-full opacity-10" style={{ background: '#fff' }} />
-        <div className="absolute bottom-12 right-16 w-14 h-14 rounded-lg rotate-45 opacity-10" style={{ background: '#fff' }} />
-        <div className="absolute top-20 right-32 w-8 h-8 rounded-full opacity-15" style={{ background: '#fff' }} />
-        <div className="relative">
-          <div className="text-5xl font-bold mb-4 max-w-xl mx-auto leading-tight" style={{ fontFamily: headingFont }}>
-            Transform Your Digital Experience
-          </div>
-          <div className="text-lg opacity-90 mb-8 max-w-lg mx-auto" style={{ fontFamily: bodyFont }}>
-            Create stunning interfaces with a palette designed to inspire. Your brand deserves colors that speak.
-          </div>
-          <div className="flex gap-3 justify-center">
-            <span
-              className="inline-flex items-center gap-2 px-7 py-3 rounded-xl font-semibold text-sm cursor-pointer transition-all hover:brightness-110"
-              style={{ background: a.hex, color: textOn(a.hex), boxShadow: '0 4px 14px rgba(0,0,0,0.2)' }}
-            >
-              Get Started Free <ArrowRight size={16} />
+      {/* Hero — asymmetric, with a product preview */}
+      <section className="relative overflow-hidden px-8 pt-16 pb-20">
+        <div className="absolute -top-24 -left-24 w-[420px] h-[420px] rounded-full pointer-events-none" style={{ background: p, opacity: 0.13, filter: 'blur(90px)' }} />
+        <div className="absolute -bottom-32 -right-16 w-[380px] h-[380px] rounded-full pointer-events-none" style={{ background: a, opacity: 0.12, filter: 'blur(90px)' }} />
+        <div className="relative grid grid-cols-2 gap-12 items-center max-md:grid-cols-1 max-md:gap-8">
+          <div>
+            <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 mb-5" style={{ background: `${a}1c`, color: a, borderRadius: 999 }}>
+              <Sparkles size={12} /> New — v2 is here
             </span>
-            <span
-              className="inline-flex items-center gap-2 px-7 py-3 rounded-xl font-semibold text-sm cursor-pointer transition-all hover:bg-white/20"
-              style={{ border: '2px solid rgba(255,255,255,0.7)', color: '#fff' }}
-            >
-              <Play size={16} /> Watch Demo
-            </span>
-          </div>
-          {/* Star rating + trust */}
-          <div className="flex items-center justify-center gap-2 mt-8 opacity-80">
-            <div className="flex gap-0.5">
-              {[0, 1, 2, 3, 4].map(i => (
-                <Star key={i} size={14} fill="currentColor" />
-              ))}
+            <h1 className="font-bold text-[46px] leading-[1.05] tracking-[-0.02em] max-md:text-[34px]" style={{ ...H, color: chrome.text }}>
+              The workspace your <span style={{ color: p }}>whole team</span> will love.
+            </h1>
+            <p className="text-[17px] leading-relaxed mt-5 max-w-md" style={{ color: chrome.textMuted }}>
+              Plan, build and ship in one place — with a system tuned to your brand from the very first pixel.
+            </p>
+            <div className="flex items-center gap-3 mt-8">
+              <span className="inline-flex items-center gap-2 px-6 py-3 font-semibold text-sm" style={{ background: p, color: textOn(p), borderRadius: rx(radii.md), boxShadow: `0 8px 20px -8px ${p}` }}>
+                Start free <ArrowRight size={16} />
+              </span>
+              <span className="inline-flex items-center gap-2 px-5 py-3 font-semibold text-sm" style={{ color: chrome.text, border: `1.5px solid ${chrome.border}`, borderRadius: rx(radii.md) }}>
+                <Play size={15} /> Watch demo
+              </span>
             </div>
-            <span className="text-sm" style={{ fontFamily: bodyFont }}>Trusted by 10,000+ designers</span>
+            <div className="flex items-center gap-3 mt-8">
+              <div className="flex -space-x-2.5">
+                {[p, s, a, colors.success.hex].map((c, i) => (
+                  <span key={i} className="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold" style={{ background: c, color: textOn(c), border: `2px solid ${chrome.background}` }}>
+                    {String.fromCharCode(65 + i)}
+                  </span>
+                ))}
+              </div>
+              <div>
+                <div className="flex gap-0.5" style={{ color: colors.warning.hex }}>
+                  {[0, 1, 2, 3, 4].map((i) => <Star key={i} size={12} fill="currentColor" />)}
+                </div>
+                <span className="text-xs" style={{ color: chrome.textMuted }}>Loved by 10,000+ teams</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Product preview: browser window with a themed mini-app */}
+          <div className="rounded-2xl overflow-hidden" style={{ ...card, borderRadius: rx(Math.max(radii.lg, 12)), boxShadow: shadow }}>
+            <div className="flex items-center gap-2 px-4 py-2.5" style={{ background: chrome.surfaceMuted, borderBottom: `1px solid ${chrome.border}` }}>
+              <span className="w-2.5 h-2.5 rounded-full" style={{ background: colors.danger.hex, opacity: 0.7 }} />
+              <span className="w-2.5 h-2.5 rounded-full" style={{ background: colors.warning.hex, opacity: 0.7 }} />
+              <span className="w-2.5 h-2.5 rounded-full" style={{ background: colors.success.hex, opacity: 0.7 }} />
+              <span className="ml-2 text-[11px] px-2.5 py-0.5 rounded-md" style={{ background: chrome.surface, color: chrome.textMuted }}>app.northwind.com</span>
+            </div>
+            <div className="flex" style={{ height: 260 }}>
+              <div className="w-12 flex flex-col items-center gap-4 py-4" style={{ background: chrome.surfaceMuted, borderRight: `1px solid ${chrome.border}` }}>
+                <span className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: p, color: textOn(p) }}><LayoutGrid size={15} /></span>
+                {[BarChart3, Bell, Settings].map((Icon, i) => <Icon key={i} size={16} style={{ color: chrome.textMuted }} />)}
+              </div>
+              <div className="flex-1 p-4 min-w-0">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-sm font-bold" style={H}>Overview</span>
+                  <span className="text-[11px] px-2 py-1 rounded-md flex items-center gap-1" style={{ background: chrome.surfaceMuted, color: chrome.textMuted }}><Search size={11} /> Search</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2.5 mb-3">
+                  {[{ v: '$48.2k', l: 'Revenue', c: p }, { v: '2,340', l: 'Users', c: a }].map((st) => (
+                    <div key={st.l} className="p-2.5 rounded-lg" style={{ background: chrome.surfaceMuted }}>
+                      <div className="text-lg font-bold" style={{ ...H, color: st.c }}>{st.v}</div>
+                      <div className="text-[10px] flex items-center gap-1" style={{ color: chrome.textMuted }}><TrendingUp size={9} style={{ color: colors.success.hex }} /> {st.l}</div>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex items-end gap-1.5 h-20 px-1">
+                  {[42, 66, 38, 80, 55, 72, 48].map((h, i) => (
+                    <div key={i} className="flex-1 rounded-t" style={{ height: `${h}%`, background: i === 3 ? p : `${p}44` }} />
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Logo strip */}
-      <div
-        className="px-8 py-6 text-center"
-        style={{ background: isDark ? getTone(colors, 'neutral', 0) : '#f9fafb' }}
-      >
-        <div className="text-xs uppercase tracking-widest mb-4 font-semibold" style={{ color: textMuted, fontFamily: bodyFont }}>
-          Trusted by leading teams
-        </div>
-        <div className="flex items-center justify-center gap-8">
-          {['Acme Corp', 'Globex', 'Initech', 'Umbrella', 'Stark'].map(name => (
-            <div
-              key={name}
-              className="px-4 py-2 rounded-lg text-sm font-bold opacity-40"
-              style={{ color: isDark ? getTone(colors, 'neutral', 6) : '#374151', fontFamily: headingFont }}
-            >
-              {name}
-            </div>
+      <div className="px-8 py-7" style={{ borderTop: `1px solid ${chrome.border}`, borderBottom: `1px solid ${chrome.border}` }}>
+        <div className="text-[11px] uppercase tracking-[0.16em] text-center mb-4 font-semibold" style={{ color: chrome.textMuted }}>Trusted by teams at</div>
+        <div className="flex items-center justify-center gap-10 flex-wrap opacity-50" style={{ color: chrome.text }}>
+          {['Acme', 'Globex', 'Initech', 'Umbrella', 'Stark'].map((n) => (
+            <span key={n} className="font-bold text-lg" style={H}>{n}</span>
           ))}
         </div>
       </div>
 
-      {/* Features grid */}
-      <div className="grid grid-cols-3 gap-6 p-8">
-        {features.map(f => (
-          <div
-            key={f.title}
-            className="rounded-xl p-6 text-center transition-all hover:-translate-y-1"
-            style={{ background: cardBg, boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}
-          >
-            <div
-              className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
-              style={{ background: `${f.color}15`, color: f.color }}
-            >
-              <f.Icon size={28} />
+      {/* Features */}
+      <section className="px-8 py-16">
+        <div className="max-w-md mb-10">
+          <h2 className="font-bold text-[32px] tracking-[-0.02em]" style={{ ...H, color: chrome.text }}>Everything you need, nothing you don't.</h2>
+        </div>
+        <div className="grid grid-cols-3 gap-5 max-md:grid-cols-1">
+          {features.map((f) => (
+            <div key={f.title} className="p-6 transition-transform hover:-translate-y-1" style={{ ...card, borderRadius: rx(radii.lg) }}>
+              <span className="w-12 h-12 flex items-center justify-center mb-4" style={{ background: `${f.color}18`, color: f.color, borderRadius: rx(radii.md) }}>
+                <f.Icon size={22} />
+              </span>
+              <div className="font-bold text-[17px] mb-1.5" style={{ ...H, color: chrome.text }}>{f.title}</div>
+              <div className="text-sm leading-relaxed mb-3" style={{ color: chrome.textMuted }}>{f.desc}</div>
+              <span className="inline-flex items-center gap-1 text-sm font-semibold" style={{ color: f.color }}>Learn more <ChevronRight size={14} /></span>
             </div>
-            <div className="font-bold text-base mb-2" style={{ fontFamily: headingFont, color: headingColor }}>{f.title}</div>
-            <div className="text-sm leading-relaxed mb-3" style={{ color: textMuted, fontFamily: bodyFont }}>{f.desc}</div>
-            <span className="inline-flex items-center gap-1 text-sm font-semibold cursor-pointer" style={{ color: f.color, fontFamily: bodyFont }}>
-              Learn more <ChevronRight size={14} />
-            </span>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      </section>
 
       {/* Testimonials */}
-      <div className="grid grid-cols-2 gap-6 mx-8 mb-8">
+      <section className="px-8 pb-16 grid grid-cols-2 gap-5 max-md:grid-cols-1">
         {[
-          { initials: 'SC', name: 'Sarah Chen', role: 'Design Lead at TechCo', quote: 'This platform completely transformed how we approach design. The color system is incredibly intuitive and our team productivity skyrocketed.', color: a.hex },
-          { initials: 'JM', name: 'James Miller', role: 'CTO at StartupXYZ', quote: 'The best investment we made this year. Our design-to-development handoff improved dramatically and consistency across products is amazing.', color: s.hex },
-        ].map(t => (
-          <div
-            key={t.initials}
-            className="p-6 rounded-xl relative"
-            style={{
-              background: isDark ? getTone(colors, 'neutral', 2) : getTone(colors, 'neutral', 8),
-              borderLeft: `4px solid ${t.color}`,
-            }}
-          >
-            <div className="absolute -top-2 left-4 text-4xl leading-none" style={{ color: `${t.color}40` }}>&ldquo;</div>
-            <div className="flex gap-0.5 mb-3">
-              {[0, 1, 2, 3, 4].map(i => (
-                <Star key={i} size={14} fill={t.color} style={{ color: t.color }} />
-              ))}
-            </div>
-            <div className="flex gap-4 items-start">
-              <div
-                className="w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold"
-                style={{ background: t.color, color: textOn(t.color) }}
-              >
-                {t.initials}
-              </div>
+          { initials: 'SC', name: 'Sarah Chen', role: 'Design Lead, TechCo', quote: 'It transformed how our team ships. The system is so consistent that handoff basically disappeared.', color: a },
+          { initials: 'JM', name: 'James Miller', role: 'CTO, StartupXYZ', quote: 'The best investment we made this year — product velocity and polish both went up.', color: s },
+        ].map((t) => (
+          <div key={t.initials} className="p-6" style={{ ...card, borderRadius: rx(radii.lg) }}>
+            <div className="flex gap-0.5 mb-3" style={{ color: colors.warning.hex }}>{[0, 1, 2, 3, 4].map((i) => <Star key={i} size={14} fill="currentColor" />)}</div>
+            <p className="text-[15px] leading-relaxed mb-5" style={{ color: chrome.text }}>“{t.quote}”</p>
+            <div className="flex items-center gap-3">
+              <span className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: t.color, color: textOn(t.color) }}>{t.initials}</span>
               <div>
-                <div className="text-sm italic mb-2" style={{ color: isDark ? getTone(colors, 'neutral', 7) : getTone(colors, 'neutral', 2), fontFamily: bodyFont }}>
-                  "{t.quote}"
-                </div>
-                <div className="text-sm font-semibold" style={{ color: t.color, fontFamily: bodyFont }}>{t.name}</div>
-                <div className="text-xs" style={{ color: textMuted, fontFamily: bodyFont }}>{t.role}</div>
+                <div className="text-sm font-semibold" style={{ color: chrome.text }}>{t.name}</div>
+                <div className="text-xs" style={{ color: chrome.textMuted }}>{t.role}</div>
               </div>
             </div>
           </div>
         ))}
-      </div>
+      </section>
 
       {/* Pricing */}
-      <div className="px-8 py-12" style={{ background: isDark ? getTone(colors, 'neutral', 0) : '#f9fafb' }}>
-        <div className="text-center mb-8">
-          <div className="text-3xl font-bold mb-2" style={{ color: headingColor, fontFamily: headingFont }}>Simple Pricing</div>
-          <div className="text-sm" style={{ color: textMuted, fontFamily: bodyFont }}>Choose the plan that fits your needs</div>
+      <section className="px-8 py-16" style={{ background: chrome.surfaceMuted }}>
+        <div className="text-center mb-10">
+          <h2 className="font-bold text-[32px] tracking-[-0.02em]" style={{ ...H, color: chrome.text }}>Simple, honest pricing</h2>
+          <p className="text-sm mt-2" style={{ color: chrome.textMuted }}>Start free. Upgrade when you're ready.</p>
         </div>
-        <div className="grid grid-cols-3 gap-6">
-          {pricingTiers.map(tier => (
-            <div
-              key={tier.name}
-              className="rounded-xl p-6 flex flex-col relative transition-all hover:-translate-y-1"
-              style={{
-                background: cardBg,
-                boxShadow: tier.popular ? `0 8px 24px ${tier.color}25` : '0 2px 12px rgba(0,0,0,0.06)',
-                border: tier.popular ? `2px solid ${tier.color}` : `1px solid ${isDark ? getTone(colors, 'neutral', 3) : '#e5e7eb'}`,
-              }}
-            >
-              {tier.popular && (
-                <div
-                  className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full text-[10px] font-bold"
-                  style={{ background: tier.color, color: textOn(tier.color) }}
-                >
-                  Most Popular
-                </div>
-              )}
-              <div className="text-sm font-semibold mb-1" style={{ color: tier.color, fontFamily: headingFont }}>{tier.name}</div>
-              <div className="flex items-baseline gap-1 mb-1">
-                <span className="text-3xl font-bold" style={{ color: headingColor, fontFamily: headingFont }}>{tier.price}</span>
-                <span className="text-sm" style={{ color: textMuted, fontFamily: bodyFont }}>{tier.period}</span>
+        <div className="grid grid-cols-3 gap-5 max-md:grid-cols-1">
+          {tiers.map((tier) => (
+            <div key={tier.name} className="p-6 flex flex-col relative" style={{ background: chrome.surface, borderRadius: rx(radii.lg), border: tier.popular ? `2px solid ${tier.color}` : `1px solid ${chrome.border}`, boxShadow: tier.popular ? `0 16px 40px -16px ${tier.color}` : 'none' }}>
+              {tier.popular && <span className="absolute -top-3 left-6 px-3 py-0.5 text-[10px] font-bold rounded-full" style={{ background: tier.color, color: textOn(tier.color) }}>MOST POPULAR</span>}
+              <div className="text-sm font-semibold mb-1" style={{ color: tier.color, ...H }}>{tier.name}</div>
+              <div className="flex items-baseline gap-1">
+                <span className="text-[34px] font-bold" style={{ ...H, color: chrome.text }}>{tier.price}</span>
+                <span className="text-sm" style={{ color: chrome.textMuted }}>{tier.period}</span>
               </div>
-              <div className="text-xs mb-5" style={{ color: textMuted, fontFamily: bodyFont }}>{tier.desc}</div>
+              <div className="text-xs mb-5" style={{ color: chrome.textMuted }}>{tier.desc}</div>
               <div className="flex flex-col gap-2.5 mb-6 flex-1">
-                {tier.features.map(feat => (
-                  <div key={feat} className="flex items-center gap-2 text-sm" style={{ color: isDark ? getTone(colors, 'neutral', 7) : '#374151', fontFamily: bodyFont }}>
-                    <Check size={15} style={{ color: tier.color, flexShrink: 0 }} />
-                    {feat}
-                  </div>
+                {tier.feats.map((f) => (
+                  <div key={f} className="flex items-center gap-2 text-sm" style={{ color: chrome.text }}><Check size={15} style={{ color: tier.color }} /> {f}</div>
                 ))}
               </div>
-              <span
-                className="inline-flex items-center justify-center gap-2 w-full px-5 py-2.5 rounded-xl font-semibold text-sm cursor-pointer transition-all hover:brightness-110"
-                style={{
-                  background: tier.popular ? tier.color : 'transparent',
-                  color: tier.popular ? textOn(tier.color) : tier.color,
-                  border: tier.popular ? 'none' : `2px solid ${tier.color}`,
-                  boxShadow: tier.popular ? '0 2px 8px rgba(0,0,0,0.1)' : 'none',
-                  fontFamily: bodyFont,
-                }}
-              >
-                Get Started <ArrowRight size={14} />
+              <span className="inline-flex items-center justify-center gap-2 w-full py-2.5 font-semibold text-sm" style={{ background: tier.popular ? tier.color : 'transparent', color: tier.popular ? textOn(tier.color) : tier.color, border: tier.popular ? 'none' : `1.5px solid ${tier.color}`, borderRadius: rx(radii.md) }}>
+                Choose {tier.name}
               </span>
             </div>
           ))}
         </div>
-      </div>
+      </section>
 
-      {/* CTA */}
-      <div
-        className="px-8 py-14 text-center"
-        style={{ background: s.hex, color: textOn(s.hex) }}
-      >
-        <div className="text-2xl font-bold mb-3" style={{ fontFamily: headingFont }}>Ready to get started?</div>
-        <div className="text-base opacity-90 mb-8" style={{ fontFamily: bodyFont }}>Join thousands of designers who trust our platform.</div>
-        <div className="flex gap-3 justify-center">
-          <span
-            className="inline-flex items-center gap-2 px-7 py-3 rounded-xl font-semibold text-sm cursor-pointer transition-all hover:brightness-110"
-            style={{ background: a.hex, color: textOn(a.hex), boxShadow: '0 4px 14px rgba(0,0,0,0.2)' }}
-          >
-            Start Free Trial <ArrowRight size={16} />
+      {/* CTA band */}
+      <section className="px-8 py-16 text-center relative overflow-hidden" style={{ background: p, color: textOn(p) }}>
+        <div className="absolute -top-16 right-10 w-64 h-64 rounded-full" style={{ background: '#fff', opacity: 0.08, filter: 'blur(60px)' }} />
+        <h2 className="font-bold text-[32px] tracking-[-0.02em] relative" style={H}>Ready to build something great?</h2>
+        <p className="text-base opacity-90 mt-2 mb-8 relative" style={B}>Join thousands of teams shipping with Northwind.</p>
+        <div className="flex gap-3 justify-center relative">
+          <span className="inline-flex items-center gap-2 px-7 py-3 font-semibold text-sm" style={{ background: a, color: textOn(a), borderRadius: rx(radii.md), boxShadow: '0 8px 20px rgba(0,0,0,0.2)' }}>
+            Start free trial <ArrowRight size={16} />
           </span>
-          <span
-            className="inline-flex items-center gap-2 px-7 py-3 rounded-xl font-semibold text-sm cursor-pointer transition-all hover:opacity-80"
-            style={{ border: `2px solid ${textOn(s.hex)}60`, color: textOn(s.hex) }}
-          >
-            <Mail size={16} /> Contact Sales
-          </span>
+          <span className="inline-flex items-center gap-2 px-7 py-3 font-semibold text-sm" style={{ border: `1.5px solid ${textOn(p)}66`, borderRadius: rx(radii.md) }}>Talk to sales</span>
         </div>
-      </div>
+      </section>
 
       {/* Footer */}
-      <div
-        className="px-8 py-8"
-        style={{ background: getTone(colors, 'neutral', 0), color: getTone(colors, 'neutral', 6) }}
-      >
-        <div className="grid grid-cols-4 gap-8 mb-6">
+      <footer className="px-8 py-10" style={{ background: chrome.surface, borderTop: `1px solid ${chrome.border}`, color: chrome.textMuted }}>
+        <div className="grid grid-cols-4 gap-8 mb-8 max-md:grid-cols-2">
           <div>
             <div className="flex items-center gap-2 mb-3">
-              <Hexagon size={18} style={{ color: getTone(colors, 'neutral', 3) }} />
-              <span className="font-bold text-base" style={{ color: getTone(colors, 'neutral', 3), fontFamily: headingFont }}>BrandName</span>
+              <span className="w-7 h-7 flex items-center justify-center" style={{ background: p, color: textOn(p), borderRadius: rx(radii.sm) }}><Sparkles size={14} /></span>
+              <span className="font-bold" style={{ ...H, color: chrome.text }}>Northwind</span>
             </div>
-            <div className="text-xs leading-relaxed" style={{ fontFamily: bodyFont }}>
-              Building beautiful digital experiences since 2024.
+            <p className="text-xs leading-relaxed">The workspace for modern product teams.</p>
+          </div>
+          {[['Product', ['Features', 'Pricing', 'Changelog']], ['Company', ['About', 'Blog', 'Careers']], ['Support', ['Help', 'Contact', 'Status']]].map(([title, items]) => (
+            <div key={title as string} className="flex flex-col gap-2 text-sm">
+              <strong className="font-semibold" style={{ color: chrome.text, ...H }}>{title as string}</strong>
+              {(items as string[]).map((i) => <span key={i}>{i}</span>)}
             </div>
-          </div>
-          <div className="flex flex-col gap-2 text-sm" style={{ fontFamily: bodyFont }}>
-            <strong className="font-semibold" style={{ color: getTone(colors, 'neutral', 3), fontFamily: headingFont }}>Product</strong>
-            <div>Features</div>
-            <div>Pricing</div>
-            <div>Docs</div>
-          </div>
-          <div className="flex flex-col gap-2 text-sm" style={{ fontFamily: bodyFont }}>
-            <strong className="font-semibold" style={{ color: getTone(colors, 'neutral', 3), fontFamily: headingFont }}>Company</strong>
-            <div>About</div>
-            <div>Blog</div>
-            <div>Careers</div>
-          </div>
-          <div className="flex flex-col gap-2 text-sm" style={{ fontFamily: bodyFont }}>
-            <strong className="font-semibold" style={{ color: getTone(colors, 'neutral', 3), fontFamily: headingFont }}>Support</strong>
-            <div>Help Center</div>
-            <div>Contact</div>
-            <div>Status</div>
-          </div>
+          ))}
         </div>
-        <div
-          className="pt-4 flex items-center justify-between text-xs"
-          style={{ borderTop: `1px solid ${getTone(colors, 'neutral', 1)}`, color: getTone(colors, 'neutral', 5) }}
-        >
-          <span>&copy; 2026 BrandName. All rights reserved.</span>
-          <div className="flex gap-3">
-            {[
-              { Icon: Twitter, label: 'Twitter' },
-              { Icon: Github, label: 'GitHub' },
-              { Icon: Linkedin, label: 'LinkedIn' },
-            ].map(({ Icon, label }) => (
-              <div
-                key={label}
-                className="w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer transition-all hover:opacity-80"
-                style={{ background: getTone(colors, 'neutral', 1) }}
-              >
-                <Icon size={14} />
-              </div>
+        <div className="pt-5 flex items-center justify-between text-xs" style={{ borderTop: `1px solid ${chrome.border}` }}>
+          <span>© 2026 Northwind. All rights reserved.</span>
+          <div className="flex gap-2">
+            {[Twitter, Github, Linkedin].map((Icon, i) => (
+              <span key={i} className="w-8 h-8 flex items-center justify-center" style={{ background: chrome.surfaceMuted, borderRadius: rx(radii.sm) }}><Icon size={14} /></span>
             ))}
           </div>
         </div>
-      </div>
+      </footer>
     </div>
   );
 }
