@@ -184,7 +184,8 @@ app.post('/generatePalette', rateLimit, async (req, res) => {
     console.error('Error in /generatePalette:', error);
     res.status(500).json({
       error: 'An error occurred while generating the palette.',
-      details: error.message
+      details: error.message,
+      stack: error.stack,
     });
   }
 });

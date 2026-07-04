@@ -262,11 +262,19 @@ export async function generateColorPalette(
     user: feelings,
     tool: GENERATE_TOOL,
     temperature: 0.75,
-    maxTokens: 2000,
+    maxTokens: 4096,
   });
   if (!args) throw new Error("Model did not return a tool call");
 
   const { style: rawStyle, ...colorArgs } = args;
+  // Guard against a truncated/partial tool result: every role must be present with a hex,
+  // otherwise validation would silently skip roles and blow up in scoring downstream.
+  const missing = REQUIRED_COLORS.filter(
+    (k) => !(colorArgs as any)[k] || !(colorArgs as any)[k].hex,
+  );
+  if (missing.length > 0) {
+    throw new Error(`Model returned an incomplete palette (missing: ${missing.join(", ")}).`);
+  }
   const validated = validatePalette(colorArgs as Palette);
   const style = normalizeStyle(rawStyle);
   return { colors: validated, style, aiResponse: JSON.stringify(validated) };
@@ -311,7 +319,7 @@ export async function critiquePalette(
       user: userMsg,
       tool: CRITIQUE_TOOL,
       temperature: 0.6,
-      maxTokens: 1500,
+      maxTokens: 3072,
     });
     if (!args) return null;
     return validatePalette(args as Palette);
