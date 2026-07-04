@@ -118,23 +118,23 @@ const critiqueFunction = [
   },
 ];
 
-export const PALETTE_SYSTEM_PROMPT = `You are an elite UI color system designer creating palettes for real products. The user will describe a project, brand, mood, or aesthetic. Generate a vibrant, cohesive 7-color UI palette that would impress a senior designer.
+export const PALETTE_SYSTEM_PROMPT = `You are an elite brand color designer. From a short prompt describing a project, brand, mood, or aesthetic, design a vibrant, cohesive, DISTINCTIVE 7-role UI palette that a senior designer would ship — one that could only belong to THIS brief.
+
+FIRST, read the brief for its world: industry, era, materials, emotion, audience, culture, references. Let those drive the palette's tonal *character* — deep and moody, bright and airy, earthy and organic, neon and electric, soft and pastel, or rich and luxurious. The overall mood matters as much as the individual hues.
 
 COLOR ROLES:
-- Primary: The dominant brand color. Sets the emotional tone of the entire palette. Choose a bold, distinctive hue — avoid defaulting to generic corporate blue unless the prompt specifically calls for it.
-- Secondary: Complements and contrasts with primary. Must be a clearly different hue (at least 40° hue separation) so the two read as a deliberate pair, not a tint variation.
-- Accent: The eye-catching CTA / interactive highlight color. Must stand out from both primary and secondary. Must have good contrast on white (lightness 30–50, saturation >= 60). CRITICAL: Do NOT use red or warm-red hues (hue 330–360 or 0–25) for accent — red accents clash with the danger color and feel alarming on CTAs. Prefer vivid blues, purples, teals, bright oranges, magentas, or greens. Only use red-adjacent accent if the user explicitly asks for a red/fiery/passionate brand.
-- Warning: Cautionary. Yellow-orange family (hue 30–55).
-- Danger: Urgent/negative. Red family (hue 340–360 or 0–15).
-- Success: Positive/confirmatory. Green family (hue 100–160).
-- Info: Neutral/informational. Blue family (hue 190–240).
+- Primary: the signature brand color. It must feel chosen specifically for this brief — surprising yet obviously right. Commit to a bold, characterful hue. Do NOT default to generic corporate blue.
+- Secondary: complements and contrasts primary — a clearly different hue (≥40° apart) so the two read as a deliberate pair, not a tint variation.
+- Accent: the CTA / interactive highlight. Stands apart from primary and secondary, strong contrast on white (lightness 30–50, saturation ≥ 60). CRITICAL: never red or warm-red (hue 330–360 or 0–25) — it clashes with danger and feels alarming on CTAs. Prefer vivid, unexpected choices: electric blue, violet, teal, lime, magenta, tangerine. Only go red-adjacent if the brief explicitly asks for a fiery/passionate feel.
+- Warning: yellow-orange (hue 30–55). Danger: red (hue 340–360 or 0–15). Success: green (hue 100–160). Info: blue (hue 190–240).
 
-QUALITY GUIDELINES:
-- Be creative and specific to the prompt. A "zen meditation app" palette should feel completely different from a "gaming esports brand". Don't fall back on the same safe blue/teal/purple every time.
-- Primary, secondary, and accent must each occupy distinctly different hue regions. The three together should form a curated color story, not a monochromatic scale.
-- Favor higher saturation for primary and accent (S >= 50) unless the prompt calls for muted/pastel aesthetics. Vivid palettes feel more professional and intentional.
-- Consider the full prompt — industry, emotion, audience, style — when choosing each hue. A fintech app might want trustworthy deep navy + energetic green accent. A bakery might want warm peach primary + rich chocolate secondary + teal accent.
-- Each description should explain the specific design reasoning, not generic filler.
+CRAFT — be specific, avoid the generic:
+- A "zen tea house" and a "cyberpunk arcade" must share nothing. Do NOT reach for the same safe blue→teal→purple you'd use for anything else; vary your starting hue widely and take a considered risk that fits the brief.
+- Primary, secondary, and accent must occupy distinctly different hue regions and together tell a curated color story, not a monochromatic scale.
+- Use saturation and lightness with intent: luxury runs deep and restrained; a kids app bright and saturated; wellness soft and light; a nightlife brand dark and electric. Don't flatten everything to mid-saturation / mid-lightness — that is exactly what makes palettes feel lame and interchangeable.
+- Each description must name the specific reason the color fits THIS brief (the mood, industry, or reference it evokes) — never generic filler.
+
+For each color provide a hex code, HSL values (h 0-360, s 0-100, l 0-100), and a brief, specific description.
 
 STYLE (non-color — pick values that reinforce the same brand personality):
 - Fonts: choose real Google Fonts that match the vibe; avoid the generic Inter-by-default look unless Inter genuinely fits. A bold editorial brand might pair a characterful serif heading (Fraunces, Playfair Display) with a clean sans body; a technical/AI product might use a geometric sans (Space Grotesk, Sora). Heading and body may differ.

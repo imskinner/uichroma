@@ -140,10 +140,11 @@ export function PalettePage() {
     return (
       <div className="landing-bg min-h-screen flex items-start justify-center p-10 max-md:p-4 overflow-auto">
         <BackgroundEllipses />
-        <GlassCard>
+        <GlassCard className="md:h-[calc(100vh-5rem)]">
           <TopBar actions={actions} />
-          <div className="flex justify-center py-20">
+          <div className="flex-1 flex flex-col items-center justify-center gap-4 py-20">
             <div className="loader" />
+            <p className="text-sm text-[#6b7280] dark:text-[#9ca3af]">Loading your theme…</p>
           </div>
         </GlassCard>
       </div>
@@ -153,7 +154,7 @@ export function PalettePage() {
   return (
     <div className="landing-bg min-h-screen flex items-start justify-center p-10 max-md:p-4 overflow-auto">
       <BackgroundEllipses />
-      <GlassCard>
+      <GlassCard className="md:h-[calc(100vh-5rem)]">
         <TopBar actions={actions} />
 
         <div className="flex flex-1 min-h-0 border-t border-black/[0.06] dark:border-white/[0.08] max-md:flex-col">
@@ -165,36 +166,38 @@ export function PalettePage() {
             keywords={keywords}
           />
 
-          <main className="flex-1 min-w-0 px-12 py-9 pb-14 max-md:px-6 max-md:py-6">
-            <div className="mb-7">
-              <h1 className="font-heading font-bold text-[28px] leading-tight text-[#1B1A18] dark:text-[#e5e5e5]">
-                {SECTION_META[active].title}
-              </h1>
-              <p className="text-[15px] text-[#6b7280] dark:text-[#9ca3af] mt-1">
-                {SECTION_META[active].desc}
-              </p>
-            </div>
-
-            {active === 'overview' && <OverviewSection colors={colors} style={style} />}
-
-            {active === 'palette' && (
-              <>
-                <ColorGrid colors={colors} onColorChange={handleColorChange} />
-                {permalink && <PermalinkBar permalink={permalink} />}
-              </>
-            )}
-
-            {active === 'shades' && <ShadesView colors={colors} />}
-            {active === 'accessibility' && <AccessibilityPanel colors={colors} />}
-            {active === 'tokens' && <TokensPanel colors={colors} style={style} />}
-            {active === 'demos' && <DemoView colors={colors} style={style} />}
-
-            {active === 'handoff' && (
-              <div className="flex flex-col">
-                <ExportSection colors={colors} style={style} />
-                <ConstraintPackSection colors={colors} vibe={keywords} permalink={permalink} style={style} />
+          <main className="flex-1 min-w-0 px-12 py-9 pb-14 max-md:px-6 max-md:py-6 md:overflow-y-auto studio-scroll">
+            <div key={active} className="section-enter">
+              <div className="mb-7">
+                <h1 className="font-heading font-bold text-[28px] leading-tight text-[#1B1A18] dark:text-[#e5e5e5]">
+                  {SECTION_META[active].title}
+                </h1>
+                <p className="text-[15px] text-[#6b7280] dark:text-[#9ca3af] mt-1">
+                  {SECTION_META[active].desc}
+                </p>
               </div>
-            )}
+
+              {active === 'overview' && <OverviewSection colors={colors} style={style} />}
+
+              {active === 'palette' && (
+                <>
+                  <ColorGrid colors={colors} onColorChange={handleColorChange} />
+                  {permalink && <PermalinkBar permalink={permalink} />}
+                </>
+              )}
+
+              {active === 'shades' && <ShadesView colors={colors} />}
+              {active === 'accessibility' && <AccessibilityPanel colors={colors} />}
+              {active === 'tokens' && <TokensPanel colors={colors} style={style} />}
+              {active === 'demos' && <DemoView colors={colors} style={style} />}
+
+              {active === 'handoff' && (
+                <div className="flex flex-col">
+                  <ExportSection colors={colors} style={style} />
+                  <ConstraintPackSection colors={colors} vibe={keywords} permalink={permalink} style={style} />
+                </div>
+              )}
+            </div>
           </main>
         </div>
       </GlassCard>

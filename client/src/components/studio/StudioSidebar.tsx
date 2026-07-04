@@ -20,7 +20,7 @@ const ROLES: PaletteKey[] = ['primary', 'secondary', 'accent', 'warning', 'dange
 
 export function StudioSidebar({ sections, active, onSelect, colors, keywords }: StudioSidebarProps) {
   return (
-    <aside className="w-[248px] shrink-0 border-r border-black/[0.06] dark:border-white/[0.08] px-5 py-7 flex flex-col gap-7 max-md:w-full max-md:border-r-0 max-md:border-b max-md:py-5">
+    <aside className="w-[248px] shrink-0 border-r border-black/[0.06] dark:border-white/[0.08] px-5 py-7 flex flex-col gap-7 md:overflow-y-auto studio-scroll max-md:w-full max-md:border-r-0 max-md:border-b max-md:py-5">
       {/* Theme identity */}
       <div>
         <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#9ca3af] mb-2">
@@ -44,12 +44,15 @@ export function StudioSidebar({ sections, active, onSelect, colors, keywords }: 
               key={s.id}
               onClick={() => onSelect(s.id)}
               className={cn(
-                'flex items-center gap-2.5 px-3 py-2.5 rounded-[10px] text-sm font-medium transition-colors text-left max-md:shrink-0',
+                'relative flex items-center gap-2.5 px-3 py-2.5 rounded-[10px] text-sm font-medium transition-colors text-left max-md:shrink-0',
                 isActive
                   ? 'bg-black/[0.055] dark:bg-white/[0.09] text-[#1B1A18] dark:text-white'
                   : 'text-[#6b7280] dark:text-[#9ca3af] hover:bg-black/[0.03] dark:hover:bg-white/[0.05] hover:text-[#1B1A18] dark:hover:text-[#e5e5e5]',
               )}
             >
+              {isActive && (
+                <span className="absolute left-0.5 top-1/2 -translate-y-1/2 h-[18px] w-[3px] rounded-full bg-[#008CF4] max-md:hidden" />
+              )}
               <Icon size={17} className={isActive ? 'text-[#008CF4]' : ''} strokeWidth={2} />
               {s.label}
             </button>

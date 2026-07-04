@@ -9,13 +9,15 @@ interface ShadeCardProps {
 
 export function ShadeCard({ colorKey, color }: ShadeCardProps) {
   return (
-    <div className="bg-white dark:bg-[#1e1e22] border border-[#EEEDEC] dark:border-[#333] rounded-lg mb-4 overflow-hidden transition-shadow hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)]">
-      <div className="flex justify-between items-center px-4 py-3">
-        <span className="font-heading font-bold text-base text-[#1B1A18] dark:text-[#e5e5e5]">{PALETTE_LABELS[colorKey]}</span>
-        <span className="text-xs text-[#85807A] dark:text-[#9ca3af]">{color.hex}</span>
+    <div className="rounded-2xl border border-black/[0.06] dark:border-white/[0.08] bg-white/50 dark:bg-white/[0.03] mb-4 overflow-hidden">
+      <div className="flex justify-between items-center px-4 pt-3.5 pb-2.5">
+        <span className="font-heading font-bold text-[15px] text-[#1B1A18] dark:text-[#e5e5e5]">
+          {PALETTE_LABELS[colorKey]}
+        </span>
+        <span className="text-xs font-mono text-[#9ca3af]">{color.hex.toUpperCase()}</span>
       </div>
-      <div className="flex">
-        {color.tones.map(tone => (
+      <div className="flex px-3 pb-3 gap-0">
+        {color.tones.map((tone) => (
           <ShadeSwatch key={tone.l} hex={tone.hex} lightness={tone.l} />
         ))}
       </div>
@@ -25,25 +27,26 @@ export function ShadeCard({ colorKey, color }: ShadeCardProps) {
 
 function ShadeSwatch({ hex, lightness }: { hex: string; lightness: number }) {
   const [copied, setCopied] = useState(false);
-  const textColor = lightness < 50 ? '#fff' : '#1B1A18';
+  const on = lightness < 52 ? 'rgba(255,255,255,0.92)' : 'rgba(0,0,0,0.72)';
 
   const handleClick = () => {
     navigator.clipboard.writeText(hex).then(() => {
       setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
+      setTimeout(() => setCopied(false), 1200);
     });
   };
 
   return (
-    <div
-      className="flex-1 h-14 flex flex-col items-center justify-center cursor-pointer relative transition-transform hover:scale-y-110 hover:shadow-[0_2px_8px_rgba(0,0,0,0.15)] hover:z-10"
-      style={{ backgroundColor: hex, color: textColor }}
+    <button
       onClick={handleClick}
+      title={hex}
+      className="group flex-1 h-16 flex flex-col items-center justify-center gap-0.5 cursor-pointer transition-[flex-grow] duration-200 hover:flex-[1.5] first:rounded-l-[10px] last:rounded-r-[10px] focus:outline-none"
+      style={{ background: hex, color: on }}
     >
-      <span className="text-[10px] font-medium leading-3.5 opacity-80">{lightness}</span>
-      <span className="text-[9px] leading-3 opacity-0 transition-opacity hover:opacity-90 group-hover:opacity-90">
-        {copied ? 'Copied!' : hex}
+      <span className="text-[10px] font-semibold leading-none">{lightness}</span>
+      <span className="text-[9px] font-mono leading-none opacity-0 group-hover:opacity-100 transition-opacity">
+        {copied ? '✓ copied' : hex.replace('#', '').toUpperCase()}
       </span>
-    </div>
+    </button>
   );
 }

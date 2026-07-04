@@ -216,3 +216,28 @@
   height: 32px;
   animation: spin 1s linear infinite;
 }
+
+/* Studio: subtle enter motion when switching sections */
+@keyframes sectionEnter {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.section-enter { animation: sectionEnter 0.3s cubic-bezier(0.22, 1, 0.36, 1); }
+
+@media (prefers-reduced-motion: reduce) {
+  .section-enter { animation: none; }
+}
+
+/* Studio: quiet, self-effacing scrollbar for the main stage */
+.studio-scroll::-webkit-scrollbar { width: 11px; height: 11px; }
+.studio-scroll::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.12);
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+.studio-scroll:hover::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.22); background-clip: content-box; }
+.dark .studio-scroll::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.12); background-clip: content-box; }
+.dark .studio-scroll:hover::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.22); background-clip: content-box; }
+.studio-scroll { scrollbar-width: thin; scrollbar-color: rgba(0,0,0,0.18) transparent; }
+.dark .studio-scroll { scrollbar-color: rgba(255,255,255,0.18) transparent; }
