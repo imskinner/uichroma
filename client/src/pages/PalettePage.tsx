@@ -17,6 +17,7 @@ import { ExportSection } from '@/components/export/ExportSection.tsx';
 import { ConstraintPackSection } from '@/components/export/ConstraintPackSection.tsx';
 import { ShareToTeamButton } from '@/components/teams/ShareToTeamButton.tsx';
 import { usePalette } from '@/hooks/use-palette.ts';
+import { usePaletteBackground } from '@/hooks/use-palette-background.ts';
 import { useDarkMode } from '@/hooks/use-dark-mode.tsx';
 import { useAuth } from '@/hooks/use-auth.tsx';
 import { getPaletteData, updatePalette, generateVariation } from '@/lib/api.ts';
@@ -53,6 +54,9 @@ export function PalettePage() {
   const { session } = useAuth();
   const [variationLoading, setVariationLoading] = useState(false);
   const [active, setActive] = useState('overview');
+
+  // Ease the drifting background glows into the active brand's colors.
+  usePaletteBackground(colors);
 
   useEffect(() => {
     if (!permalink) return;
