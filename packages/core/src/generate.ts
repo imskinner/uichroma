@@ -13,7 +13,7 @@ const OPENAI_CHAT_URL = "https://api.openai.com/v1/chat/completions";
 const ANTHROPIC_MESSAGES_URL = "https://api.anthropic.com/v1/messages";
 const ANTHROPIC_VERSION = "2023-06-01";
 const DEFAULT_OPENAI_MODEL = "gpt-4o";
-const DEFAULT_ANTHROPIC_MODEL = "claude-sonnet-4-6";
+const DEFAULT_ANTHROPIC_MODEL = "claude-opus-4-8";
 
 export type LLMProvider = "openai" | "anthropic";
 export interface LLMOptions {
