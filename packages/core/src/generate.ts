@@ -38,15 +38,24 @@ const colorSchema = {
   required: ["hex", "h", "s", "l", "description"],
 } as const;
 
+// Each role is its OWN nested object. The explicit per-role description keeps some models
+// (notably Opus) from occasionally collapsing the schema into a single flat color.
+function roleSchema(note: string) {
+  return {
+    ...colorSchema,
+    description: `${note} Provide it as an object with hex, h, s, l, and description.`,
+  };
+}
+
 const colorProps = {
-  primary: colorSchema,
-  secondary: colorSchema,
-  accent: colorSchema,
-  warning: colorSchema,
-  danger: colorSchema,
-  success: colorSchema,
-  info: colorSchema,
-} as const;
+  primary: roleSchema("The primary signature brand color."),
+  secondary: roleSchema("The secondary color — a clearly different hue from primary."),
+  accent: roleSchema("The accent / CTA highlight color."),
+  warning: roleSchema("The warning color (yellow-orange)."),
+  danger: roleSchema("The danger color (red)."),
+  success: roleSchema("The success color (green)."),
+  info: roleSchema("The info color (blue)."),
+};
 
 const REQUIRED_COLORS = [
   "primary",
@@ -263,33 +272,37 @@ export async function generateColorPalette(
   if (!apiKey) throw new Error("LLM API key is not set.");
   const { provider, model } = resolveModel(opts);
 
-  const args = await callToolLLM({
-    apiKey,
-    provider,
-    model,
-    system: PALETTE_SYSTEM_PROMPT,
-    user: feelings,
-    tool: GENERATE_TOOL,
-    temperature: 0.75,
-    maxTokens: 8192,
-  });
-  if (!args) throw new Error("Model did not return a tool call");
-
-  const { style: rawStyle, ...colorArgs } = args;
-  // Guard against a truncated/partial tool result: every role must be present with a hex,
-  // otherwise validation would silently skip roles and blow up in scoring downstream.
-  const missing = REQUIRED_COLORS.filter(
-    (k) => !(colorArgs as any)[k] || !(colorArgs as any)[k].hex,
-  );
-  if (missing.length > 0) {
-    throw new Error(
-      `Model returned an incomplete palette (missing: ${missing.join(", ")}). ` +
-        `argsKeys=[${Object.keys(args).join(",")}] raw=${JSON.stringify(args).slice(0, 700)}`,
+  // Retry once if the model returns a malformed/partial palette (some models occasionally
+  // collapse the nested schema). A completeness check catches it before it breaks downstream.
+  let lastIssue = "";
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    const args = await callToolLLM({
+      apiKey,
+      provider,
+      model,
+      system: PALETTE_SYSTEM_PROMPT,
+      user: feelings,
+      tool: GENERATE_TOOL,
+      temperature: 0.75,
+      maxTokens: 8192,
+    });
+    if (!args) {
+      lastIssue = "no tool call";
+      continue;
+    }
+    const { style: rawStyle, ...colorArgs } = args;
+    const missing = REQUIRED_COLORS.filter(
+      (k) => !(colorArgs as any)[k] || !(colorArgs as any)[k].hex,
     );
+    if (missing.length === 0) {
+      const validated = validatePalette(colorArgs as Palette);
+      const style = normalizeStyle(rawStyle);
+      return { colors: validated, style, aiResponse: JSON.stringify(validated) };
+    }
+    lastIssue = `missing [${missing.join(", ")}]; got keys [${Object.keys(args).join(", ")}]`;
+    console.warn(`Generation attempt ${attempt} malformed: ${lastIssue}`);
   }
-  const validated = validatePalette(colorArgs as Palette);
-  const style = normalizeStyle(rawStyle);
-  return { colors: validated, style, aiResponse: JSON.stringify(validated) };
+  throw new Error(`Model returned an incomplete palette after retry — ${lastIssue}`);
 }
 
 /** Re-prompt the LLM to repair only the flagged issues. Returns null on any failure. */
