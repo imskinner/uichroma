@@ -1,10 +1,11 @@
 import { useEffect, useCallback, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Sparkles, Shuffle, Moon, Sun } from 'lucide-react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs.tsx';
+import { Sparkles, Shuffle, Moon, Sun, Palette as PaletteIcon, Layers, Eye, Type, LayoutGrid, Download } from 'lucide-react';
 import { BackgroundEllipses } from '@/components/layout/BackgroundEllipses.tsx';
 import { GlassCard } from '@/components/layout/GlassCard.tsx';
 import { TopBar } from '@/components/layout/TopBar.tsx';
+import { StudioSidebar, type StudioSection } from '@/components/studio/StudioSidebar.tsx';
+import { OverviewSection } from '@/components/studio/OverviewSection.tsx';
 import { ColorGrid } from '@/components/palette/ColorGrid.tsx';
 import { PermalinkBar } from '@/components/palette/PermalinkBar.tsx';
 import { ShadesView } from '@/components/shades/ShadesView.tsx';
@@ -21,6 +22,26 @@ import { getPaletteData, updatePalette, generateVariation } from '@/lib/api.ts';
 import { normalizePaletteColors } from '@/lib/palette-utils.ts';
 import type { PaletteKey } from '@/lib/palette-utils.ts';
 
+const SECTIONS: StudioSection[] = [
+  { id: 'overview', label: 'Overview', icon: Sparkles },
+  { id: 'palette', label: 'Palette', icon: PaletteIcon },
+  { id: 'shades', label: 'Shades', icon: Layers },
+  { id: 'accessibility', label: 'Accessibility', icon: Eye },
+  { id: 'tokens', label: 'Tokens', icon: Type },
+  { id: 'demos', label: 'Demos', icon: LayoutGrid },
+  { id: 'handoff', label: 'Handoff', icon: Download },
+];
+
+const SECTION_META: Record<string, { title: string; desc: string }> = {
+  overview: { title: 'Overview', desc: 'Your generated brand system at a glance.' },
+  palette: { title: 'Palette', desc: 'The eight semantic roles — click a swatch to fine-tune.' },
+  shades: { title: 'Shades', desc: 'A 10-step tonal ramp for every role.' },
+  accessibility: { title: 'Accessibility', desc: 'WCAG contrast for every pair, in light and dark.' },
+  tokens: { title: 'Tokens', desc: 'Typography, spacing, radii and shadows.' },
+  demos: { title: 'Demos', desc: 'Your theme applied to real interfaces.' },
+  handoff: { title: 'Handoff', desc: 'Export the tokens and the AI constraint packs.' },
+};
+
 export function PalettePage() {
   const { permalink } = useParams<{ permalink: string }>();
   const navigate = useNavigate();
@@ -28,6 +49,7 @@ export function PalettePage() {
   const { isDark, toggleDark } = useDarkMode();
   const { session } = useAuth();
   const [variationLoading, setVariationLoading] = useState(false);
+  const [active, setActive] = useState('overview');
 
   useEffect(() => {
     if (!permalink) return;
@@ -134,62 +156,46 @@ export function PalettePage() {
       <GlassCard>
         <TopBar actions={actions} />
 
-        {/* Header */}
-        <div className="px-15 pt-10 max-md:px-6 max-md:pt-6">
-          <h1
-            className="font-heading font-bold text-5xl leading-[56px] mb-2 max-md:text-[32px] max-md:leading-10"
-            style={{ color: isDark ? '#e5e5e5' : '#1B1A18' }}
-          >
-            {keywords ? `\u201C${keywords}\u201D` : 'Your Color Palette'}
-          </h1>
-          <ul className="list-none p-0 m-0 flex flex-wrap gap-3 mb-0">
-            {(['primary', 'secondary', 'accent', 'warning', 'danger', 'success', 'info', 'neutral'] as PaletteKey[]).map(key => {
-              const c = colors[key];
-              if (!c?.description) return null;
-              return (
-                <li key={key} className="text-base leading-6" style={{ color: isDark ? '#d1d5db' : '#1B1A18' }}>
-                  <strong>{key.charAt(0).toUpperCase() + key.slice(1)}:</strong> {c.description}
-                </li>
-              );
-            })}
-          </ul>
-        </div>
+        <div className="flex flex-1 min-h-0 border-t border-black/[0.06] dark:border-white/[0.08] max-md:flex-col">
+          <StudioSidebar
+            sections={SECTIONS}
+            active={active}
+            onSelect={setActive}
+            colors={colors}
+            keywords={keywords}
+          />
 
-        {/* Body */}
-        <div className="flex-1 px-15 py-8 pb-15 max-md:px-6 max-md:py-4 max-md:pb-8">
-          <Tabs defaultValue="palette">
-            <TabsList className="mb-6">
-              <TabsTrigger value="palette">Palette</TabsTrigger>
-              <TabsTrigger value="shades">Shades</TabsTrigger>
-              <TabsTrigger value="accessibility">Accessibility</TabsTrigger>
-              <TabsTrigger value="tokens">Tokens</TabsTrigger>
-              <TabsTrigger value="demo">Demo</TabsTrigger>
-            </TabsList>
+          <main className="flex-1 min-w-0 px-12 py-9 pb-14 max-md:px-6 max-md:py-6">
+            <div className="mb-7">
+              <h1 className="font-heading font-bold text-[28px] leading-tight text-[#1B1A18] dark:text-[#e5e5e5]">
+                {SECTION_META[active].title}
+              </h1>
+              <p className="text-[15px] text-[#6b7280] dark:text-[#9ca3af] mt-1">
+                {SECTION_META[active].desc}
+              </p>
+            </div>
 
-            <TabsContent value="palette">
-              <ColorGrid colors={colors} onColorChange={handleColorChange} />
-              {permalink && <PermalinkBar permalink={permalink} />}
-            </TabsContent>
+            {active === 'overview' && <OverviewSection colors={colors} style={style} />}
 
-            <TabsContent value="shades">
-              <ShadesView colors={colors} />
-            </TabsContent>
+            {active === 'palette' && (
+              <>
+                <ColorGrid colors={colors} onColorChange={handleColorChange} />
+                {permalink && <PermalinkBar permalink={permalink} />}
+              </>
+            )}
 
-            <TabsContent value="accessibility">
-              <AccessibilityPanel colors={colors} />
-            </TabsContent>
+            {active === 'shades' && <ShadesView colors={colors} />}
+            {active === 'accessibility' && <AccessibilityPanel colors={colors} />}
+            {active === 'tokens' && <TokensPanel colors={colors} style={style} />}
+            {active === 'demos' && <DemoView colors={colors} style={style} />}
 
-            <TabsContent value="tokens">
-              <TokensPanel colors={colors} style={style} />
-            </TabsContent>
-
-            <TabsContent value="demo">
-              <DemoView colors={colors} style={style} />
-            </TabsContent>
-          </Tabs>
-
-          <ExportSection colors={colors} style={style} />
-          <ConstraintPackSection colors={colors} vibe={keywords} permalink={permalink} style={style} />
+            {active === 'handoff' && (
+              <div className="flex flex-col">
+                <ExportSection colors={colors} style={style} />
+                <ConstraintPackSection colors={colors} vibe={keywords} permalink={permalink} style={style} />
+              </div>
+            )}
+          </main>
         </div>
       </GlassCard>
     </div>
