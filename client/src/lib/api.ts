@@ -75,3 +75,58 @@ export async function getMyThemes(token: string): Promise<MyThemeRow[]> {
   const data = await response.json();
   return data.themes || [];
 }
+
+// --- Teams (Phase 3.2) ---
+
+export interface Team {
+  id: string;
+  name: string;
+  invite_code?: string;
+  role?: string;
+}
+
+async function jsonError(res: Response, fallback: string): Promise<string> {
+  const body = await res.json().catch(() => ({}));
+  return body.error || fallback;
+}
+
+export async function getTeams(token: string): Promise<Team[]> {
+  const res = await fetch('/api/teams', { headers: authHeaders(token) });
+  if (!res.ok) throw new Error(await jsonError(res, 'Failed to load teams'));
+  return (await res.json()).teams || [];
+}
+
+export async function createTeam(name: string, token: string): Promise<Team> {
+  const res = await fetch('/api/teams', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...authHeaders(token) },
+    body: JSON.stringify({ name }),
+  });
+  if (!res.ok) throw new Error(await jsonError(res, 'Failed to create team'));
+  return (await res.json()).team;
+}
+
+export async function joinTeam(code: string, token: string): Promise<Team> {
+  const res = await fetch('/api/teams/join', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...authHeaders(token) },
+    body: JSON.stringify({ code }),
+  });
+  if (!res.ok) throw new Error(await jsonError(res, 'Failed to join team'));
+  return (await res.json()).team;
+}
+
+export async function getTeamThemes(teamId: string, token: string): Promise<MyThemeRow[]> {
+  const res = await fetch(`/api/teams/${teamId}/themes`, { headers: authHeaders(token) });
+  if (!res.ok) throw new Error(await jsonError(res, 'Failed to load team themes'));
+  return (await res.json()).themes || [];
+}
+
+export async function shareThemeToTeam(permalink: string, teamId: string, token: string): Promise<void> {
+  const res = await fetch('/api/theme/share', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...authHeaders(token) },
+    body: JSON.stringify({ permalink, teamId }),
+  });
+  if (!res.ok) throw new Error(await jsonError(res, 'Failed to share theme'));
+}

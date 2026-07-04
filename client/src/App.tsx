@@ -6,6 +6,8 @@ import { PaletteContext, usePaletteReducer } from '@/hooks/use-palette.ts';
 import { HomePage } from '@/pages/HomePage.tsx';
 import { PalettePage } from '@/pages/PalettePage.tsx';
 import { MyThemesPage } from '@/pages/MyThemesPage.tsx';
+import { TeamsPage } from '@/pages/TeamsPage.tsx';
+import { JoinPage } from '@/pages/JoinPage.tsx';
 
 function PalettePageWrapper() {
   const { state, dispatch } = usePaletteReducer();
@@ -26,6 +28,8 @@ export default function App() {
               <Route path="/" element={<HomePage />} />
               <Route path="/palette/:permalink" element={<PalettePageWrapper />} />
               <Route path="/my-themes" element={<MyThemesPage />} />
+              <Route path="/teams" element={<TeamsPage />} />
+              <Route path="/join/:code" element={<JoinPage />} />
             </Routes>
           </TooltipProvider>
         </DarkModeProvider>

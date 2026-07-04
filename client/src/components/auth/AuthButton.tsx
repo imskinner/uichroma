@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { LayoutGrid, LogOut, ChevronDown } from 'lucide-react';
+import { LayoutGrid, LogOut, ChevronDown, Users } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth.tsx';
 import { AuthModal } from './AuthModal.tsx';
 
@@ -32,6 +32,13 @@ export function AuthButton() {
                 className="flex items-center gap-2 px-3 py-2 text-sm text-[#374151] dark:text-[#e5e5e5] hover:bg-black/5 dark:hover:bg-white/5"
               >
                 <LayoutGrid size={15} /> My Themes
+              </Link>
+              <Link
+                to="/teams"
+                onClick={() => setMenuOpen(false)}
+                className="flex items-center gap-2 px-3 py-2 text-sm text-[#374151] dark:text-[#e5e5e5] hover:bg-black/5 dark:hover:bg-white/5"
+              >
+                <Users size={15} /> Teams
               </Link>
               <button
                 onClick={() => {

@@ -47,3 +47,29 @@ drop policy if exists "owners update their themes" on themes;
 create policy "owners update their themes"
   on themes for update
   using (auth.uid() = user_id);
+
+-- --- Teams (Phase 3.2): shared brand library ---
+create table if not exists teams (
+  id           uuid primary key default gen_random_uuid(),
+  name         text not null,
+  owner_id     uuid not null,                 -- references auth.users
+  invite_code  text unique not null,          -- shareable join link code
+  created_at   timestamptz not null default now()
+);
+
+create table if not exists team_members (
+  team_id    uuid not null references teams(id) on delete cascade,
+  user_id    uuid not null,                   -- references auth.users
+  role       text not null default 'member',  -- 'owner' | 'member'
+  created_at timestamptz not null default now(),
+  primary key (team_id, user_id)
+);
+create index if not exists team_members_user_idx on team_members (user_id);
+
+alter table themes add column if not exists team_id uuid references teams(id) on delete set null;
+create index if not exists themes_team_idx on themes (team_id);
+
+-- RLS on with no permissive policies: teams/team_members are reachable only via the
+-- service-role Express API (which bypasses RLS). The API enforces membership in code.
+alter table teams enable row level security;
+alter table team_members enable row level security;

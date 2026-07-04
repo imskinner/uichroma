@@ -13,6 +13,7 @@ import { TokensPanel } from '@/components/tokens/TokensPanel.tsx';
 import { DemoView } from '@/components/demo/DemoView.tsx';
 import { ExportSection } from '@/components/export/ExportSection.tsx';
 import { ConstraintPackSection } from '@/components/export/ConstraintPackSection.tsx';
+import { ShareToTeamButton } from '@/components/teams/ShareToTeamButton.tsx';
 import { usePalette } from '@/hooks/use-palette.ts';
 import { useDarkMode } from '@/hooks/use-dark-mode.tsx';
 import { useAuth } from '@/hooks/use-auth.tsx';
@@ -74,6 +75,7 @@ export function PalettePage() {
 
   const actions = (
     <>
+      {permalink && <ShareToTeamButton permalink={permalink} />}
       {isDirty && (
         <button
           onClick={handleSave}

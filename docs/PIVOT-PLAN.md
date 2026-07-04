@@ -229,9 +229,17 @@ sub-views at once — so sharp↔pill corners visibly change per theme (circles/
   page canonicalizes legacy MD5 URLs to the slug (`navigate(..., {replace:true})`). Old MD5 links
   + the Figma plugin keep working (legacy rows have `slug=null`).
 
-### 3.2 — Team brand library
-- `teams`, `team_members`, `themes.team_id`. Shared brand the whole team (and their agents via
-  MCP) pulls from. This is the sticky, paid, defensible layer.
+### 3.2 — Team brand library (DONE 2026-06-29)
+- Tables `teams` (name, owner_id, unique `invite_code`), `team_members` (team_id, user_id, role),
+  and `themes.team_id`. **Roles:** owner + member. **Join:** shareable invite link
+  (`/join/<code>` → auto-joins a signed-in user). **Sharing:** explicit "Share to team" on a theme
+  (owner-only, must be a team member) sets `themes.team_id`.
+- API (all auth-gated, service-role + in-code membership checks): `GET/POST /api/teams`,
+  `POST /api/teams/join`, `GET /api/teams/:id/themes` (members only), `POST /api/theme/share`.
+- Client: `TeamsPage` (`/teams`: create, list w/ copy-invite-link, join, view a team's shared
+  themes), `JoinPage` (`/join/:code`), `ShareToTeamButton` on the palette page (shown only when you
+  have teams), Teams link in the user menu. RLS on the new tables (no policies → API-only access).
+- Verified end-to-end (2 admin-created users → create/join/share/team-themes + 403 ownership).
 
 ### 3.3 — Billing
 - Stripe. Free / Pro / Team tiers (see `STRATEGY.md §6`). Gate: saved themes count, private

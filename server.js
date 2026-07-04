@@ -15,6 +15,13 @@ const {
   getUserId,
   getThemeOwner,
   getThemesByUser,
+  createTeam,
+  getTeamsForUser,
+  getTeamByInviteCode,
+  addTeamMember,
+  getTeamRole,
+  getTeamThemes,
+  shareThemeToTeam,
 } = require('./db');
 
 const app = express();
@@ -187,6 +194,94 @@ app.get('/api/myThemes', async (req, res) => {
   } catch (error) {
     console.error('Error in /api/myThemes:', error);
     res.status(500).json({ error: 'Failed to load your themes.' });
+  }
+});
+
+// --- Teams (Phase 3.2) ---
+
+// List the signed-in user's teams
+app.get('/api/teams', async (req, res) => {
+  try {
+    const userId = await getUserId(bearerToken(req));
+    if (!userId) return res.status(401).json({ error: 'Not authenticated.' });
+    const teams = await getTeamsForUser(userId);
+    res.json({ teams });
+  } catch (error) {
+    console.error('Error in GET /api/teams:', error);
+    res.status(500).json({ error: 'Failed to load teams.' });
+  }
+});
+
+// Create a team (the caller becomes its owner)
+app.post('/api/teams', async (req, res) => {
+  try {
+    const userId = await getUserId(bearerToken(req));
+    if (!userId) return res.status(401).json({ error: 'Not authenticated.' });
+    const name = (req.body.name || '').trim();
+    if (!name) return res.status(400).json({ error: 'A team name is required.' });
+    const inviteCode = crypto.randomBytes(9).toString('base64url');
+    const team = await createTeam({ name, ownerId: userId, inviteCode });
+    res.json({ team: { id: team.id, name: team.name, invite_code: team.invite_code, role: 'owner' } });
+  } catch (error) {
+    console.error('Error in POST /api/teams:', error);
+    res.status(500).json({ error: 'Failed to create team.' });
+  }
+});
+
+// Join a team by its invite code
+app.post('/api/teams/join', async (req, res) => {
+  try {
+    const userId = await getUserId(bearerToken(req));
+    if (!userId) return res.status(401).json({ error: 'Not authenticated.' });
+    const code = (req.body.code || '').trim();
+    if (!code) return res.status(400).json({ error: 'An invite code is required.' });
+    const team = await getTeamByInviteCode(code);
+    if (!team) return res.status(404).json({ error: 'Invite not found.' });
+    await addTeamMember(team.id, userId, 'member');
+    res.json({ team: { id: team.id, name: team.name } });
+  } catch (error) {
+    console.error('Error in POST /api/teams/join:', error);
+    res.status(500).json({ error: 'Failed to join team.' });
+  }
+});
+
+// A team's shared themes (members only)
+app.get('/api/teams/:teamId/themes', async (req, res) => {
+  try {
+    const userId = await getUserId(bearerToken(req));
+    if (!userId) return res.status(401).json({ error: 'Not authenticated.' });
+    const role = await getTeamRole(req.params.teamId, userId);
+    if (!role) return res.status(403).json({ error: 'You are not a member of this team.' });
+    const themes = await getTeamThemes(req.params.teamId);
+    res.json({ themes });
+  } catch (error) {
+    console.error('Error in GET /api/teams/:teamId/themes:', error);
+    res.status(500).json({ error: 'Failed to load team themes.' });
+  }
+});
+
+// Share a theme to a team (must own the theme and be a member of the team)
+app.post('/api/theme/share', async (req, res) => {
+  try {
+    const userId = await getUserId(bearerToken(req));
+    if (!userId) return res.status(401).json({ error: 'Not authenticated.' });
+    const { permalink, teamId } = req.body;
+    if (!permalink || !teamId) {
+      return res.status(400).json({ error: 'permalink and teamId are required.' });
+    }
+    const owner = await getThemeOwner(permalink);
+    if (owner === undefined) return res.status(404).json({ error: 'Theme not found.' });
+    if (owner !== userId) {
+      return res.status(403).json({ error: 'You can only share themes you own.' });
+    }
+    const role = await getTeamRole(teamId, userId);
+    if (!role) return res.status(403).json({ error: 'You are not a member of this team.' });
+    const shared = await shareThemeToTeam(permalink, teamId);
+    if (!shared) return res.status(404).json({ error: 'Theme not found.' });
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error in POST /api/theme/share:', error);
+    res.status(500).json({ error: 'Failed to share theme.' });
   }
 });
 
