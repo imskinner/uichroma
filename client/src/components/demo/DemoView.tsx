@@ -4,7 +4,6 @@ import { buildTheme, type Style } from '@uichroma/core/theme';
 import type { PaletteColors } from '@/lib/palette-utils.ts';
 import { DemoSettingsProvider, useDemoSettings } from '@/hooks/use-demo-settings.tsx';
 import { DemoToolbar } from './DemoToolbar.tsx';
-import { DemoComponents } from './DemoComponents.tsx';
 import { DemoLanding } from './DemoLanding.tsx';
 import { DemoDashboard } from './DemoDashboard.tsx';
 import { DemoMobile } from './DemoMobile.tsx';
@@ -33,19 +32,13 @@ function DemoContent({ colors }: { colors: PaletteColors }) {
   return (
     <div className="demo-themed" style={rootStyle}>
       <DemoToolbar />
-      <Tabs defaultValue="components">
+      <Tabs defaultValue="landing">
         <TabsList>
-          <TabsTrigger value="components">Components</TabsTrigger>
           <TabsTrigger value="landing">Landing Page</TabsTrigger>
           <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
           <TabsTrigger value="mobile">Mobile App</TabsTrigger>
           <TabsTrigger value="blog">Blog</TabsTrigger>
         </TabsList>
-        <TabsContent value="components">
-          <div className="rounded-lg overflow-hidden" style={{ ...wrapperStyle, padding: isDark ? 16 : 0 }}>
-            <DemoComponents colors={colors} />
-          </div>
-        </TabsContent>
         <TabsContent value="landing">
           <div className="rounded-lg overflow-hidden" style={{ ...wrapperStyle, padding: isDark ? 16 : 0 }}>
             <DemoLanding colors={colors} />

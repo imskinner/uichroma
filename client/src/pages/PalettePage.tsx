@@ -1,6 +1,6 @@
 import { useEffect, useCallback, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Sparkles, Shuffle, Moon, Sun, Palette as PaletteIcon, Layers, Eye, Type, LayoutGrid, Download } from 'lucide-react';
+import { Sparkles, Shuffle, Moon, Sun, Palette as PaletteIcon, Layers, Eye, Type, Blocks, LayoutGrid, Download } from 'lucide-react';
 import { BackgroundEllipses } from '@/components/layout/BackgroundEllipses.tsx';
 import { GlassCard } from '@/components/layout/GlassCard.tsx';
 import { TopBar } from '@/components/layout/TopBar.tsx';
@@ -11,6 +11,7 @@ import { PermalinkBar } from '@/components/palette/PermalinkBar.tsx';
 import { ShadesView } from '@/components/shades/ShadesView.tsx';
 import { AccessibilityPanel } from '@/components/accessibility/AccessibilityPanel.tsx';
 import { TokensPanel } from '@/components/tokens/TokensPanel.tsx';
+import { ComponentGallery } from '@/components/studio/ComponentGallery.tsx';
 import { DemoView } from '@/components/demo/DemoView.tsx';
 import { ExportSection } from '@/components/export/ExportSection.tsx';
 import { ConstraintPackSection } from '@/components/export/ConstraintPackSection.tsx';
@@ -28,6 +29,7 @@ const SECTIONS: StudioSection[] = [
   { id: 'shades', label: 'Shades', icon: Layers },
   { id: 'accessibility', label: 'Accessibility', icon: Eye },
   { id: 'tokens', label: 'Tokens', icon: Type },
+  { id: 'components', label: 'Components', icon: Blocks },
   { id: 'demos', label: 'Demos', icon: LayoutGrid },
   { id: 'handoff', label: 'Handoff', icon: Download },
 ];
@@ -38,7 +40,8 @@ const SECTION_META: Record<string, { title: string; desc: string }> = {
   shades: { title: 'Shades', desc: 'A 10-step tonal ramp for every role.' },
   accessibility: { title: 'Accessibility', desc: 'WCAG contrast for every pair, in light and dark.' },
   tokens: { title: 'Tokens', desc: 'Typography, spacing, radii and shadows.' },
-  demos: { title: 'Demos', desc: 'Your theme applied to real interfaces.' },
+  components: { title: 'Components', desc: 'A storybook of every UI component, themed with your brand.' },
+  demos: { title: 'Demos', desc: 'Your theme applied to full interfaces.' },
   handoff: { title: 'Handoff', desc: 'Export the tokens and the AI constraint packs.' },
 };
 
@@ -189,6 +192,7 @@ export function PalettePage() {
               {active === 'shades' && <ShadesView colors={colors} />}
               {active === 'accessibility' && <AccessibilityPanel colors={colors} />}
               {active === 'tokens' && <TokensPanel colors={colors} style={style} />}
+              {active === 'components' && <ComponentGallery colors={colors} style={style} />}
               {active === 'demos' && <DemoView colors={colors} style={style} />}
 
               {active === 'handoff' && (
