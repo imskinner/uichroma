@@ -32,6 +32,15 @@ function bearerToken(req) {
   return h.startsWith('Bearer ') ? h.slice(7) : null;
 }
 
+// Which LLM backs generation: Anthropic when ANTHROPIC_API_KEY is set, else OpenAI (API_KEY).
+// Read per-request so flipping the env var takes effect without a code change.
+function llmConfig() {
+  if (process.env.ANTHROPIC_API_KEY) {
+    return { apiKey: process.env.ANTHROPIC_API_KEY, provider: 'anthropic' };
+  }
+  return { apiKey: process.env.API_KEY, provider: 'openai' };
+}
+
 // Build a human-readable, URL-safe slug from the prompt (uniqueness comes from the suffix).
 function slugify(text) {
   return (
@@ -140,7 +149,8 @@ app.post('/generatePalette', rateLimit, async (req, res) => {
     const feelings = req.body.feelings;
 
     // Generate → score → critique (if needed) → derive neutral + non-color style. All in packages/core.
-    const { colors: paletteData, style, aiResponse } = await runPalettePipeline(feelings, process.env.API_KEY);
+    const { apiKey, provider } = llmConfig();
+    const { colors: paletteData, style, aiResponse } = await runPalettePipeline(feelings, apiKey, { provider });
 
     // Generate MD5 hash for permalink + a human-readable slug (suffix keeps it unique).
     const md5 = crypto.createHash('md5');
@@ -194,9 +204,60 @@ Rules:
 
 Respond ONLY as JSON: {"moods": ["...", "...", "...", "...", "..."]}`;
 
+function sanitizeMoods(raw) {
+  const arr = Array.isArray(raw) ? raw : [];
+  const seen = new Set();
+  const moods = [];
+  for (const m of arr) {
+    if (typeof m !== 'string') continue;
+    const clean = m.trim().toLowerCase();
+    if (clean.length < 2 || clean.length > 22) continue;
+    if (!/^[a-z][a-z -]*$/.test(clean)) continue; // letters, spaces, hyphens only
+    if (seen.has(clean)) continue;
+    seen.add(clean);
+    moods.push(clean);
+    if (moods.length >= 6) break;
+  }
+  return moods;
+}
+
 async function suggestMoodsAI(prompt) {
-  const apiKey = process.env.API_KEY;
-  if (!apiKey) throw new Error('OpenAI API key is not set.');
+  const { apiKey, provider } = llmConfig();
+  if (!apiKey) throw new Error('LLM API key is not set.');
+
+  if (provider === 'anthropic') {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 150,
+        temperature: 0.8,
+        system: MOODS_SYSTEM_PROMPT,
+        messages: [{ role: 'user', content: prompt }],
+        tools: [{
+          name: 'suggest_moods',
+          description: 'Return the list of suggested color moods.',
+          input_schema: {
+            type: 'object',
+            properties: { moods: { type: 'array', items: { type: 'string' } } },
+            required: ['moods'],
+          },
+        }],
+        tool_choice: { type: 'tool', name: 'suggest_moods' },
+      }),
+    });
+    if (!response.ok) throw new Error(`Anthropic API ${response.status}: ${await response.text()}`);
+    const data = await response.json();
+    const block = (data.content || []).find(b => b.type === 'tool_use');
+    return sanitizeMoods(block?.input?.moods);
+  }
+
+  // OpenAI JSON mode.
   const response = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
@@ -222,20 +283,7 @@ async function suggestMoodsAI(prompt) {
   } catch {
     parsed = {};
   }
-  const raw = Array.isArray(parsed.moods) ? parsed.moods : [];
-  const seen = new Set();
-  const moods = [];
-  for (const m of raw) {
-    if (typeof m !== 'string') continue;
-    const clean = m.trim().toLowerCase();
-    if (clean.length < 2 || clean.length > 22) continue;
-    if (!/^[a-z][a-z -]*$/.test(clean)) continue; // letters, spaces, hyphens only
-    if (seen.has(clean)) continue;
-    seen.add(clean);
-    moods.push(clean);
-    if (moods.length >= 6) break;
-  }
-  return moods;
+  return sanitizeMoods(parsed.moods);
 }
 
 app.post('/api/suggestMoods', rateLimitMoods, async (req, res) => {

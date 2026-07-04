@@ -1,6 +1,7 @@
-// The generation engine: GPT-4o function-calling to produce a palette, a deterministic
+// The generation engine: a forced tool/function call to produce a palette, a deterministic
 // score, and a critique call that repairs only flagged colors (accepted only if it scores
-// higher). This whole pipeline is reused by the Express API, the Cloud Function, and the
+// higher). Provider-agnostic — runs on OpenAI or Anthropic behind one interface (chosen by
+// the caller). This whole pipeline is reused by the Express API, the Cloud Function, and the
 // (Phase 1) MCP server — it is the product, so it lives here once.
 
 import { validatePalette } from "./validate";
@@ -9,6 +10,18 @@ import { scoreTheme, normalizeStyle, type Style } from "./theme";
 import type { Palette } from "./types";
 
 const OPENAI_CHAT_URL = "https://api.openai.com/v1/chat/completions";
+const ANTHROPIC_MESSAGES_URL = "https://api.anthropic.com/v1/messages";
+const ANTHROPIC_VERSION = "2023-06-01";
+const DEFAULT_OPENAI_MODEL = "gpt-4o";
+const DEFAULT_ANTHROPIC_MODEL = "claude-sonnet-4-6";
+
+export type LLMProvider = "openai" | "anthropic";
+export interface LLMOptions {
+  /** Which LLM backs generation. Defaults to "openai" for backward compatibility. */
+  provider?: LLMProvider;
+  /** Override the model id; otherwise a sensible default per provider. */
+  model?: string;
+}
 
 const colorSchema = {
   type: "object",
@@ -92,31 +105,110 @@ const styleSchema = {
 } as const;
 
 /** Generation: palette + non-color style in one call. */
-const generateFunction = [
-  {
-    name: "generate_theme",
-    description:
-      "Generate a 7-color UI palette plus the brand's non-color style (fonts, type scale, roundness, density, elevation).",
-    parameters: {
-      type: "object",
-      properties: { ...colorProps, style: styleSchema },
-      required: [...REQUIRED_COLORS, "style"],
-    },
+const GENERATE_TOOL = {
+  name: "generate_theme",
+  description:
+    "Generate a 7-color UI palette plus the brand's non-color style (fonts, type scale, roundness, density, elevation).",
+  parameters: {
+    type: "object",
+    properties: { ...colorProps, style: styleSchema },
+    required: [...REQUIRED_COLORS, "style"],
   },
-];
+};
 
 /** Critique: repair colors only (style is preserved from the original generation). */
-const critiqueFunction = [
-  {
-    name: "generate_palette",
-    description: "Generate a 7-color UI palette with hex, HSL values, and descriptions",
-    parameters: {
-      type: "object",
-      properties: { ...colorProps },
-      required: [...REQUIRED_COLORS],
-    },
+const CRITIQUE_TOOL = {
+  name: "generate_palette",
+  description: "Generate a 7-color UI palette with hex, HSL values, and descriptions",
+  parameters: {
+    type: "object",
+    properties: { ...colorProps },
+    required: [...REQUIRED_COLORS],
   },
-];
+};
+
+/**
+ * One forced tool/function call against OpenAI or Anthropic; returns the model's structured
+ * tool input (the arguments object) or null. Keeps both providers behind one interface so the
+ * rest of the pipeline is identical regardless of which LLM backs it.
+ */
+async function callToolLLM(opts: {
+  apiKey: string;
+  provider: LLMProvider;
+  model: string;
+  system: string;
+  user: string;
+  tool: { name: string; description: string; parameters: unknown };
+  temperature: number;
+  maxTokens: number;
+}): Promise<Record<string, any> | null> {
+  const { apiKey, provider, model, system, user, tool, temperature, maxTokens } = opts;
+
+  if (provider === "anthropic") {
+    const response = await fetch(ANTHROPIC_MESSAGES_URL, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "x-api-key": apiKey,
+        "anthropic-version": ANTHROPIC_VERSION,
+      },
+      body: JSON.stringify({
+        model,
+        max_tokens: maxTokens,
+        temperature,
+        system,
+        messages: [{ role: "user", content: user }],
+        tools: [{ name: tool.name, description: tool.description, input_schema: tool.parameters }],
+        tool_choice: { type: "tool", name: tool.name },
+      }),
+    });
+    if (!response.ok) {
+      const errText = await response.text();
+      console.error(`Anthropic API Error: ${response.status} - ${errText}`);
+      throw new Error("Anthropic API request failed");
+    }
+    const data: any = await response.json();
+    const block = (data.content || []).find((b: any) => b.type === "tool_use");
+    return block ? block.input : null;
+  }
+
+  // Default: OpenAI function calling.
+  const response = await fetch(OPENAI_CHAT_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model,
+      messages: [
+        { role: "system", content: system },
+        { role: "user", content: user },
+      ],
+      functions: [tool],
+      function_call: { name: tool.name },
+      temperature,
+      max_tokens: maxTokens,
+    }),
+  });
+  if (!response.ok) {
+    const errText = await response.text();
+    console.error(`OpenAI API Error: ${response.status} - ${errText}`);
+    throw new Error("OpenAI API request failed");
+  }
+  const data: any = await response.json();
+  const msg = data.choices?.[0]?.message;
+  if (msg?.function_call) return JSON.parse(msg.function_call.arguments);
+  return null;
+}
+
+/** Resolve the model id for a provider (explicit override wins). */
+function resolveModel(opts: LLMOptions): { provider: LLMProvider; model: string } {
+  const provider = opts.provider ?? "openai";
+  const model =
+    opts.model ?? (provider === "anthropic" ? DEFAULT_ANTHROPIC_MODEL : DEFAULT_OPENAI_MODEL);
+  return { provider, model };
+}
 
 export const PALETTE_SYSTEM_PROMPT = `You are an elite brand color designer. From a short prompt describing a project, brand, mood, or aesthetic, design a vibrant, cohesive, DISTINCTIVE 7-role UI palette that a senior designer would ship — one that could only belong to THIS brief.
 
@@ -152,54 +244,40 @@ export interface GenerationResult {
   aiResponse: string;
 }
 
-/** Call GPT-4o once and return a validated palette + normalized non-color style. */
+/** Call the LLM once and return a validated palette + normalized non-color style. */
 export async function generateColorPalette(
   feelings: string,
   apiKey: string,
+  opts: LLMOptions = {},
 ): Promise<GenerationResult> {
-  if (!apiKey) throw new Error("OpenAI API key is not set.");
+  if (!apiKey) throw new Error("LLM API key is not set.");
+  const { provider, model } = resolveModel(opts);
 
-  const response = await fetch(OPENAI_CHAT_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: "gpt-4o",
-      messages: [
-        { role: "system", content: PALETTE_SYSTEM_PROMPT },
-        { role: "user", content: feelings },
-      ],
-      functions: generateFunction,
-      function_call: { name: "generate_theme" },
-      temperature: 0.75,
-    }),
+  const args = await callToolLLM({
+    apiKey,
+    provider,
+    model,
+    system: PALETTE_SYSTEM_PROMPT,
+    user: feelings,
+    tool: GENERATE_TOOL,
+    temperature: 0.75,
+    maxTokens: 2000,
   });
+  if (!args) throw new Error("Model did not return a tool call");
 
-  if (!response.ok) {
-    const errText = await response.text();
-    console.error(`OpenAI API Error: ${response.status} - ${errText}`);
-    throw new Error("OpenAI API request failed");
-  }
-
-  const data: any = await response.json();
-  const choiceMsg = data.choices?.[0]?.message;
-  if (choiceMsg?.function_call) {
-    const { style: rawStyle, ...colorArgs } = JSON.parse(choiceMsg.function_call.arguments);
-    const validated = validatePalette(colorArgs as Palette);
-    const style = normalizeStyle(rawStyle);
-    return { colors: validated, style, aiResponse: JSON.stringify(validated) };
-  }
-  throw new Error("OpenAI did not return a function call");
+  const { style: rawStyle, ...colorArgs } = args;
+  const validated = validatePalette(colorArgs as Palette);
+  const style = normalizeStyle(rawStyle);
+  return { colors: validated, style, aiResponse: JSON.stringify(validated) };
 }
 
-/** Re-prompt GPT-4o to repair only the flagged issues. Returns null on any failure. */
+/** Re-prompt the LLM to repair only the flagged issues. Returns null on any failure. */
 export async function critiquePalette(
   feelings: string,
   colors: Palette,
   issues: string[],
   apiKey: string,
+  opts: LLMOptions = {},
 ): Promise<Palette | null> {
   const compactPalette: Record<string, { hex: string; h: number; s: number; l: number }> = {};
   for (const key of [
@@ -223,31 +301,19 @@ export async function critiquePalette(
   )}\n\nIssues to fix:\n${issueList}`;
 
   try {
-    const response = await fetch(OPENAI_CHAT_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: "gpt-4o",
-        messages: [
-          { role: "system", content: CRITIQUE_SYSTEM_PROMPT },
-          { role: "user", content: userMsg },
-        ],
-        functions: critiqueFunction,
-        function_call: { name: "generate_palette" },
-        temperature: 0.6,
-      }),
+    const { provider, model } = resolveModel(opts);
+    const args = await callToolLLM({
+      apiKey,
+      provider,
+      model,
+      system: CRITIQUE_SYSTEM_PROMPT,
+      user: userMsg,
+      tool: CRITIQUE_TOOL,
+      temperature: 0.6,
+      maxTokens: 1500,
     });
-    if (!response.ok) return null;
-    const data: any = await response.json();
-    const choiceMsg = data.choices?.[0]?.message;
-    if (choiceMsg?.function_call) {
-      const args = JSON.parse(choiceMsg.function_call.arguments) as Palette;
-      return validatePalette(args);
-    }
-    return null;
+    if (!args) return null;
+    return validatePalette(args as Palette);
   } catch (err) {
     console.error("Critique call failed:", (err as Error).message);
     return null;
@@ -262,10 +328,12 @@ export async function critiquePalette(
 export async function runPalettePipeline(
   feelings: string,
   apiKey: string,
+  opts: LLMOptions = {},
 ): Promise<GenerationResult> {
   const { colors: generated, style, aiResponse } = await generateColorPalette(
     feelings,
     apiKey,
+    opts,
   );
   let colors = generated;
 
@@ -284,6 +352,7 @@ export async function runPalettePipeline(
       colors,
       firstScore.issues,
       apiKey,
+      opts,
     );
     if (critiqued) {
       const secondScore = scoreTheme(critiqued);
