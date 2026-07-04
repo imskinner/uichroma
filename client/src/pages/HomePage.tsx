@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, type CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Globe, Sparkles, ArrowRight, Wand2, Palette, Layers, ShieldCheck,
@@ -37,6 +37,24 @@ const EXAMPLES = [
   { label: 'Cyberpunk arcade', prompt: 'A neon cyberpunk arcade at night — electric magenta, cyan and deep indigo', swatches: ['#0B0F2A', '#FF2E97', '#00E5FF', '#8A5CFF', '#F5D90A'] },
   { label: 'Trustworthy fintech', prompt: 'A fintech app that feels trustworthy and modern, with a bold accent for CTAs', swatches: ['#0A2540', '#1B6EF3', '#00C08B', '#F5A623', '#E8EDF5'] },
 ];
+
+// Sparkle positions spread around the input's perimeter; the delay (∝ position) makes the
+// twinkles chase around the box like a wave.
+const SPARKLES = Array.from({ length: 20 }, (_, i) => {
+  const t = i / 20;
+  let left = 0;
+  let top = 0;
+  if (t < 0.25) { left = (t / 0.25) * 100; top = 0; }
+  else if (t < 0.5) { left = 100; top = ((t - 0.25) / 0.25) * 100; }
+  else if (t < 0.75) { left = 100 - ((t - 0.5) / 0.25) * 100; top = 100; }
+  else { left = 0; top = 100 - ((t - 0.75) / 0.25) * 100; }
+  return {
+    left: `${left}%`,
+    top: `${top}%`,
+    size: `${5 + (i % 3) * 2}px`,
+    delay: `${(t * 1.8).toFixed(2)}s`,
+  };
+});
 
 const TOOLS = [
   { name: 'v0', file: 'v0' },
@@ -137,7 +155,15 @@ export function HomePage() {
 
           {/* Prompt box — the core action */}
           <div className="w-full max-w-[680px] mt-9">
-            <div className="flex flex-col border border-[#DADADA] dark:border-white/15 rounded-2xl bg-white dark:bg-white/5 p-4 shadow-[0_10px_40px_-16px_rgba(0,0,0,0.25)] transition-colors focus-within:border-[#008CF4] focus-within:ring-2 focus-within:ring-[#008CF4]/30 text-left">
+            <div className="prompt-fx">
+              <div className="prompt-fx__aura" aria-hidden="true" />
+              <div className="prompt-fx__beam" aria-hidden="true" />
+              <div className="prompt-fx__sparkles" aria-hidden="true">
+                {SPARKLES.map((sp, i) => (
+                  <span key={i} style={{ left: sp.left, top: sp.top, animationDelay: sp.delay, '--s': sp.size } as unknown as CSSProperties} />
+                ))}
+              </div>
+              <div className="relative z-[2] flex flex-col border border-[#DADADA] dark:border-white/15 rounded-2xl bg-white dark:bg-white/5 p-4 shadow-[0_10px_40px_-16px_rgba(0,0,0,0.25)] transition-colors focus-within:border-[#008CF4] text-left">
               <div className="flex flex-row items-start gap-3">
                 <Globe className="shrink-0 mt-1.5 text-[#7A7A7A]" size={22} />
                 <textarea
@@ -185,6 +211,7 @@ export function HomePage() {
                       : null}
                 </div>
               )}
+              </div>
             </div>
             <button
               onClick={() => generate(composePrompt())}

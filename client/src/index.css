@@ -202,6 +202,129 @@
   }
 }
 
+/* --- Prompt focus effects: a blue light beam, pulsing aura, and a sparkle wave --- */
+@property --fx-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+.prompt-fx {
+  position: relative;
+}
+.prompt-fx__aura,
+.prompt-fx__beam,
+.prompt-fx__sparkles {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.45s ease;
+}
+.prompt-fx__aura {
+  inset: -16px;
+  z-index: 0;
+  border-radius: 28px;
+  background: radial-gradient(62% 72% at 50% 50%, rgba(0, 140, 244, 0.32), rgba(77, 184, 255, 0.12) 55%, transparent 72%);
+  filter: blur(16px);
+  animation: fx-pulse 2.8s ease-in-out infinite;
+  animation-play-state: paused;
+}
+.prompt-fx__beam {
+  inset: -2px;
+  z-index: 1;
+  border-radius: 18px;
+  padding: 2px;
+  background: conic-gradient(
+    from var(--fx-angle),
+    transparent 0deg,
+    transparent 205deg,
+    #4db8ff 250deg,
+    #eaf6ff 278deg,
+    #008cf4 302deg,
+    transparent 342deg,
+    transparent 360deg
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  animation: fx-spin 3.6s linear infinite;
+  animation-play-state: paused;
+}
+.prompt-fx__sparkles {
+  inset: -12px;
+  z-index: 3;
+}
+.prompt-fx__sparkles span {
+  position: absolute;
+  width: var(--s, 7px);
+  height: var(--s, 7px);
+  margin: calc(var(--s, 7px) / -2);
+  background: radial-gradient(circle, #f2f9ff 0%, #7cc6ff 42%, rgba(0, 140, 244, 0) 72%);
+  clip-path: polygon(50% 0%, 58% 42%, 100% 50%, 58% 58%, 50% 100%, 42% 58%, 0% 50%, 42% 42%);
+  filter: drop-shadow(0 0 4px rgba(0, 140, 244, 0.9));
+  opacity: 0;
+  transform: scale(0);
+  animation: fx-twinkle 1.8s ease-in-out infinite;
+  animation-play-state: paused;
+}
+
+.prompt-fx:focus-within .prompt-fx__aura,
+.prompt-fx:focus-within .prompt-fx__beam,
+.prompt-fx:focus-within .prompt-fx__sparkles {
+  opacity: 1;
+}
+.prompt-fx:focus-within .prompt-fx__aura,
+.prompt-fx:focus-within .prompt-fx__beam,
+.prompt-fx:focus-within .prompt-fx__sparkles span {
+  animation-play-state: running;
+}
+
+@keyframes fx-spin {
+  to {
+    --fx-angle: 360deg;
+  }
+}
+@keyframes fx-pulse {
+  0%,
+  100% {
+    transform: scale(0.985);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.02);
+    opacity: 1;
+  }
+}
+@keyframes fx-twinkle {
+  0% {
+    opacity: 0;
+    transform: scale(0) rotate(0deg);
+  }
+  35% {
+    opacity: 1;
+    transform: scale(1) rotate(35deg);
+  }
+  70% {
+    opacity: 0.5;
+    transform: scale(0.7) rotate(70deg);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0) rotate(90deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .prompt-fx__aura,
+  .prompt-fx__beam,
+  .prompt-fx__sparkles span {
+    animation: none;
+  }
+  .prompt-fx:focus-within .prompt-fx__beam {
+    background: none;
+  }
+}
+
 @keyframes drift-1 {
   0%, 100% { transform: translate(0, 0) scale(1); }
   25%      { transform: translate(60px, 40px) scale(1.05); }
