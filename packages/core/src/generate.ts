@@ -282,7 +282,10 @@ export async function generateColorPalette(
     (k) => !(colorArgs as any)[k] || !(colorArgs as any)[k].hex,
   );
   if (missing.length > 0) {
-    throw new Error(`Model returned an incomplete palette (missing: ${missing.join(", ")}).`);
+    throw new Error(
+      `Model returned an incomplete palette (missing: ${missing.join(", ")}). ` +
+        `argsKeys=[${Object.keys(args).join(",")}] raw=${JSON.stringify(args).slice(0, 700)}`,
+    );
   }
   const validated = validatePalette(colorArgs as Palette);
   const style = normalizeStyle(rawStyle);
