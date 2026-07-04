@@ -1,13 +1,13 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Globe, Sparkles, ArrowRight, Wand2, Palette, Layers, ShieldCheck,
-  FileJson, Plug2, FileCode2, Check, MessageSquare,
+  FileJson, Plug2, FileCode2, Check, MessageSquare, Plus, X,
 } from 'lucide-react';
 import { BackgroundEllipses } from '@/components/layout/BackgroundEllipses.tsx';
 import { GlassCard } from '@/components/layout/GlassCard.tsx';
 import { TopBar } from '@/components/layout/TopBar.tsx';
-import { generatePalette } from '@/lib/api.ts';
+import { generatePalette, suggestMoods } from '@/lib/api.ts';
 import { useAuth } from '@/hooks/use-auth.tsx';
 
 const CHIPS = [
@@ -50,9 +50,39 @@ const TOOLS = [
 export function HomePage() {
   const [prompt, setPrompt] = useState('');
   const [loading, setLoading] = useState(false);
+  const [moods, setMoods] = useState<string[]>([]);
+  const [selectedMoods, setSelectedMoods] = useState<string[]>([]);
+  const [moodsLoading, setMoodsLoading] = useState(false);
   const navigate = useNavigate();
   const { session } = useAuth();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Suggest color "moods" from the in-progress description (debounced + abortable).
+  useEffect(() => {
+    const text = prompt.trim();
+    if (text.length < 4) { setMoods([]); setMoodsLoading(false); return; }
+    const controller = new AbortController();
+    const timer = setTimeout(async () => {
+      setMoodsLoading(true);
+      try {
+        const result = await suggestMoods(text, controller.signal);
+        setMoods(result);
+      } catch {
+        if (!controller.signal.aborted) setMoods([]);
+      } finally {
+        if (!controller.signal.aborted) setMoodsLoading(false);
+      }
+    }, 700);
+    return () => { clearTimeout(timer); controller.abort(); };
+  }, [prompt]);
+
+  // The prompt actually sent = description + any chosen moods (richer brief → better palette).
+  const composePrompt = () => {
+    const base = prompt.trim();
+    return selectedMoods.length ? `${base} — mood: ${selectedMoods.join(', ')}` : base;
+  };
+  const addMood = (m: string) => setSelectedMoods(prev => (prev.includes(m) ? prev : [...prev, m]));
+  const removeMood = (m: string) => setSelectedMoods(prev => prev.filter(x => x !== m));
 
   const generate = async (text: string) => {
     const value = text.trim();
@@ -75,12 +105,15 @@ export function HomePage() {
 
   const fillPrompt = (text: string) => {
     setPrompt(text);
+    setSelectedMoods([]);
     textareaRef.current?.focus();
     textareaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   };
 
   const ink = 'text-[#1B1A18] dark:text-[#ECEAE7]';
   const muted = 'text-[#6b7280] dark:text-[#9ca3af]';
+  const suggestions = moods.filter(m => !selectedMoods.includes(m));
+  const showTray = prompt.trim().length >= 3 && (selectedMoods.length > 0 || suggestions.length > 0 || moodsLoading);
 
   return (
     <div className="landing-bg min-h-screen flex items-start justify-center p-10 max-md:p-4 overflow-auto">
@@ -104,20 +137,57 @@ export function HomePage() {
 
           {/* Prompt box — the core action */}
           <div className="w-full max-w-[680px] mt-9">
-            <div className="flex flex-row items-start gap-3 border border-[#DADADA] dark:border-white/15 rounded-2xl bg-white dark:bg-white/5 p-4 shadow-[0_10px_40px_-16px_rgba(0,0,0,0.25)] transition-colors focus-within:border-[#008CF4] focus-within:ring-2 focus-within:ring-[#008CF4]/30 text-left">
-              <Globe className="shrink-0 mt-1.5 text-[#7A7A7A]" size={22} />
-              <textarea
-                ref={textareaRef}
-                value={prompt}
-                onChange={e => setPrompt(e.target.value)}
-                onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) generate(prompt); }}
-                rows={2}
-                placeholder="e.g. A fintech app that feels trustworthy and modern, with a bold accent for CTAs…"
-                className={`flex-1 border-none outline-none text-[17px] leading-7 resize-y min-h-14 bg-transparent placeholder:text-[#85807A] font-sans ${ink}`}
-              />
+            <div className="flex flex-col border border-[#DADADA] dark:border-white/15 rounded-2xl bg-white dark:bg-white/5 p-4 shadow-[0_10px_40px_-16px_rgba(0,0,0,0.25)] transition-colors focus-within:border-[#008CF4] focus-within:ring-2 focus-within:ring-[#008CF4]/30 text-left">
+              <div className="flex flex-row items-start gap-3">
+                <Globe className="shrink-0 mt-1.5 text-[#7A7A7A]" size={22} />
+                <textarea
+                  ref={textareaRef}
+                  value={prompt}
+                  onChange={e => setPrompt(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) generate(composePrompt()); }}
+                  rows={2}
+                  placeholder="e.g. A fintech app that feels trustworthy and modern, with a bold accent for CTAs…"
+                  className={`flex-1 border-none outline-none text-[17px] leading-7 resize-y min-h-14 bg-transparent placeholder:text-[#85807A] font-sans ${ink}`}
+                />
+              </div>
+
+              {/* Mood tray — AI-suggested, tap to add to the brief */}
+              {showTray && (
+                <div className="flex flex-wrap items-center gap-1.5 mt-3.5 pt-3 border-t border-[#EEEBE6] dark:border-white/10">
+                  <span className={`inline-flex items-center gap-1 text-[11px] font-semibold mr-0.5 ${muted}`}>
+                    <Sparkles size={12} className="text-[#008CF4]" /> Moods
+                  </span>
+                  {selectedMoods.map(m => (
+                    <button
+                      key={m}
+                      type="button"
+                      onClick={() => removeMood(m)}
+                      className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full bg-[#008CF4] text-white hover:bg-[#0072C6] transition-colors"
+                    >
+                      {m} <X size={12} />
+                    </button>
+                  ))}
+                  {suggestions.length > 0
+                    ? suggestions.map(m => (
+                        <button
+                          key={m}
+                          type="button"
+                          onClick={() => addMood(m)}
+                          className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full border border-[#D8E8F7] dark:border-white/15 text-[#0072C6] dark:text-[#5cb8ff] bg-[#008CF4]/[0.06] hover:bg-[#008CF4]/[0.14] transition-colors"
+                        >
+                          <Plus size={11} /> {m}
+                        </button>
+                      ))
+                    : moodsLoading
+                      ? [64, 52, 72, 58].map((w, i) => (
+                          <span key={i} className="h-[26px] rounded-full bg-black/[0.06] dark:bg-white/10 animate-pulse" style={{ width: w }} />
+                        ))
+                      : null}
+                </div>
+              )}
             </div>
             <button
-              onClick={() => generate(prompt)}
+              onClick={() => generate(composePrompt())}
               disabled={loading}
               className="flex items-center justify-center gap-2.5 w-full px-8 py-4 mt-3.5 border-none rounded-2xl bg-[#008CF4] text-white font-semibold text-[17px] cursor-pointer transition-colors hover:bg-[#0072C6] disabled:opacity-60 disabled:cursor-not-allowed shadow-[0_10px_28px_-10px_rgba(0,140,244,0.8)]"
             >

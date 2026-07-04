@@ -21,6 +21,18 @@ export async function generatePalette(
   return response.json();
 }
 
+export async function suggestMoods(prompt: string, signal?: AbortSignal): Promise<string[]> {
+  const response = await fetch('/api/suggestMoods', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prompt }),
+    signal,
+  });
+  if (!response.ok) throw new Error(`Failed to suggest moods: ${response.status}`);
+  const data = await response.json();
+  return Array.isArray(data.moods) ? data.moods : [];
+}
+
 export async function getPaletteData(permalink: string): Promise<{
   permalink?: string;
   slug?: string | null;

@@ -85,6 +85,32 @@ const rateSweep = setInterval(() => {
 }, RATE_LIMIT_WINDOW_MS);
 if (rateSweep.unref) rateSweep.unref();
 
+// A separate, more lenient limiter for the cheap mood-suggestion endpoint, which fires as the
+// user types (so it must not consume the generation budget). Its own IP map + sweep.
+const MOODS_RATE_MAX = Number(process.env.MOODS_RATE_MAX) || 40;
+const moodHits = new Map();
+function rateLimitMoods(req, res, next) {
+  const fwd = req.headers['x-forwarded-for'];
+  const ip = (fwd && fwd.split(',')[0].trim()) || req.ip || req.socket.remoteAddress || 'unknown';
+  const now = Date.now();
+  let entry = moodHits.get(ip);
+  if (!entry || now > entry.resetAt) {
+    entry = { count: 0, resetAt: now + 60_000 };
+    moodHits.set(ip, entry);
+  }
+  entry.count++;
+  if (entry.count > MOODS_RATE_MAX) {
+    res.set('Retry-After', '30');
+    return res.status(429).json({ error: 'Too many requests. Please slow down.' });
+  }
+  next();
+}
+const moodSweep = setInterval(() => {
+  const now = Date.now();
+  for (const [ip, entry] of moodHits) if (now > entry.resetAt) moodHits.delete(ip);
+}, 60_000);
+if (moodSweep.unref) moodSweep.unref();
+
 // Get a palette from the database
 async function getPaletteFromDatabase(permalink) {
   try {
@@ -150,6 +176,77 @@ app.post('/generatePalette', rateLimit, async (req, res) => {
       error: 'An error occurred while generating the palette.',
       details: error.message
     });
+  }
+});
+
+// --- Mood suggestions: assists the home-page prompt box ---
+// A richer, mood-qualified brief produces a more distinctive palette. Given the user's
+// in-progress description we suggest a few evocative "moods" they can tap to add.
+const MOODS_SYSTEM_PROMPT = `You are a senior brand designer helping someone describe a brand so an AI can generate a distinctive color palette.
+Given their short description, suggest color "moods": evocative one- or two-word adjectives (tone, feeling, or material) that push the palette toward something specific and fitting — NOT generic filler.
+
+Rules:
+- Return exactly 5 moods, ordered most-fitting first.
+- Prefer concrete, palette-shaping words (e.g. earthy, warm, muted, neon, pastel, moody, premium, playful, organic, industrial, airy, vintage, high-contrast) over vague ones (nice, good, cool, beautiful).
+- Do NOT repeat words already present in the description.
+- Lowercase, no punctuation, each mood 1-2 words.
+- Tailor to the domain: a coffee shop -> earthy, warm, artisanal, cozy, premium; a crypto app -> futuristic, neon, high-contrast, sleek, bold.
+
+Respond ONLY as JSON: {"moods": ["...", "...", "...", "...", "..."]}`;
+
+async function suggestMoodsAI(prompt) {
+  const apiKey = process.env.API_KEY;
+  if (!apiKey) throw new Error('OpenAI API key is not set.');
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+    body: JSON.stringify({
+      model: 'gpt-4o-mini',
+      temperature: 0.8,
+      max_tokens: 120,
+      response_format: { type: 'json_object' },
+      messages: [
+        { role: 'system', content: MOODS_SYSTEM_PROMPT },
+        { role: 'user', content: prompt },
+      ],
+    }),
+  });
+  if (!response.ok) {
+    const errText = await response.text();
+    throw new Error(`OpenAI API ${response.status}: ${errText}`);
+  }
+  const data = await response.json();
+  let parsed = {};
+  try {
+    parsed = JSON.parse(data.choices?.[0]?.message?.content || '{}');
+  } catch {
+    parsed = {};
+  }
+  const raw = Array.isArray(parsed.moods) ? parsed.moods : [];
+  const seen = new Set();
+  const moods = [];
+  for (const m of raw) {
+    if (typeof m !== 'string') continue;
+    const clean = m.trim().toLowerCase();
+    if (clean.length < 2 || clean.length > 22) continue;
+    if (!/^[a-z][a-z -]*$/.test(clean)) continue; // letters, spaces, hyphens only
+    if (seen.has(clean)) continue;
+    seen.add(clean);
+    moods.push(clean);
+    if (moods.length >= 6) break;
+  }
+  return moods;
+}
+
+app.post('/api/suggestMoods', rateLimitMoods, async (req, res) => {
+  try {
+    const prompt = String(req.body.prompt || '').trim().slice(0, 300);
+    if (prompt.length < 3) return res.json({ moods: [] });
+    const moods = await suggestMoodsAI(prompt);
+    res.json({ moods });
+  } catch (error) {
+    console.error('Error in /api/suggestMoods:', error);
+    res.status(500).json({ error: 'Failed to suggest moods.' });
   }
 });
 
