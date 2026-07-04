@@ -165,7 +165,7 @@ async function callToolLLM(opts: {
     if (!response.ok) {
       const errText = await response.text();
       console.error(`Anthropic API Error: ${response.status} - ${errText}`);
-      throw new Error("Anthropic API request failed");
+      throw new Error(`Anthropic API request failed (${response.status}): ${errText.slice(0, 400)}`);
     }
     const data: any = await response.json();
     const block = (data.content || []).find((b: any) => b.type === "tool_use");
@@ -194,7 +194,7 @@ async function callToolLLM(opts: {
   if (!response.ok) {
     const errText = await response.text();
     console.error(`OpenAI API Error: ${response.status} - ${errText}`);
-    throw new Error("OpenAI API request failed");
+    throw new Error(`OpenAI API request failed (${response.status}): ${errText.slice(0, 400)}`);
   }
   const data: any = await response.json();
   const msg = data.choices?.[0]?.message;
