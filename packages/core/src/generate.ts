@@ -30,7 +30,10 @@ const colorSchema = {
     h: { type: "number", description: "Hue 0-360" },
     s: { type: "number", description: "Saturation 0-100" },
     l: { type: "number", description: "Lightness 0-100" },
-    description: { type: "string", description: "Brief design rationale" },
+    description: {
+      type: "string",
+      description: "A concise rationale (max ~14 words) for why this color fits the brief.",
+    },
   },
   required: ["hex", "h", "s", "l", "description"],
 } as const;
@@ -170,7 +173,13 @@ async function callToolLLM(opts: {
     }
     const data: any = await response.json();
     const block = (data.content || []).find((b: any) => b.type === "tool_use");
-    return block ? block.input : null;
+    if (!block || !block.input || Object.keys(block.input).length === 0) {
+      const kinds = (data.content || []).map((b: any) => b.type).join(",") || "none";
+      throw new Error(
+        `Anthropic returned no usable tool input (stop_reason=${data.stop_reason}, blocks=[${kinds}])`,
+      );
+    }
+    return block.input;
   }
 
   // Default: OpenAI function calling.
@@ -262,7 +271,7 @@ export async function generateColorPalette(
     user: feelings,
     tool: GENERATE_TOOL,
     temperature: 0.75,
-    maxTokens: 4096,
+    maxTokens: 8192,
   });
   if (!args) throw new Error("Model did not return a tool call");
 
@@ -319,7 +328,7 @@ export async function critiquePalette(
       user: userMsg,
       tool: CRITIQUE_TOOL,
       temperature: 0.6,
-      maxTokens: 3072,
+      maxTokens: 4096,
     });
     if (!args) return null;
     return validatePalette(args as Palette);
