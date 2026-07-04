@@ -38,7 +38,14 @@ const EXAMPLES = [
   { label: 'Trustworthy fintech', prompt: 'A fintech app that feels trustworthy and modern, with a bold accent for CTAs', swatches: ['#0A2540', '#1B6EF3', '#00C08B', '#F5A623', '#E8EDF5'] },
 ];
 
-const TOOLS = ['v0', 'Lovable', 'Cursor', 'Claude Code', 'Bolt', 'Figma Make'];
+const TOOLS = [
+  { name: 'v0', file: 'v0' },
+  { name: 'Cursor', file: 'cursor' },
+  { name: 'Claude Code', file: 'claude' },
+  { name: 'Figma Make', file: 'figma' },
+  { name: 'Replit', file: 'replit' },
+  { name: 'Windsurf', file: 'windsurf' },
+];
 
 export function HomePage() {
   const [prompt, setPrompt] = useState('');
@@ -142,9 +149,28 @@ export function HomePage() {
 
         {/* Tools strip */}
         <div className="px-8 md:px-16 py-7 border-y border-[#EAE7E3] dark:border-white/[0.08]">
-          <p className={`text-[11px] uppercase tracking-[0.16em] text-center mb-4 font-semibold ${muted}`}>Feeds the tools you already build in</p>
-          <div className={`flex items-center justify-center gap-x-9 gap-y-3 flex-wrap font-heading font-bold text-lg opacity-45 ${ink}`}>
-            {TOOLS.map(t => <span key={t}>{t}</span>)}
+          <p className={`text-[11px] uppercase tracking-[0.16em] text-center mb-5 font-semibold ${muted}`}>Feeds the tools you already build in</p>
+          <div className={`flex items-center justify-center gap-x-11 gap-y-5 flex-wrap ${ink}`}>
+            {TOOLS.map(t => (
+              <span
+                key={t.name}
+                role="img"
+                title={t.name}
+                aria-label={t.name}
+                className="w-8 h-8 opacity-40 hover:opacity-70 transition-opacity"
+                style={{
+                  backgroundColor: 'currentColor',
+                  WebkitMaskImage: `url(/img/logos/${t.file}.svg)`,
+                  maskImage: `url(/img/logos/${t.file}.svg)`,
+                  WebkitMaskRepeat: 'no-repeat',
+                  maskRepeat: 'no-repeat',
+                  WebkitMaskPosition: 'center',
+                  maskPosition: 'center',
+                  WebkitMaskSize: 'contain',
+                  maskSize: 'contain',
+                }}
+              />
+            ))}
           </div>
         </div>
 
