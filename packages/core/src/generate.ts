@@ -152,10 +152,11 @@ async function callToolLLM(opts: {
         "x-api-key": apiKey,
         "anthropic-version": ANTHROPIC_VERSION,
       },
+      // Note: newer Anthropic models (e.g. Opus 4.8) reject `temperature`, so we omit it and
+      // let the provider default apply. `temperature` still applies to the OpenAI path below.
       body: JSON.stringify({
         model,
         max_tokens: maxTokens,
-        temperature,
         system,
         messages: [{ role: "user", content: user }],
         tools: [{ name: tool.name, description: tool.description, input_schema: tool.parameters }],
