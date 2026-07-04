@@ -1,6 +1,6 @@
 import { useEffect, useCallback, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Sparkles, Shuffle, Moon, Sun, Palette as PaletteIcon, Layers, Eye, Type, Blocks, LayoutGrid, Download } from 'lucide-react';
+import { Sparkles, Moon, Sun, Palette as PaletteIcon, Layers, Eye, Type, Blocks, LayoutGrid, Download } from 'lucide-react';
 import { BackgroundEllipses } from '@/components/layout/BackgroundEllipses.tsx';
 import { GlassCard } from '@/components/layout/GlassCard.tsx';
 import { TopBar } from '@/components/layout/TopBar.tsx';
@@ -15,6 +15,7 @@ import { ComponentGallery } from '@/components/studio/ComponentGallery.tsx';
 import { DemoView } from '@/components/demo/DemoView.tsx';
 import { ExportSection } from '@/components/export/ExportSection.tsx';
 import { ConstraintPackSection } from '@/components/export/ConstraintPackSection.tsx';
+import { MakeVariationButton } from '@/components/palette/MakeVariationButton.tsx';
 import { ShareToTeamButton } from '@/components/teams/ShareToTeamButton.tsx';
 import { usePalette } from '@/hooks/use-palette.ts';
 import { usePaletteBackground } from '@/hooks/use-palette-background.ts';
@@ -88,11 +89,11 @@ export function PalettePage() {
     }
   }, [permalink, colors, dispatch, session]);
 
-  const handleVariation = useCallback(async () => {
+  const handleVariation = useCallback(async (overridePrompt?: string) => {
     if (!colors) return;
     setVariationLoading(true);
     try {
-      const result = await generateVariation(keywords || '', session?.access_token);
+      const result = await generateVariation(overridePrompt ?? (keywords || ''), session?.access_token);
       navigate(`/palette/${result.slug || result.permalink}`);
     } catch (err) {
       console.error('Variation error:', err);
@@ -113,14 +114,11 @@ export function PalettePage() {
           Save Changes
         </button>
       )}
-      <button
-        onClick={handleVariation}
-        disabled={variationLoading || !colors}
-        className="inline-flex items-center gap-2 px-4 py-2.5 border-2 border-[#8b5cf6] rounded-lg bg-transparent text-[#8b5cf6] font-medium text-sm cursor-pointer hover:bg-[#f3f0ff] transition-colors disabled:opacity-50 disabled:cursor-not-allowed dark:hover:bg-[#8b5cf620]"
-      >
-        <Shuffle size={18} className={variationLoading ? 'animate-spin' : ''} />
-        {variationLoading ? 'Generating...' : 'Make Variation'}
-      </button>
+      <MakeVariationButton
+        keywords={keywords || ''}
+        loading={variationLoading}
+        onGenerate={handleVariation}
+      />
       <Link
         to="/"
         className="inline-flex items-center gap-2 px-4 py-2.5 border-2 border-[#008CF4] rounded-lg bg-transparent text-[#008CF4] font-medium text-sm no-underline hover:bg-[#E5F4FF] transition-colors dark:hover:bg-[#008CF420]"
