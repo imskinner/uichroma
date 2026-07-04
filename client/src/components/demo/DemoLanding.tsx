@@ -33,7 +33,7 @@ export function DemoLanding({ colors }: DemoLandingProps) {
   ];
 
   return (
-    <div style={{ background: chrome.background, color: chrome.text, ...B }}>
+    <div style={{ background: chrome.background, color: chrome.text, borderRadius: rx(Math.max(radii.lg, 12)), overflow: 'hidden', border: `1px solid ${chrome.border}`, ...B }}>
       {/* Navbar */}
       <header
         className="flex items-center justify-between px-8 py-4 sticky top-0 z-20 backdrop-blur"
